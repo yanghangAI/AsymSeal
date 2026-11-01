@@ -1,5 +1,10 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#fbfbfd" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#161617" media="(prefers-color-scheme: dark)">
 <title>AsymSeal</title>
-<meta name="claude:viewport-fit-sides" content="cover">
 <meta name="description" content="AsymSeal: a kilobit invisible image watermark with a tiny signer and a strong verifier. Live demo runs in your browser.">
 <style>
 /* Layout: an Apple-style product page. Full-width bands alternate two grounds; a 980px content
@@ -90,7 +95,18 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
 .pill.small { font-size: 12px; padding: 6px 12px; }
 .pill.ghost { background: transparent; color: var(--link); border: 1px solid var(--link); }
 .pill:disabled { opacity: 0.45; cursor: default; filter: none; }
-@media (max-width: 760px) { .nav .links { display: none; } .nav .pill { margin-left: auto; } }
+.nav-menu { display: none; border: 0; background: transparent; color: var(--fg); padding: 10px; margin: 0 -2px 0 auto; border-radius: 8px; cursor: pointer; line-height: 0; }
+.nav-menu svg { transition: transform 0.2s; }
+.nav.open .nav-menu svg { transform: rotate(180deg); }
+@media (max-width: 760px) {
+  .nav-menu { display: inline-flex; }
+  .nav .links { display: none; position: absolute; top: 100%; left: 0; right: 0; flex-direction: column; gap: 0; margin: 0;
+    padding: 4px max(16px, env(safe-area-inset-right, 0px)) 10px max(16px, env(safe-area-inset-left, 0px));
+    background: var(--bg); border-bottom: 1px solid var(--hair); box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08); font-size: 17px; }
+  .nav.open .links { display: flex; }
+  .nav .links a { padding: 12px 0; border-bottom: 1px solid var(--hair); opacity: 1; }
+  .nav .links a:last-child { border-bottom: 0; }
+}
 
 /* hero */
 .hero { padding-block: 72px 40px; text-align: center; }
@@ -100,20 +116,30 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
 .hero .lede { font-size: clamp(19px, 2.4vw, 24px); line-height: 1.33; color: var(--fg-2); max-width: 760px; margin: 22px auto 0; letter-spacing: -0.01em; }
 .hero .ctas { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; margin-top: 30px; }
 .hero .ctas .pill { font-size: 17px; padding: 12px 22px; }
-.reveal { margin-top: 48px; position: relative; border-radius: 22px; overflow: hidden; background: var(--bg-alt); }
+.reveal { margin-top: 48px; position: relative; border-radius: 22px; overflow: hidden; background: var(--bg-alt); cursor: ew-resize;
+  touch-action: pan-y pinch-zoom; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
 .reveal canvas { display: block; width: 100%; height: auto; }
-.reveal input[type=range] { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: ew-resize; margin: 0; }
+/* the range is the keyboard control; pointer and touch drags are handled on the figure, so a vertical swipe still scrolls */
+.reveal input[type=range] { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; margin: 0; pointer-events: none; }
+.reveal:has(input:focus-visible) { outline: 3px solid var(--accent); outline-offset: 2px; }
 .reveal .tag { position: absolute; top: 14px; font-size: 12px; font-weight: 600; padding: 5px 10px; border-radius: 980px;
   background: rgba(0, 0, 0, 0.55); color: #fff; letter-spacing: 0; pointer-events: none; }
 .reveal .tag.l { left: 14px; } .reveal .tag.r { right: 14px; }
 .reveal .status { position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); font-size: 12px; padding: 6px 12px;
-  border-radius: 980px; background: rgba(0, 0, 0, 0.55); color: #fff; letter-spacing: 0; pointer-events: none; white-space: nowrap; }
+  border-radius: 980px; background: rgba(0, 0, 0, 0.55); color: #fff; letter-spacing: 0; pointer-events: none; max-width: calc(100% - 28px); text-align: center; }
 .caption { font-size: 14px; color: var(--fg-2); margin-top: 12px; line-height: 1.45; }
 .hero .caption { text-align: center; }
 .stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 24px; margin-top: 56px; text-align: center; }
 .stat .v { font-family: var(--font-display); font-size: clamp(30px, 4.4vw, 44px); font-weight: 700; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
 .stat .k { font-size: 14px; color: var(--fg-2); line-height: 1.35; margin-top: 4px; }
 @media (max-width: 760px) { .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 560px) {
+  .hero { padding-block: 48px 32px; }
+  .reveal { margin-top: 36px; border-radius: 16px; }
+  .reveal .tag { top: 10px; font-size: 11px; padding: 4px 8px; }
+  .reveal .tag.l { left: 10px; } .reveal .tag.r { right: 10px; }
+  .stats { gap: 28px 16px; margin-top: 40px; }
+}
 
 /* section heads */
 .kicker { font-size: 17px; font-weight: 600; color: var(--accent); }
@@ -138,6 +164,7 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
 .tile .t { font-size: 19px; font-weight: 600; letter-spacing: -0.012em; }
 .tile .big { font-family: var(--font-display); font-size: 40px; font-weight: 700; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; line-height: 1.1; }
 .tile .d { font-size: 15px; color: var(--fg-2); margin-top: 8px; line-height: 1.42; }
+@media (max-width: 560px) { .tiles { margin-top: 36px; gap: 14px; } .tile { padding: 22px 20px; } }
 
 /* figures */
 figure { margin: 0; }
@@ -145,11 +172,20 @@ figure { margin: 0; }
 .fig-head { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; flex-wrap: wrap; }
 .scroll-x { overflow-x: auto; -webkit-overflow-scrolling: touch; }
 .diagram { min-width: 760px; }
+/* phones: a stacked redraw where one exists, otherwise a wider sideways-scrolling diagram with a hint */
+.diagram-narrow { display: none; width: 100%; max-width: 440px; height: auto; margin: 0 auto; }
+.swipe-hint { display: none; font-size: 12px; color: var(--fg-3); margin-top: 8px; letter-spacing: 0; }
+@media (max-width: 640px) {
+  .has-narrow .scroll-x { display: none; }
+  .has-narrow .diagram-narrow { display: block; }
+  .scroll-x .diagram { min-width: 860px; }
+  .swipe-hint { display: block; }
+}
 svg text { font-family: var(--font); letter-spacing: 0; }
 .legend { display: flex; gap: 18px; flex-wrap: wrap; font-size: 13px; color: var(--fg-2); margin-top: 10px; }
 .legend span { display: inline-flex; align-items: center; gap: 6px; }
 .tooltip { position: fixed; z-index: 50; pointer-events: none; background: var(--card); color: var(--fg); border: 1px solid var(--hair);
-  border-radius: 10px; padding: 8px 10px; font-size: 13px; line-height: 1.35; box-shadow: 0 8px 28px rgba(0, 0, 0, 0.14); max-width: 260px; letter-spacing: 0; }
+  border-radius: 10px; padding: 8px 10px; font-size: 13px; line-height: 1.35; box-shadow: 0 8px 28px rgba(0, 0, 0, 0.14); max-width: min(260px, calc(100vw - 16px)); letter-spacing: 0; }
 [hidden] { display: none !important; }
 
 /* tables */
@@ -160,6 +196,7 @@ th:first-child, td:first-child { text-align: left; }
 th { font-weight: 600; color: var(--fg-2); font-size: 12px; }
 details { margin-top: 14px; }
 summary { cursor: pointer; color: var(--link); font-size: 14px; }
+@media (max-width: 560px) { th, td { padding: 8px 6px; } }
 
 /* demo */
 .demo { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); gap: 24px; margin-top: 44px; align-items: start; }
@@ -212,6 +249,28 @@ input[type=range] { width: 100%; accent-color: var(--accent); }
 .drop-hint { font-size: 13px; color: var(--fg-2); }
 .file-btn { position: relative; overflow: hidden; }
 .file-btn input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.sel-sm { width: auto; font-size: 13px; padding: 5px 8px; }
+.attack-table td:first-child { white-space: normal; min-width: 9em; }
+
+/* phones and touch screens */
+@media (pointer: coarse) {
+  .seg button { padding: 9px 14px; }
+  .pill.small { font-size: 13px; padding: 9px 14px; }
+}
+@media (hover: none) { .hover-only { display: none; } }
+/* 16px text in form fields keeps iOS from zooming in on focus */
+@media (max-width: 760px), (pointer: coarse) { textarea, select, input[type=text], .sel-sm { font-size: 16px; } }
+@media (max-width: 560px) {
+  .demo { gap: 16px; margin-top: 32px; }
+  .panel { padding: 16px; border-radius: 18px; }
+  .stage-wrap { border-radius: 10px; }
+  #viewSeg { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); width: 100%; }
+  #modeSeg { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); width: 100%; }
+  .metric .v { font-size: 18px; }
+  .bitmap-row canvas { width: 96px; height: 96px; }
+  .range-labels .opt { display: none; }
+  .attack-table td.ba, .attack-table th.ba { display: none; }
+}
 
 /* verification bar table */
 .vt { width: 100%; }
@@ -221,11 +280,19 @@ input[type=range] { width: 100%; accent-color: var(--accent); }
 .vt .grp td { font-size: 12px; font-weight: 600; color: var(--fg-2); padding-top: 18px; text-transform: uppercase; letter-spacing: 0.05em; text-align: left; }
 .vbar { height: 10px; border-radius: 4px; background: var(--s1); }
 .vbar.edit { background: var(--fg-3); }
+.vt .nb { display: none; }
+@media (max-width: 560px) {
+  .vt td.b, .vt th.b { display: none; }
+  .vt .nb { display: inline; }
+  .vt td.l { min-width: 0; }
+  .vt td { padding: 7px 5px; }
+}
 
 /* carrier explorer */
 .carrier { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: 28px; align-items: start; margin-top: 36px; }
 @media (max-width: 760px) { .carrier { grid-template-columns: minmax(0, 1fr); } }
-.carrier canvas { width: 100%; height: auto; image-rendering: pixelated; border-radius: 10px; display: block; background: var(--bg-alt); cursor: crosshair; touch-action: none; }
+.carrier canvas { width: 100%; height: auto; image-rendering: pixelated; border-radius: 10px; display: block; background: var(--bg-alt); cursor: crosshair; touch-action: pan-y pinch-zoom; }
+@media (max-width: 760px) { .carrier { gap: 20px; margin-top: 24px; } .carrier #slotCanvas { max-width: 320px; } }
 .cap-h { font-size: 13px; font-weight: 600; margin-bottom: 8px; letter-spacing: 0; }
 
 /* findings */
@@ -246,13 +313,17 @@ input[type=range] { width: 100%; accent-color: var(--accent); }
 
 footer { padding-block: 40px 56px; font-size: 12px; color: var(--fg-2); line-height: 1.5; letter-spacing: 0; }
 footer pre { font-family: var(--mono); font-size: 12px; background: var(--card); border-radius: 12px; padding: 14px; overflow-x: auto; margin-top: 10px; color: var(--fg); }
+@media (max-width: 560px) { footer pre { font-size: 11px; padding: 12px; } }
 footer .row { margin-top: 14px; }
 </style>
 
-<nav class="nav band" aria-label="Sections">
+<nav class="nav band" id="siteNav" aria-label="Sections">
   <div class="wrap">
     <a class="brand" href="#top">AsymSeal</a>
-    <div class="links">
+    <button class="nav-menu" type="button" id="navMenu" aria-expanded="false" aria-controls="navLinks" aria-label="Sections">
+      <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 6l5 5 5-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <div class="links" id="navLinks">
       <a href="#task">Overview</a><a href="#demo">Demo</a><a href="#performance">Performance</a><a href="#method">Method</a><a href="#signed">Signed payload</a><a href="#limits">Limits</a>
     </div>
     <a class="pill small" href="#demo">Try it</a>
@@ -271,7 +342,7 @@ footer .row { margin-top: 14px; }
       <span class="tag l">Watermarked</span><span class="tag r">Watermark ×30</span>
       <span class="status" id="revealStatus">Loading the model (3.5 MB)…</span>
     </figure>
-    <p class="caption">A public-domain photo (Patio de los Arrayanes, Alhambra; 2048 × 1393) after embedding 1,024 bits at the released operating point. Drag across it to see the change, amplified 30 times. PSNR <span id="revealPsnr" class="num">–</span>.</p>
+    <p class="caption">A public-domain photo (Patio de los Arrayanes, Alhambra; 2048 × 1393) after embedding 1,024 bits at the released operating point. Drag across it, or tap, to see the change, amplified 30 times. PSNR <span id="revealPsnr" class="num">–</span>.</p>
     <div class="stats">
       <div class="stat"><div class="v">10,412</div><div class="k">parameters in the signer's write network</div></div>
       <div class="stat"><div class="v">44.18 dB</div><div class="k">PSNR on the test set</div></div>
@@ -286,7 +357,7 @@ footer .row { margin-top: 14px; }
     <p class="kicker">The task</p>
     <h2 class="h2">Proof that survives the upload.</h2>
     <p class="sub">Provenance metadata such as C2PA manifests is stripped by most platforms that re-encode uploaded images. AsymSeal puts the proof into the pixels instead: a camera signs a perceptual hash of the photo it took, and the signature travels as an invisible watermark.</p>
-    <figure class="fig">
+    <figure class="fig has-narrow">
       <div class="scroll-x"><svg class="diagram" viewBox="0 0 980 190" role="img" aria-label="Sign on the device, survive the platform's resize and JPEG, verify with the public key.">
         <defs><marker id="ah1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
         <g fill="none" stroke="currentColor" stroke-width="1.4" color="var(--fg-3)">
@@ -313,6 +384,32 @@ footer .row { margin-top: 14px; }
           <text x="840" y="160" text-anchor="middle" font-size="12" fill="var(--fg-3)">heavier, can be upgraded later</text>
         </g>
       </svg></div>
+      <svg class="diagram-narrow" viewBox="0 0 340 404" role="img" aria-label="Sign on the device, survive the platform's resize and JPEG, verify with the public key.">
+        <defs><marker id="ah1n" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
+        <g fill="none" stroke="currentColor" stroke-width="1.4" color="var(--fg-3)">
+          <line x1="170" y1="110" x2="170" y2="146" marker-end="url(#ah1n)"/>
+          <line x1="170" y1="258" x2="170" y2="294" marker-end="url(#ah1n)"/>
+        </g>
+        <g font-size="13" fill="var(--fg)" text-anchor="middle">
+          <rect x="10" y="8" width="320" height="100" rx="16" fill="var(--learned)" stroke="var(--learned-line)"/>
+          <text x="170" y="36" font-weight="600" font-size="15">Sign on the device</text>
+          <text x="170" y="57" fill="var(--fg-2)">hash the photo, sign it (Ed25519),</text>
+          <text x="170" y="75" fill="var(--fg-2)">embed 1,024 bits · 0.68 GMACs</text>
+          <text x="170" y="96" font-size="12" fill="var(--fg-3)">tiny, fixed once images are signed</text>
+          <rect x="10" y="156" width="320" height="100" rx="16" fill="var(--fixed)" stroke="var(--hair)"/>
+          <text x="170" y="184" font-weight="600" font-size="15">Platform</text>
+          <text x="170" y="205" fill="var(--fg-2)">downscale, JPEG, re-share</text>
+          <text x="170" y="223" fill="var(--fg-2)">e.g. WeChat-like: 0.3×, quality 50</text>
+          <text x="170" y="244" font-size="12" fill="var(--fg-3)">not under anyone's control</text>
+          <rect x="10" y="304" width="320" height="92" rx="16" fill="var(--learned)" stroke="var(--learned-line)"/>
+          <text x="170" y="332" font-weight="600" font-size="15">Verify anywhere</text>
+          <text x="170" y="353" fill="var(--fg-2)">decode the bits, correct errors,</text>
+          <text x="170" y="371" fill="var(--fg-2)">check the signature · 47.6 GMACs</text>
+          <text x="170" y="388" font-size="12" fill="var(--fg-3)">heavier, can be upgraded later</text>
+          <text x="182" y="132" font-size="12" fill="var(--fg-2)" text-anchor="start">posts</text>
+          <text x="182" y="280" font-size="12" fill="var(--fg-2)" text-anchor="start">downloads</text>
+        </g>
+      </svg>
       <figcaption class="caption">The two halves are deployed very differently, so they get different budgets: a tiny signer on the capture device and a heavier verifier wherever provenance is checked.</figcaption>
     </figure>
     <div class="tiles c4">
@@ -359,7 +456,7 @@ footer .row { margin-top: 14px; }
           <div class="metric"><div class="k">Embedding canvas</div><div class="v" id="mCanvas">–</div></div>
           <div class="metric"><div class="k">Time</div><div class="v" id="mTime">–</div></div>
         </div>
-        <p class="hint">To keep the watermarked image, right-click or long-press it in the Watermarked view and save it as PNG. JPEG is one of the attacks, not a storage format. Drop any image onto the picture to use it.</p>
+        <p class="hint">To keep the watermarked image, use Download PNG in step 3, or right-click or long-press it in the Watermarked view. JPEG is one of the attacks, not a storage format.<span class="hover-only"> Drop any image onto the picture to use it.</span></p>
       </div>
 
       <div class="panel">
@@ -387,7 +484,7 @@ footer .row { margin-top: 14px; }
           </div>
           <label class="f" for="sIn">Embedding strength <span class="mono" id="sVal">s = 0.90</span></label>
           <input type="range" id="sIn" min="0.35" max="1" step="0.05" value="0.9">
-          <div class="range-labels"><span>0.35 · fainter</span><span>0.55 robust floor</span><span>0.90 released</span><span>1.0</span></div>
+          <div class="range-labels"><span>0.35<span class="opt"> · fainter</span></span><span>0.55<span class="opt"> robust floor</span></span><span>0.90 released</span><span>1.0</span></div>
           <details>
             <summary>Trade-off λ</summary>
             <label class="f" for="lamIn">λ = (λ_pareto, λ_struct). Extraction uses the same λ.</label>
@@ -413,9 +510,15 @@ footer .row { margin-top: 14px; }
         </div>
 
         <div class="step">
-          <div class="step-h">3 · Decode a file</div>
-          <p class="hint">Save the watermarked image, send it through a messenger or post it, download it again, and drop it here. It is compared with the payload you embedded above.</p>
-          <div class="row" style="margin-top:8px"><span class="pill small ghost file-btn">Choose image to decode<input type="file" id="decodeFileIn" accept="image/*" aria-label="Choose an image to decode"></span></div>
+          <div class="step-h">3 · Through a real platform</div>
+          <p class="hint">Download the watermarked image or share it to an app. Send it through a messenger or post it, save the copy that comes back, and decode that copy here.</p>
+          <div class="row" style="margin-top:10px">
+            <button class="pill small" type="button" id="dlBtn" disabled>Download PNG</button>
+            <button class="pill small ghost" type="button" id="shareBtn" hidden disabled>Share…</button>
+            <span class="pill small ghost file-btn">Decode the copy<input type="file" id="decodeFileIn" accept="image/*" aria-label="Choose the copy to decode"></span>
+          </div>
+          <p class="hint" id="sentNote">Download or share the image first. Until then, a copy is compared with the payload embedded above.</p>
+          <p class="hint">Most platforms downscale a photo, compress the small image and scale it back up. The model handles that order worse than the chains of the evaluation (see Limits). Sending in HD, or as a file, keeps more of the watermark, and the 100-bit mode tolerates the most bit errors.</p>
           <div class="result" id="fileResult" aria-live="polite"></div>
         </div>
       </div>
@@ -473,7 +576,7 @@ footer .row { margin-top: 14px; }
 
     <figure class="fig">
       <div class="fig-head"><h3 class="h3">Signed images that verify</h3><span class="small muted">530 CLIC 2020 images × 6 sizes · one key pair · one run</span></div>
-      <div class="table-wrap"><table class="vt"><thead><tr><th>condition</th><th style="text-align:left">all six sizes</th><th></th><th>1024²</th><th>2048 × 1536</th></tr></thead><tbody id="verifyBody"></tbody></table></div>
+      <div class="table-wrap"><table class="vt"><thead><tr><th>condition</th><th class="b" style="text-align:left">all six sizes</th><th><span class="nb">all six</span></th><th>1024²</th><th>2048 × 1536</th></tr></thead><tbody id="verifyBody"></tbody></table></div>
       <figcaption class="caption">Percent of images whose codeword decodes and whose signature checks out with the trusted public key. For the edits the percentage is how often the edited image is still accepted, so lower is better. "Platform order" compresses the downscaled image before upscaling, which is much harder.</figcaption>
     </figure>
   </div>
@@ -550,6 +653,7 @@ footer .row { margin-top: 14px; }
           <text x="746" y="418" fill="var(--fg)" font-weight="600">Router</text><text x="746" y="434" fill="var(--fg-2)" font-size="11">channel weights</text>
         </g>
       </svg></div>
+      <p class="swipe-hint">Swipe sideways to see the whole diagram.</p>
       <figcaption class="caption">Blue: learned (every block FiLM-modulated by the trade-off λ). Gray: fixed operators. The payload reaches the image only through the fixed carrier; the decoder is the part worth scaling. Only the canvas residual is upsampled, so the signer's cost does not grow with the photo.</figcaption>
     </figure>
 
@@ -562,12 +666,12 @@ footer .row { margin-top: 14px; }
 
     <figure class="fig" id="carrierFig">
       <div class="fig-head"><h3 class="h3">Inside the carrier</h3><span class="small muted">256 × 256 canvas · the released layout</span></div>
-      <p class="sub" style="font-size:17px;margin-top:10px">Each of the 1,024 bits owns 16 scattered positions in each of the 12 polyphase channels: 192 places in the image. Point at a slot to see where its bit goes; point at a position to find its slot.</p>
+      <p class="sub" style="font-size:17px;margin-top:10px">Each of the 1,024 bits owns 16 scattered positions in each of the 12 polyphase channels: 192 places in the image. Point at or tap a slot to see where its bit goes, or a position to find its slot.</p>
       <div class="carrier">
         <div><div class="cap-h">Payload slots (32 × 32)</div><canvas id="slotCanvas" width="256" height="256" aria-label="The 1,024 payload slots"></canvas></div>
         <div>
           <div class="row spread"><div class="cap-h" id="mTitle">Message tensor M, channel 1 (128 × 128)</div>
-            <select id="chanSel" style="width:auto;font-size:13px;padding:5px 8px" aria-label="Channel"></select></div>
+            <select id="chanSel" class="sel-sm" aria-label="Channel"></select></div>
           <canvas id="mCanvas2" width="512" height="512" aria-label="Message tensor of one channel"></canvas>
         </div>
       </div>
@@ -587,7 +691,7 @@ footer .row { margin-top: 14px; }
     <p class="kicker">Signed payload</p>
     <h2 class="h2">A signature in 1,024 bits.</h2>
     <p class="sub">The signer hashes the photo with a 128-bit PDQ-style perceptual hash, signs the hash with Ed25519 and embeds one Reed–Solomon codeword. The hash itself is not sent; only its BCH syndrome is.</p>
-    <figure class="fig">
+    <figure class="fig has-narrow">
       <div class="scroll-x"><svg class="diagram" viewBox="0 0 980 120" role="img" aria-label="The 1,024 bits: 28-bit hash syndrome, 512-bit signature, 256-bit public key, 4 zero bits, and 224 bits of Reed-Solomon parity.">
         <g font-size="12.5" text-anchor="middle">
           <rect x="10" y="30" width="28" height="44" fill="var(--s3)"/>
@@ -604,6 +708,22 @@ footer .row { margin-top: 14px; }
           <text x="874" y="96" fill="var(--fg-2)" font-size="11">28 parity bytes</text>
         </g>
       </svg></div>
+      <svg class="diagram-narrow" viewBox="0 0 340 124" role="img" aria-label="The 1,024 bits: 28-bit hash syndrome, 512-bit signature, 256-bit public key, 4 zero bits, and 224 bits of Reed-Solomon parity.">
+        <g font-size="12" text-anchor="middle">
+          <rect x="10" y="26" width="9" height="40" fill="var(--s3)"/>
+          <rect x="20" y="26" width="162" height="40" fill="var(--s1)"/>
+          <rect x="183" y="26" width="80" height="40" fill="var(--s2)"/>
+          <rect x="264" y="26" width="2" height="40" fill="var(--fg-3)"/>
+          <rect x="267" y="26" width="63" height="40" fill="var(--fixed)" stroke="var(--hair)"/>
+          <text x="10" y="16" fill="var(--fg-2)" font-size="11" text-anchor="start">hash syndrome · 28 bits</text>
+          <text x="101" y="50" fill="#ffffff" font-weight="600">signature · 512</text>
+          <text x="223" y="50" fill="#ffffff" font-weight="600">key · 256</text>
+          <text x="298" y="50" fill="var(--fg)" font-weight="600">RS · 224</text>
+          <path d="M10 74 V80 H265 V74 M267 74 V80 H330 V74" fill="none" stroke="var(--fg-3)" stroke-width="1"/>
+          <text x="137" y="97" fill="var(--fg-2)" font-size="11">100 data bytes (796 bits + 4 zero bits)</text>
+          <text x="330" y="115" fill="var(--fg-2)" font-size="11" text-anchor="end">28 Reed–Solomon parity bytes</text>
+        </g>
+      </svg>
       <figcaption class="caption">RS(128, 100) over bytes corrects up to 14 wrong bytes anywhere in the codeword. BCH(127, t = 4) lets the verifier recover the signed hash from its own hash of the received image when the two differ in at most 4 bits.</figcaption>
     </figure>
     <div class="steps-list">
@@ -2119,6 +2239,13 @@ void main() {
     tip.style.left = Math.max(8, x) + 'px'; tip.style.top = Math.max(8, y) + 'px';
   }
   function hideTip() { tip.hidden = true; }
+  // a mouse shows the tip on hover; on a touch screen a tap shows it and a tap elsewhere or a scroll hides it
+  function tipTarget(node, html) {
+    const show = (e) => showTip(e, html);
+    node.setAttribute('class', 'tip-hit');
+    node.addEventListener('pointermove', show); node.addEventListener('pointerdown', show);
+    node.addEventListener('pointerleave', (e) => { if (e.pointerType !== 'touch') hideTip(); });
+  }
 
   // -------------------------------------------------------------------------------------
   // Reported numbers (README of the release: test set, held-out selection, verification rates)
@@ -2194,7 +2321,7 @@ void main() {
   ];
   function drawSizeChart() {
     const host = $('sizeChart');
-    const W = Math.max(320, host.clientWidth || 900);
+    const W = Math.max(280, host.clientWidth || 900);
     const narrow = W < 560;
     const left = narrow ? 92 : 120, right = 24, top = 26, rowH = narrow ? 34 : 38;
     const H = top + rowH * SIZES.length + 30;
@@ -2215,15 +2342,14 @@ void main() {
       el('line', { x1: X(Math.min(...vals)), x2: X(Math.max(...vals)), y1: y, y2: y }, { stroke: 'var(--fg-3)', 'stroke-width': '2px', 'stroke-linecap': 'round', opacity: '0.45' }, svg);
       SIZE_SERIES.forEach(s => marker(svg, s.shape, X(row[s.key]), y, s.color, 5.5));
       const hit = el('rect', { x: 0, y: y - rowH / 2, width: W, height: rowH }, { fill: 'transparent' }, svg);
-      hit.addEventListener('pointermove', (e) => showTip(e, `<b>${row[0]}</b><br>No attack: ${nf(row[5], 5)}<br>Mean of 16 attacks: ${nf(row[4], 4)}<br>WeChat-like chain: ${nf(row[6], 4)}<br><span style="color:var(--fg-2)">PSNR ${nf(row[1], 2)} dB · SSIM ${nf(row[2], 4)}</span>`));
-      hit.addEventListener('pointerleave', hideTip);
+      tipTarget(hit, `<b>${row[0]}</b><br>No attack: ${nf(row[5], 5)}<br>Mean of 16 attacks: ${nf(row[4], 4)}<br>WeChat-like chain: ${nf(row[6], 4)}<br><span style="color:var(--fg-2)">PSNR ${nf(row[1], 2)} dB · SSIM ${nf(row[2], 4)}</span>`);
     });
     text(svg, left, 12, 'bit accuracy', {}, { 'font-size': '11px' });
   }
 
   function drawTradeChart() {
     const host = $('tradeChart');
-    const W = Math.max(320, host.clientWidth || 900);
+    const W = Math.max(280, host.clientWidth || 900);
     const narrow = W < 560;
     const left = 48, right = narrow ? 16 : 150, top = 20, bottom = 40;
     const H = narrow ? 320 : 380;
@@ -2256,7 +2382,11 @@ void main() {
       if (deployed) el('circle', { cx: x, cy: y, r: 11 }, { fill: 'none', stroke: 'var(--accent)', 'stroke-width': '2px' }, svg);
       const m = onSweep ? marker(svg, 'circle', x, y, 'var(--s1)', 4.5) : marker(svg, 'square', x, y, 'var(--s2)', 4.5, true);
       pts.push([x, y, c, m]);
-      if (onSweep && [0.35, 0.55, 0.8, 1.0].includes(c[2])) text(svg, x + 8, y - 6, 's = ' + c[2].toFixed(2), {}, { 'font-size': '11px' });
+      // a label that would run past the right edge (narrow screens) goes on the left of its point
+      if (onSweep && (narrow ? [0.35, 0.55] : [0.35, 0.55, 0.8, 1.0]).includes(c[2])) {
+        const right = x + 56 > W;
+        text(svg, right ? x - 8 : x + 8, y - 6, 's = ' + c[2].toFixed(2), right ? { 'text-anchor': 'end' } : {}, { 'font-size': '11px' });
+      }
     });
     const dep = CANDS[12];
     if (!narrow) {
@@ -2267,8 +2397,7 @@ void main() {
     }
     pts.forEach(([x, y, c]) => {
       const hit = el('circle', { cx: x, cy: y, r: 13 }, { fill: 'transparent', cursor: 'default' }, svg);
-      hit.addEventListener('pointermove', (e) => showTip(e, `<b>λ = ${c[1]}, s = ${c[2].toFixed(2)}</b>${c[2] === 0.9 && c[1] === '(0.35, 0.95)' ? ' · deployed' : ''}<br>PSNR ${nf(c[3], 2)} dB<br>Bit accuracy ${nf(c[4], 4)}<br><span style="color:var(--fg-2)">Stage ${c[0]} candidate</span>`));
-      hit.addEventListener('pointerleave', hideTip);
+      tipTarget(hit, `<b>λ = ${c[1]}, s = ${c[2].toFixed(2)}</b>${c[2] === 0.9 && c[1] === '(0.35, 0.95)' ? ' · deployed' : ''}<br>PSNR ${nf(c[3], 2)} dB<br>Bit accuracy ${nf(c[4], 4)}<br><span style="color:var(--fg-2)">Stage ${c[0]} candidate</span>`);
     });
   }
 
@@ -2337,7 +2466,11 @@ void main() {
     const ctx = c.getContext('2d', { willReadFrequently: true });
     ctx.imageSmoothingQuality = 'high';
     ctx.drawImage(bmp, 0, 0, w, h);
-    return { width: w, height: h, data: ctx.getImageData(0, 0, w, h).data, note };
+    const data = ctx.getImageData(0, 0, w, h).data;
+    // phones cap the total canvas memory of a page, so scratch canvases and bitmaps are released at once
+    if (bmp.close) bmp.close();
+    c.width = c.height = 0;
+    return { width: w, height: h, data, note };
   }
   const jcan = document.createElement('canvas');
   const jctx = jcan.getContext('2d', { willReadFrequently: true });
@@ -2348,6 +2481,7 @@ void main() {
     const bmp = await createImageBitmap(blob);
     jctx.clearRect(0, 0, img.width, img.height);
     jctx.drawImage(bmp, 0, 0);
+    if (bmp.close) bmp.close();
     return { width: img.width, height: img.height, data: jctx.getImageData(0, 0, img.width, img.height).data };
   }
   function gaussKernel(n, sigma) {
@@ -2475,7 +2609,7 @@ void main() {
   const state = {
     model: null, ready: false, gpu: false, busy: false,
     cover: null, sampleIdx: 0, mode: 'text', view: 'marked',
-    emb: null, attacked: null, signer: null, ed25519: false, hex100: null, hero: null, saveUrl: null, saveLoaded: null,
+    emb: null, attacked: null, signer: null, ed25519: false, hex100: null, hero: null, saveUrl: null, saveLoaded: null, saveBlob: null, saveFor: null, sent: null,
   };
 
   function setEngine(kind, msg) {
@@ -2534,10 +2668,12 @@ void main() {
     const c = document.createElement('canvas');
     putImage(c, c.getContext('2d'), rgba);
     c.toBlob(b => {
+      c.width = c.height = 0;
       if (!b) return;
       if (state.saveUrl) URL.revokeObjectURL(state.saveUrl);
       const url = URL.createObjectURL(b), si = $('saveImg');
-      state.saveUrl = url; state.saveLoaded = null;
+      state.saveUrl = url; state.saveLoaded = null; state.saveBlob = b; state.saveFor = rgba;
+      updateSendButtons();
       si.onload = () => { if (state.saveUrl === url) { state.saveLoaded = url; drawStage(); } };
       si.onerror = () => { if (state.saveUrl === url) drawStage(); };
       si.src = url;
@@ -2556,10 +2692,12 @@ void main() {
     const W = rc.width, H = rc.height, x = Math.round(W * frac);
     rctx.drawImage(h.marked, 0, 0);
     rctx.save(); rctx.beginPath(); rctx.rect(x, 0, W - x, H); rctx.clip(); rctx.drawImage(h.diff, 0, 0); rctx.restore();
-    rctx.fillStyle = '#ffffff'; rctx.fillRect(x - 1, 0, 2, H);
-    rctx.beginPath(); rctx.arc(x, H / 2, 16, 0, 2 * Math.PI); rctx.fill();
-    rctx.fillStyle = '#1d1d1f'; rctx.font = '600 14px -apple-system, system-ui, sans-serif'; rctx.textAlign = 'center'; rctx.textBaseline = 'middle';
-    rctx.fillText('‹ ›', x, H / 2 + 1);
+    // the handle keeps the same on-screen size however far the 2048-pixel canvas is scaled down
+    const k = W / (rc.getBoundingClientRect().width || W);
+    rctx.fillStyle = '#ffffff'; rctx.fillRect(x - k, 0, 2 * k, H);
+    rctx.beginPath(); rctx.arc(x, H / 2, 17 * k, 0, 2 * Math.PI); rctx.fill();
+    rctx.fillStyle = '#1d1d1f'; rctx.font = `600 ${Math.round(15 * k)}px -apple-system, system-ui, sans-serif`; rctx.textAlign = 'center'; rctx.textBaseline = 'middle';
+    rctx.fillText('‹ ›', x, H / 2 + k);
   }
   function setHero(cover, rgba, psnr) {
     const mk = (img) => { const c = document.createElement('canvas'); putImage(c, c.getContext('2d'), img); return c; };
@@ -2595,7 +2733,8 @@ void main() {
     }
     res.ba = 1 - res.nWrong / res.n;
     if (emb.mode === 'text') { res.text = A.bitsToText(hard); res.textOk = res.text === emb.text; }
-    if (emb.mode === 'signed' && state.signer) res.verify = await S.verifyImage(hard, rgba, state.signer.publicKey, emb.bits);
+    const pk = emb.pk || (state.signer && state.signer.publicKey);
+    if (emb.mode === 'signed' && pk) res.verify = await S.verifyImage(hard, rgba, pk, emb.bits);
     return res;
   }
   function renderResult(host, res, meta) {
@@ -2678,8 +2817,9 @@ void main() {
       const out = await state.model.embed(A.imageToTensor(cover), bits, { lambda: lam, s, progress: setProgress });
       const rgba = A.tensorToImage(out.image);
       const ms = performance.now() - t0;
-      state.emb = { mode, bits, info, text, signed, lam, s, rgba, canvas: out.canvas, cover };
+      state.emb = { mode, bits, info, text, signed, pk: signed ? state.signer.publicKey : null, lam, s, rgba, canvas: out.canvas, cover };
       state.attacked = null;
+      updateSendButtons();
       const psnr = A.psnr8(cover, rgba);
       $('mPsnr').textContent = nf(psnr, 2) + ' dB';
       $('mSsim').textContent = '…';
@@ -2746,6 +2886,87 @@ void main() {
     } catch (e) { $('allNote').textContent = 'Stopped: ' + (e.message || e); }
     finally { setBusy(false); setProgress(0); }
   }
+  // -------------------------------------------------------------------------------------
+  // Round trip through a real platform. The payload of the last image downloaded or shared is what a returned
+  // copy is compared with. It is also kept in this browser's localStorage, because a phone may reload the tab
+  // while the person is in a messenger; a signed payload keeps the public key it was signed with.
+  // -------------------------------------------------------------------------------------
+  const SENT_KEY = 'asymseal.sent.v1';
+  // Inside the claude.ai viewer a framed page may not download by itself: the viewer's downloads capability asks
+  // the person and saves the file. Anywhere else (GitHub Pages, a saved copy) a plain download link works.
+  const framed = (() => { try { return window.top !== window; } catch (e) { return true; } })();
+  const downloadsCap = window.claude && typeof window.claude.use === 'function' ? window.claude.use('downloads').catch(() => null) : null;
+  const canShareFiles = (() => {
+    try {
+      const pol = document.permissionsPolicy || document.featurePolicy;
+      if (pol && pol.allowsFeature && !pol.allowsFeature('web-share')) return false;
+      return !!(navigator.share && navigator.canShare && navigator.canShare({ files: [new File([new Uint8Array(8)], 'x.png', { type: 'image/png' })] }));
+    } catch (e) { return false; }
+  })();
+  function sendReady() { return !!(state.emb && state.saveBlob && state.saveFor === state.emb.rgba); }
+  function updateSendButtons() { const ok = sendReady(); $('dlBtn').disabled = !ok; $('shareBtn').disabled = !ok; }
+  function pngName(emb) { return `asymseal-watermarked-${emb.mode === 'b100' ? '100bit' : emb.mode}.png`; }
+  function rememberSent(how) {
+    const e = state.emb;
+    state.sent = { mode: e.mode, bits: e.bits, info: e.info, text: e.text, pk: e.pk, lam: e.lam, s: e.s, w: e.rgba.width, h: e.rgba.height, at: Date.now(), how };
+    try {
+      localStorage.setItem(SENT_KEY, JSON.stringify(Object.assign({}, state.sent, {
+        bits: bitsToHex(e.bits), info: e.info ? bitsToHex(e.info) : null, pk: e.pk ? S.hex(e.pk) : null })));
+    } catch (err) { /* storage blocked: the record lasts as long as this tab */ }
+    showSentNote();
+  }
+  function loadSent() {
+    try {
+      const r = JSON.parse(localStorage.getItem(SENT_KEY) || 'null');
+      if (!r || !/^[0-9a-f]{256}$/.test(r.bits) || !['text', 'signed', 'b100'].includes(r.mode)) return;
+      state.sent = Object.assign(r, { bits: hexToBits(r.bits, 1024), info: r.info ? hexToBits(r.info, 100) : null, pk: r.pk ? S.fromHex(r.pk) : null });
+    } catch (e) { /* nothing stored, or storage blocked */ }
+  }
+  function sentWhen(t) {
+    const d = new Date(t), now = new Date();
+    const hm = d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+    return d.toDateString() === now.toDateString() ? 'at ' + hm : `on ${d.toLocaleDateString([], { month: 'short', day: 'numeric' })} at ${hm}`;
+  }
+  function sentLabel(r) {
+    const what = r.mode === 'signed' ? 'signed' : r.mode === 'b100' ? '100-bit' : 'text';
+    return `the ${what} image you ${r.how} ${sentWhen(r.at)} (${r.w} × ${r.h})`;
+  }
+  function showSentNote(extra) {
+    if (!state.sent && !extra) return;  // keep the page's first-visit text
+    $('sentNote').textContent = [extra, state.sent ? `A copy is compared with ${sentLabel(state.sent)}.` : ''].filter(Boolean).join(' ');
+  }
+  const SAVE_BY_HAND = 'If no file was saved, long-press or right-click the picture in the Watermarked view and save it.';
+  async function doDownload() {
+    if (!sendReady()) return;
+    rememberSent('downloaded');
+    const blob = state.saveBlob, url = state.saveUrl, name = pngName(state.emb);
+    const dl = downloadsCap ? await downloadsCap : null;
+    if (dl) {
+      try { await dl.save({ filename: name, data: blob }); }
+      catch (e) {
+        const code = e && e.code;
+        if (code === 'declined') return;
+        showSentNote(code === 'rate_limited' ? 'A save prompt is already open.' : 'Saving is not available in this view. ' + SAVE_BY_HAND);
+      }
+      return;
+    }
+    const a = document.createElement('a');
+    a.href = url; a.download = name; a.rel = 'noopener';
+    document.body.appendChild(a); a.click(); a.remove();
+    if (framed) showSentNote(SAVE_BY_HAND);
+  }
+  async function doShare() {
+    if (!sendReady()) return;
+    const file = new File([state.saveBlob], pngName(state.emb), { type: 'image/png' });
+    rememberSent('shared');  // before the share sheet: the tab may be reloaded while the person is in the other app
+    try { await navigator.share({ files: [file] }); }
+    catch (e) {
+      if (e.name === 'AbortError') return;
+      if (e.name === 'NotAllowedError') { $('shareBtn').hidden = true; showSentNote('Sharing is blocked in this view; use Download PNG.'); return; }
+      renderError($('fileResult'), e);
+    }
+  }
+
   async function doDecodeFile(file) {
     const host = $('fileResult');
     if (!state.ready) { host.innerHTML = '<p class="hint">The model is still loading.</p>'; return; }
@@ -2754,13 +2975,19 @@ void main() {
     host.innerHTML = '<p class="hint">Decoding…</p>';
     try {
       const img = await fileToRGBA(file);
-      const lam = state.emb ? state.emb.lam : lamValue();
+      const ref = state.sent || state.emb;
+      const lam = ref ? ref.lam : lamValue();
       const t0 = performance.now();
       const r = await state.model.extract(A.imageToTensor(img), { lambda: lam, progress: setProgress });
       const ms = performance.now() - t0;
-      if (state.emb) {
-        const res = await evaluate(state.emb, r.logits, img);
+      if (ref) {
+        const res = await evaluate(ref, r.logits, img);
         renderResult(host, res, { label: `${file.name} · ${img.width} × ${img.height}${img.note}`, ms, canvas: r.canvas });
+        const p = document.createElement('p'); p.className = 'hint';
+        p.textContent = ref === state.sent
+          ? `Compared with ${sentLabel(ref)}.` + (ref.w !== img.width || ref.h !== img.height ? ` The copy came back at ${img.width} × ${img.height}.` : '')
+          : 'Compared with the payload embedded above; download or share the image to compare a copy with it.';
+        host.appendChild(p);
       } else {
         host.innerHTML = '';
         const d = document.createElement('div'); d.className = 'decoded'; d.textContent = bitsToHex(A.hardBits(r.logits)); host.appendChild(d);
@@ -2872,6 +3099,37 @@ void main() {
     sw.addEventListener('dragleave', () => sw.classList.remove('drag'));
     sw.addEventListener('drop', async (e) => { e.preventDefault(); sw.classList.remove('drag'); const f = e.dataTransfer.files[0]; if (!f) return; try { const img = await fileToRGBA(f); await setCover(img, f.name); } catch (err) { renderError($('result'), err); } });
     $('revealRange').addEventListener('input', drawReveal);
+    // drag on the hero: a mouse moves the divider from the press; a finger moves it on a sideways drag or a tap,
+    // while a vertical swipe still scrolls the page (touch-action: pan-y on the figure)
+    const rv = $('reveal');
+    let rvDrag = null;
+    const revealAt = (e) => { const r = rv.getBoundingClientRect(); $('revealRange').value = String(Math.round(1000 * Math.min(1, Math.max(0, (e.clientX - r.left) / (r.width || 1))))); drawReveal(); };
+    rv.addEventListener('pointerdown', (e) => {
+      if (e.button > 0) return;
+      rvDrag = e.pointerId;
+      if (e.pointerType === 'mouse') { revealAt(e); try { rv.setPointerCapture(e.pointerId); } catch (err) { /* not capturable */ } }
+    });
+    rv.addEventListener('pointermove', (e) => { if (rvDrag === e.pointerId) revealAt(e); });
+    rv.addEventListener('pointerup', (e) => { if (rvDrag === e.pointerId) revealAt(e); rvDrag = null; });
+    rv.addEventListener('pointercancel', () => { rvDrag = null; });
+    new ResizeObserver(() => { if (state.hero) drawReveal(); }).observe(rc);
+    // section menu on narrow screens
+    const nav = $('siteNav'), menuBtn = $('navMenu');
+    const setMenu = (open) => { nav.classList[open ? 'add' : 'remove']('open'); menuBtn.setAttribute('aria-expanded', String(open)); };
+    menuBtn.addEventListener('click', () => setMenu(menuBtn.getAttribute('aria-expanded') !== 'true'));
+    document.querySelectorAll('#navLinks a').forEach(a => a.addEventListener('click', () => setMenu(false)));
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { setMenu(false); hideTip(); } });
+    document.addEventListener('pointerdown', (e) => {
+      const t = e.target, inside = (sel) => !!(t && t.closest && t.closest(sel));
+      if (!inside('.tip-hit')) hideTip();
+      if (!inside('#siteNav')) setMenu(false);
+    });
+    window.addEventListener('scroll', hideTip, { passive: true });
+    // round trip through a real platform
+    $('shareBtn').hidden = !canShareFiles;
+    $('dlBtn').addEventListener('click', doDownload);
+    $('shareBtn').addEventListener('click', doShare);
+    loadSent(); showSentNote();
     $('copyBib').addEventListener('click', () => {
       const t = $('bib').textContent;
       const done = (m) => { $('copyNote').textContent = m; };
@@ -2921,3 +3179,5 @@ void main() {
   start();
 })();
 </script>
+
+</html>

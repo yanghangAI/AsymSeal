@@ -16,6 +16,9 @@ The page includes a JavaScript port of the released checkpoint (seed 0, at its d
 - **GPU:** with WebGL2 the model runs on your GPU. At startup the page checks the GPU result against the CPU code and switches to the CPU if they disagree.
 - **CPU:** without WebGL2 it runs on the CPU. Decoding a 512 × 512 canvas then takes about two minutes.
 - **Signed payload:** this mode uses your browser's built-in Ed25519. The key is made in the page and stays there.
+- **Through a real platform:** download the watermarked PNG, or share it to an app on a phone. Send it through a messenger or post it, then decode the copy you get back. The page keeps the payload of the last image you downloaded or shared in your browser's `localStorage`, so a copy can still be checked if the tab reloads. For a signed image this is the public key, not the private key. Nothing is sent anywhere.
+
+The page works on phones. Touch drags the comparison slider and explores the carrier, and the wide diagrams are redrawn for narrow screens.
 
 The demo differs from the paper's measurements in two ways:
 

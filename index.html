@@ -251,6 +251,15 @@ input[type=range] { width: 100%; accent-color: var(--accent); }
 .file-btn input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
 .sel-sm { width: auto; font-size: 13px; padding: 5px 8px; }
 .attack-table td:first-child { white-space: normal; min-width: 9em; }
+.attack-table .muted { font-size: 12px; }
+.attack-table .jz-inline { display: none; }
+/* image size before and after compression */
+.sizes { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 8px; align-items: center; margin-top: 12px; }
+.sz { background: var(--bg-alt); border-radius: 12px; padding: 10px 12px; min-width: 0; letter-spacing: 0; }
+.sz .k { font-size: 12px; color: var(--fg-2); line-height: 1.3; }
+.sz .v { font-size: 17px; font-weight: 600; font-variant-numeric: tabular-nums; margin-top: 2px; white-space: nowrap; }
+.sz .d { font-size: 12px; color: var(--fg-2); font-variant-numeric: tabular-nums; line-height: 1.4; }
+.sizes .arrow { color: var(--fg-3); font-size: 17px; }
 
 /* phones and touch screens */
 @media (pointer: coarse) {
@@ -270,6 +279,11 @@ input[type=range] { width: 100%; accent-color: var(--accent); }
   .bitmap-row canvas { width: 96px; height: 96px; }
   .range-labels .opt { display: none; }
   .attack-table td.ba, .attack-table th.ba { display: none; }
+  .attack-table td:first-child { min-width: 0; }
+  .attack-table td.jz, .attack-table th.jz { display: none; }
+  .attack-table .jz-inline { display: block; font-size: 12px; color: var(--fg-2); }
+  .sz { padding: 8px 10px; }
+  .sz .v { font-size: 15px; }
 }
 
 /* verification bar table */
@@ -526,8 +540,8 @@ footer .row { margin-top: 14px; }
 
     <figure class="fig" id="allFig" hidden>
       <div class="fig-head"><h3 class="h3">Your image under the 16 attacks of the evaluation</h3><span class="small muted" id="allNote"></span></div>
-      <div class="table-wrap"><table class="attack-table"><thead><tr><th>attack</th><th>bit accuracy</th><th class="ba"></th><th id="allExtraHead">bit errors</th></tr></thead><tbody id="allBody"></tbody></table></div>
-      <figcaption class="caption">One image, one payload. JPEG here is your browser's encoder, not the libjpeg build of the paper, so values differ slightly from the evaluation's.</figcaption>
+      <div class="table-wrap"><table class="attack-table"><thead><tr><th>attack</th><th>bit accuracy</th><th class="ba"></th><th class="jz">JPEG size</th><th id="allExtraHead">bit errors</th></tr></thead><tbody id="allBody"></tbody></table></div>
+      <figcaption class="caption">One image, one payload. JPEG here is your browser's encoder, not the libjpeg build of the paper, so values differ slightly from the evaluation's. JPEG size is the file the attack's last JPEG step produced, next to the watermarked PNG's size above the table.</figcaption>
     </figure>
   </div>
 </section>
@@ -2455,7 +2469,8 @@ void main() {
   async function fileToRGBA(file) {
     let bmp;
     try { bmp = await createImageBitmap(file, { imageOrientation: 'from-image' }); } catch (e) { bmp = await createImageBitmap(file); }
-    let w = bmp.width, h = bmp.height, note = '';
+    const srcW = bmp.width, srcH = bmp.height;
+    let w = srcW, h = srcH, note = '';
     if (Math.max(w, h) > MAX_SIDE) {
       const k = MAX_SIDE / Math.max(w, h);
       note = ` (scaled down from ${w} × ${h})`;
@@ -2470,14 +2485,29 @@ void main() {
     // phones cap the total canvas memory of a page, so scratch canvases and bitmaps are released at once
     if (bmp.close) bmp.close();
     c.width = c.height = 0;
-    return { width: w, height: h, data, note };
+    return { width: w, height: h, data, note, srcW, srcH };
   }
+  // what a file really is, from its first bytes (a platform may send a JPEG named .png, or no type at all)
+  async function sniffFormat(file) {
+    try {
+      const b = new Uint8Array(await file.slice(0, 16).arrayBuffer());
+      const str = (i, n) => String.fromCharCode.apply(null, Array.from(b.slice(i, i + n)));
+      if (b[0] === 0xff && b[1] === 0xd8) return 'JPEG';
+      if (b[0] === 0x89 && str(1, 3) === 'PNG') return 'PNG';
+      if (str(0, 4) === 'RIFF' && str(8, 4) === 'WEBP') return 'WebP';
+      if (str(0, 3) === 'GIF') return 'GIF';
+      if (str(4, 4) === 'ftyp') { const br = str(8, 4); return /avi/.test(br) ? 'AVIF' : /hei|hev|mif/.test(br) ? 'HEIC' : 'ISO media'; }
+    } catch (e) { /* fall back to the declared type */ }
+    return (file.type || '').replace(/^image\//, '').toUpperCase() || 'unknown format';
+  }
+  let jpegLog = null;  // set around one attack: [{ q, w, h, bytes }] for each JPEG encode it made
   const jcan = document.createElement('canvas');
   const jctx = jcan.getContext('2d', { willReadFrequently: true });
   async function jpegRGBA(img, q) {
     jcan.width = img.width; jcan.height = img.height;
     jctx.putImageData(new ImageData(new Uint8ClampedArray(img.data), img.width, img.height), 0, 0);
     const blob = await new Promise((res, rej) => jcan.toBlob(b => (b ? res(b) : rej(new Error('Your browser could not encode a JPEG.'))), 'image/jpeg', q / 100));
+    if (jpegLog) jpegLog.push({ q, w: img.width, h: img.height, bytes: blob.size });
     const bmp = await createImageBitmap(blob);
     jctx.clearRect(0, 0, img.width, img.height);
     jctx.drawImage(bmp, 0, 0);
@@ -2667,8 +2697,9 @@ void main() {
   function updateSaveImage(rgba) {
     const c = document.createElement('canvas');
     putImage(c, c.getContext('2d'), rgba);
-    c.toBlob(b => {
+    state.savePromise = new Promise(resolve => c.toBlob(b => {
       c.width = c.height = 0;
+      resolve(b);
       if (!b) return;
       if (state.saveUrl) URL.revokeObjectURL(state.saveUrl);
       const url = URL.createObjectURL(b), si = $('saveImg');
@@ -2678,7 +2709,49 @@ void main() {
       si.onerror = () => { if (state.saveUrl === url) drawStage(); };
       si.src = url;
       drawStage();
-    }, 'image/png');
+    }, 'image/png'));
+  }
+  async function pngBytes(emb) {
+    if (state.saveFor !== emb.rgba && state.savePromise) await state.savePromise;
+    return state.saveFor === emb.rgba && state.saveBlob ? state.saveBlob.size : 0;
+  }
+
+  // -------------------------------------------------------------------------------------
+  // Sizes before and after compression
+  // -------------------------------------------------------------------------------------
+  function fmtBytes(n) { return n < 1e3 ? n + ' B' : n < 1e6 ? (n / 1e3).toFixed(n < 1e4 ? 1 : 0) + ' KB' : (n / 1e6).toFixed(2) + ' MB'; }
+  function share(x) { return (100 * x).toFixed(x < 0.1 ? 1 : 0) + '%'; }
+  // before / after: { title, w, h, fmt, bytes, lines }
+  function sizesBlock(before, after, note) {
+    const box = (b) => {
+      const d = document.createElement('div'); d.className = 'sz';
+      const lines = [b.fmt + (b.bytes ? ' · ' + fmtBytes(b.bytes) : '')];
+      if (b.bytes) lines.push(nf(8 * b.bytes / (b.w * b.h), 2) + ' bits per pixel');
+      d.innerHTML = `<div class="k">${escapeHtml(b.title)}</div><div class="v">${b.w} × ${b.h}</div>` +
+        lines.concat(b.lines || []).map(l => `<div class="d">${escapeHtml(l)}</div>`).join('');
+      return d;
+    };
+    const out = document.createElement('div');
+    const row = document.createElement('div'); row.className = 'sizes';
+    row.appendChild(box(before));
+    const ar = document.createElement('div'); ar.className = 'arrow'; ar.setAttribute('aria-hidden', 'true'); ar.textContent = '→';
+    row.appendChild(ar);
+    row.appendChild(box(after));
+    out.appendChild(row);
+    const parts = [`${share(after.w * after.h / (before.w * before.h))} of the pixels`];
+    if (before.bytes && after.bytes) parts.push(`${share(after.bytes / before.bytes)} of the bytes`);
+    const p = document.createElement('p'); p.className = 'hint';
+    p.textContent = `Kept ${parts.join(' and ')}.` + (note ? ' ' + note : '');
+    out.appendChild(p);
+    return out;
+  }
+  // the JPEG an attack made, against the watermarked PNG
+  function jpegSizes(emb, jpegs, png) {
+    const last = jpegs[jpegs.length - 1], W = emb.rgba.width, H = emb.rgba.height;
+    const lines = jpegs.slice(0, -1).map(j => `after quality ${j.q}: ${fmtBytes(j.bytes)}`);
+    if (last.w !== W || last.h !== H) lines.push(`then scaled back up to ${W} × ${H}`);
+    return sizesBlock({ title: 'Before · watermarked PNG', w: W, h: H, fmt: 'PNG', bytes: png },
+      { title: `After · JPEG, quality ${last.q}`, w: last.w, h: last.h, fmt: 'JPEG', bytes: last.bytes, lines }, "JPEG from your browser's encoder.");
   }
 
   // -------------------------------------------------------------------------------------
@@ -2838,13 +2911,15 @@ void main() {
   }
   async function attackAndDecode(emb, atk) {
     const base = A.imageToTensor(emb.rgba);
-    const t = await atk.fn(base);
+    jpegLog = [];
+    let t, jpegs;
+    try { t = await atk.fn(base); } finally { jpegs = jpegLog; jpegLog = null; }
     const rgba = A.tensorToImage(t);
     const t0 = performance.now();
     const r = await state.model.extract(t, { lambda: emb.lam, progress: setProgress });
     const ms = performance.now() - t0;
     const res = await evaluate(emb, r.logits, rgba);
-    return { res, rgba, ms, canvas: r.canvas };
+    return { res, rgba, ms, canvas: r.canvas, jpegs };
   }
   async function doDecode() {
     if (!state.ready || state.busy || !state.emb) return;
@@ -2854,9 +2929,10 @@ void main() {
     if (!state.gpu) host.innerHTML = '<p class="hint">Decoding on the CPU. This takes one to two minutes for a 512 × 512 canvas…</p>';
     try {
       const emb = state.emb;
-      const { res, rgba, ms, canvas } = await attackAndDecode(emb, atk);
+      const { res, rgba, ms, canvas, jpegs } = await attackAndDecode(emb, atk);
       state.attacked = { id: atk.id, rgba };
       renderResult(host, res, { label: atk.label, ms, canvas });
+      if (jpegs.length) host.appendChild(jpegSizes(emb, jpegs, await pngBytes(emb)));
       if (atk.id !== 'none') setView('attacked');
     } catch (e) { renderError(host, e); }
     finally { setBusy(false); setProgress(0); }
@@ -2868,21 +2944,27 @@ void main() {
     fig.hidden = false;
     $('allExtraHead').textContent = emb.mode === 'signed' ? 'verification' : emb.mode === 'b100' ? 'message bits wrong' : 'bit errors';
     const list = ATTACKS.filter(a => a.eval);
-    body.innerHTML = list.map(a => `<tr id="all-${a.id}"><td>${a.label}</td><td class="num">…</td><td class="ba"><div class="bar-track"><div class="bar" style="width:0"></div></div></td><td>…</td></tr>`).join('');
+    body.innerHTML = list.map(a => `<tr id="all-${a.id}"><td>${a.label}</td><td class="num">…</td><td class="ba"><div class="bar-track"><div class="bar" style="width:0"></div></div></td><td class="jz">…</td><td>…</td></tr>`).join('');
     let sum = 0, verified = 0;
     try {
       for (const a of list) {
-        const { res } = await attackAndDecode(emb, a);
+        const { res, jpegs } = await attackAndDecode(emb, a);
         sum += res.ba;
         const tr = $('all-' + a.id);
         tr.children[1].textContent = pct(res.ba, 2);
         tr.children[2].firstChild.firstChild.style.width = (100 * res.ba) + '%';
+        const j = jpegs[jpegs.length - 1];
+        const at = j && (j.w !== emb.rgba.width || j.h !== emb.rgba.height) ? ` at ${j.w} × ${j.h}` : '';
+        tr.children[3].innerHTML = !j ? '–' : fmtBytes(j.bytes) + (at ? `<br><span class="muted">${at.trim()}</span>` : '');
+        if (j) tr.children[0].innerHTML = `${a.label}<span class="jz-inline">JPEG ${fmtBytes(j.bytes)}${at}</span>`;
         if (res.verify) {
           const ok = res.verify.outcome === 'verified'; if (ok) verified++;
-          tr.children[3].innerHTML = ok ? '<span style="color:var(--good-ink)">✓ verified</span>' : `<span style="color:var(--bad-ink)">✕ ${res.verify.outcome}</span>`;
-        } else tr.children[3].textContent = `${res.nWrong} of ${res.n}`;
+          tr.children[4].innerHTML = ok ? '<span style="color:var(--good-ink)">✓ verified</span>' : `<span style="color:var(--bad-ink)">✕ ${res.verify.outcome}</span>`;
+        } else tr.children[4].textContent = `${res.nWrong} of ${res.n}`;
       }
-      $('allNote').textContent = `mean bit accuracy ${pct(sum / list.length, 2)}` + (emb.mode === 'signed' ? ` · ${verified} of 16 verified` : '');
+      const png = await pngBytes(emb);
+      $('allNote').textContent = `mean bit accuracy ${pct(sum / list.length, 2)}` + (emb.mode === 'signed' ? ` · ${verified} of 16 verified` : '') +
+        (png ? ` · the watermarked PNG is ${fmtBytes(png)}` : '');
     } catch (e) { $('allNote').textContent = 'Stopped: ' + (e.message || e); }
     finally { setBusy(false); setProgress(0); }
   }
@@ -2908,7 +2990,8 @@ void main() {
   function pngName(emb) { return `asymseal-watermarked-${emb.mode === 'b100' ? '100bit' : emb.mode}.png`; }
   function rememberSent(how) {
     const e = state.emb;
-    state.sent = { mode: e.mode, bits: e.bits, info: e.info, text: e.text, pk: e.pk, lam: e.lam, s: e.s, w: e.rgba.width, h: e.rgba.height, at: Date.now(), how };
+    state.sent = { mode: e.mode, bits: e.bits, info: e.info, text: e.text, pk: e.pk, lam: e.lam, s: e.s, w: e.rgba.width, h: e.rgba.height,
+      bytes: state.saveBlob.size, at: Date.now(), how };
     try {
       localStorage.setItem(SENT_KEY, JSON.stringify(Object.assign({}, state.sent, {
         bits: bitsToHex(e.bits), info: e.info ? bitsToHex(e.info) : null, pk: e.pk ? S.hex(e.pk) : null })));
@@ -2929,7 +3012,7 @@ void main() {
   }
   function sentLabel(r) {
     const what = r.mode === 'signed' ? 'signed' : r.mode === 'b100' ? '100-bit' : 'text';
-    return `the ${what} image you ${r.how} ${sentWhen(r.at)} (${r.w} × ${r.h})`;
+    return `the ${what} image you ${r.how} ${sentWhen(r.at)} (${r.w} × ${r.h}${r.bytes ? ', PNG ' + fmtBytes(r.bytes) : ''})`;
   }
   function showSentNote(extra) {
     if (!state.sent && !extra) return;  // keep the page's first-visit text
@@ -2974,7 +3057,7 @@ void main() {
     setBusy(true);
     host.innerHTML = '<p class="hint">Decoding…</p>';
     try {
-      const img = await fileToRGBA(file);
+      const img = await fileToRGBA(file), fmt = await sniffFormat(file);
       const ref = state.sent || state.emb;
       const lam = ref ? ref.lam : lamValue();
       const t0 = performance.now();
@@ -2983,9 +3066,14 @@ void main() {
       if (ref) {
         const res = await evaluate(ref, r.logits, img);
         renderResult(host, res, { label: `${file.name} · ${img.width} × ${img.height}${img.note}`, ms, canvas: r.canvas });
+        const before = ref === state.sent
+          ? { title: 'Before · sent', w: ref.w, h: ref.h, fmt: 'PNG', bytes: ref.bytes || 0 }
+          : { title: 'Before · embedded above', w: ref.rgba.width, h: ref.rgba.height, fmt: 'PNG', bytes: await pngBytes(ref) };
+        host.appendChild(sizesBlock(before, { title: 'After · received', w: img.srcW, h: img.srcH, fmt, bytes: file.size,
+          lines: img.note ? [`decoded at ${img.width} × ${img.height}`] : [] }));
         const p = document.createElement('p'); p.className = 'hint';
         p.textContent = ref === state.sent
-          ? `Compared with ${sentLabel(ref)}.` + (ref.w !== img.width || ref.h !== img.height ? ` The copy came back at ${img.width} × ${img.height}.` : '')
+          ? `Compared with ${sentLabel(ref)}.`
           : 'Compared with the payload embedded above; download or share the image to compare a copy with it.';
         host.appendChild(p);
       } else {

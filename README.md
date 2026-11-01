@@ -32,6 +32,7 @@ So demo numbers will be close to the paper's but not identical. The page's resul
 | `model.json` | The tensor list, the deployed operating point, and the SHA-256 of the weights and of the source checkpoint. |
 | `weights.b64.txt` | The float32 weights (little-endian, 3,459,988 bytes), base64-encoded. |
 | `ties.json` | The tie-break table that makes the carrier permutations match the PyTorch reference. |
+| `samples/*.jpg` | The demo's sample photos (CC0, Wikimedia Commons), scaled to 2048 px on the long side. |
 
 The JavaScript port was checked against the PyTorch release code on three images (128 × 128, 200 × 330 and 600 × 520). Every decoded bit sign agreed, and bit accuracy was identical. At most 2 of 198,000 8-bit pixel values differed, each by one level.
 
@@ -40,3 +41,8 @@ The JavaScript port was checked against the PyTorch release code on three images
 The code and the model weights are released under CC BY-NC 4.0 (see `LICENSE`).
 
 The 128-bit perceptual hash in the signed payload follows the PDQ image-hashing algorithm from Facebook's ThreatExchange (<https://github.com/facebook/ThreatExchange>). It is not bit-compatible with other PDQ implementations.
+
+Sample photos, all CC0 via Wikimedia Commons:
+
+- Jebulon: *Patio de los Arrayanes detail Alhambra Granada Spain*, *Courtyard Zappeion Athens, Greece*, *Carrelet, Esnandes, Charente-Maritime, august 2015*.
+- David Marcu: *Alone in the unspoilt wilderness (Unsplash)*.

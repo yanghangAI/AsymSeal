@@ -271,7 +271,7 @@ footer .row { margin-top: 14px; }
       <span class="tag l">Watermarked</span><span class="tag r">Watermark ×30</span>
       <span class="status" id="revealStatus">Loading the model (3.5 MB)…</span>
     </figure>
-    <p class="caption">A generated sample image after embedding 1,024 bits at the released operating point. Drag across it to see the change, amplified 30 times. PSNR <span id="revealPsnr" class="num">–</span>.</p>
+    <p class="caption">A public-domain photo (Patio de los Arrayanes, Alhambra; 2048 × 1393) after embedding 1,024 bits at the released operating point. Drag across it to see the change, amplified 30 times. PSNR <span id="revealPsnr" class="num">–</span>.</p>
     <div class="stats">
       <div class="stat"><div class="v">10,412</div><div class="k">parameters in the signer's write network</div></div>
       <div class="stat"><div class="v">44.18 dB</div><div class="k">PSNR on the test set</div></div>
@@ -347,10 +347,10 @@ footer .row { margin-top: 14px; }
           <div class="progress" id="progress"></div>
         </div>
         <div class="row spread stage-bar">
-          <span class="drop-hint" id="imgInfo">Generated sample · 1024 × 640</span>
+          <span class="drop-hint" id="imgInfo">Loading the sample photo…</span>
           <div class="row">
             <span class="pill small ghost file-btn">Use your own photo<input type="file" id="fileIn" accept="image/*" aria-label="Choose a photo"></span>
-            <button class="pill small ghost" type="button" id="sampleBtn">New sample</button>
+            <button class="pill small ghost" type="button" id="sampleBtn">Next sample</button>
           </div>
         </div>
         <div class="metrics" aria-live="polite">
@@ -633,7 +633,7 @@ footer .row { margin-top: 14px; }
 <footer class="band alt">
   <div class="wrap">
     <p><b>Tiny Signer, Strong Verifier: The Decoder Sets the Frontier of Kilobit Image Watermarks.</b> Anonymous authors, under review. "AsymSeal" is a working name.</p>
-    <p style="margin-top:6px">Code and weights are released for non-commercial use under CC BY-NC 4.0. The demo runs the released checkpoint (seed 0, sha256 dbc90699…9a8d0d) in fp32; the paper's tables use fp16 autocast on a GTX 1080 Ti, and the demo's JPEG is your browser's encoder.</p>
+    <p style="margin-top:6px">Code and weights are released for non-commercial use under CC BY-NC 4.0. The demo runs the released checkpoint (seed 0, sha256 dbc90699…9a8d0d) in fp32; the paper's tables use fp16 autocast on a GTX 1080 Ti, and the demo's JPEG is your browser's encoder. Sample photos: Jebulon (Alhambra, Zappeion, Esnandes) and David Marcu (mountains), CC0, via Wikimedia Commons, scaled to 2048 pixels.</p>
     <pre id="bib">@misc{asymseal2026,
   title  = {Tiny Signer, Strong Verifier: The Decoder Sets the Frontier of Kilobit Image Watermarks},
   author = {Anonymous Authors},
@@ -2294,90 +2294,29 @@ void main() {
   }
 
   // -------------------------------------------------------------------------------------
-  // Generated sample photos (no third-party images on this page)
+  // Sample photos: public domain (CC0) from Wikimedia Commons, scaled to 2048 px on the long side
   // -------------------------------------------------------------------------------------
   function mulberry32(a) {
     return function () { a |= 0; a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
   }
-  const PALETTES = [
-    { name: 'Lake at sunset', top: [34, 46, 104], hor: [252, 172, 112], sun: [255, 238, 205], m: [[128, 112, 152], [92, 80, 124], [58, 52, 88], [30, 30, 48]], water: [44, 52, 96], shore: [22, 24, 26], sunX: 0.7, sunY: 0.2, snow: false },
-    { name: 'Alpine morning', top: [64, 124, 206], hor: [206, 228, 246], sun: [255, 255, 236], m: [[168, 184, 210], [104, 126, 156], [62, 88, 86], [34, 56, 36]], water: [38, 84, 112], shore: [36, 52, 26], sunX: 0.24, sunY: 0.2, snow: true },
-    { name: 'Desert dusk', top: [26, 38, 74], hor: [236, 128, 92], sun: [255, 214, 170], m: [[156, 104, 104], [126, 78, 70], [92, 56, 50], [52, 34, 30]], water: [70, 52, 70], shore: [40, 28, 22], sunX: 0.42, sunY: 0.52, snow: false },
+  const SAMPLES = [
+    { file: 'samples/alhambra.jpg', name: 'Patio de los Arrayanes, Alhambra', credit: 'Jebulon, CC0' },
+    { file: 'samples/zappeion.jpg', name: 'Zappeion courtyard, Athens', credit: 'Jebulon, CC0' },
+    { file: 'samples/carrelet.jpg', name: 'Fishing hut at Esnandes', credit: 'Jebulon, CC0' },
+    { file: 'samples/wilderness.jpg', name: 'Mountain wilderness', credit: 'David Marcu, CC0' },
   ];
-  function makeSample(idx) {
-    const P = PALETTES[idx % PALETTES.length];
-    const W = 1024, H = 640, rnd = mulberry32(1000 + idx * 7919);
-    const G = 256, grid = new Float32Array(G * G);
-    for (let i = 0; i < grid.length; i++) grid[i] = rnd();
-    const g = (i, j) => grid[((j & 255) << 8) | (i & 255)];
-    const noise = (x, y) => {
-      const xi = Math.floor(x), yi = Math.floor(y), xf = x - xi, yf = y - yi;
-      const u = xf * xf * (3 - 2 * xf), v = yf * yf * (3 - 2 * yf);
-      const a = g(xi, yi) + (g(xi + 1, yi) - g(xi, yi)) * u, b = g(xi, yi + 1) + (g(xi + 1, yi + 1) - g(xi, yi + 1)) * u;
-      return a + (b - a) * v;
-    };
-    const fbm = (x, y, oct) => { let s = 0, amp = 0.5, f = 1; for (let o = 0; o < oct; o++) { s += amp * noise(x * f, y * f); f *= 2.03; amp *= 0.5; } return s; };
-    const horizon = Math.round(H * 0.66);
-    const layers = [
-      { base: 0.30, amp: 0.20, freq: 3.0, off: 11 }, { base: 0.42, amp: 0.17, freq: 4.2, off: 37 },
-      { base: 0.52, amp: 0.13, freq: 5.5, off: 71 }, { base: 0.60, amp: 0.08, freq: 7.0, off: 113 },
-    ];
-    const ridge = layers.map(L => { const r = new Float32Array(W); for (let x = 0; x < W; x++) r[x] = H * (L.base + L.amp * (0.5 - fbm(x / W * L.freq + L.off, L.off * 0.37, 6)) * 2); return r; });
-    const out = new Uint8ClampedArray(W * H * 4);
-    const above = new Float32Array(W * horizon * 3);
-    const sx = P.sunX * W, sy = P.sunY * H;
-    for (let y = 0; y < horizon; y++) {
-      const ty = y / horizon;
-      for (let x = 0; x < W; x++) {
-        let r = P.top[0] + (P.hor[0] - P.top[0]) * ty * ty, gg = P.top[1] + (P.hor[1] - P.top[1]) * ty * ty, b = P.top[2] + (P.hor[2] - P.top[2]) * ty * ty;
-        const d = Math.hypot(x - sx, y - sy);
-        const glow = Math.exp(-d / 140) * 0.55 + (d < 34 ? 1 : Math.exp(-(d - 34) / 6) * 0.8);
-        r += (P.sun[0] - r) * Math.min(1, glow); gg += (P.sun[1] - gg) * Math.min(1, glow); b += (P.sun[2] - b) * Math.min(1, glow);
-        const cl = fbm(x / 180 + 3, y / 60 + 9, 5);
-        const cloud = Math.max(0, cl - 0.52) * 2.2 * (1 - ty);
-        r += (255 - r) * cloud * 0.6; gg += (240 - gg) * cloud * 0.6; b += (235 - b) * cloud * 0.6;
-        for (let li = 0; li < 4; li++) {
-          if (y >= ridge[li][x]) {
-            const c = P.m[li], depth = (y - ridge[li][x]) / H;
-            const tex = fbm(x / (26 - li * 5) + li * 13, y / (14 - li * 2), 6);
-            const shade = 0.72 + 0.5 * tex - depth * 0.8;
-            let cr = c[0] * shade, cg = c[1] * shade, cb = c[2] * shade;
-            if (P.snow && li === 0 && depth < 0.05 + 0.04 * tex && tex > 0.42) { cr = 240 * (0.85 + 0.2 * tex); cg = 244 * (0.85 + 0.2 * tex); cb = 252 * (0.85 + 0.2 * tex); }
-            const haze = 0.42 - li * 0.12;
-            r = cr + (P.hor[0] - cr) * haze; gg = cg + (P.hor[1] - cg) * haze; b = cb + (P.hor[2] - cb) * haze;
-          }
-        }
-        const o = (y * W + x) * 3;
-        above[o] = r; above[o + 1] = gg; above[o + 2] = b;
-      }
+  const sampleCache = new Map();
+  function loadSample(i) {
+    const S = SAMPLES[i % SAMPLES.length];
+    if (!sampleCache.has(S.file)) {
+      const p = fetch(S.file)
+        .then(r => { if (!r.ok) throw new Error(`could not load ${S.file} (${r.status})`); return r.blob(); })
+        .then(fileToRGBA)
+        .then(img => Object.assign(img, { name: S.name, note: ` · photo: ${S.credit}`, sample: true }));
+      p.catch(() => sampleCache.delete(S.file));
+      sampleCache.set(S.file, p);
     }
-    for (let y = 0; y < H; y++) {
-      for (let x = 0; x < W; x++) {
-        let r, gg, b;
-        if (y < horizon) { const o = (y * W + x) * 3; r = above[o]; gg = above[o + 1]; b = above[o + 2]; }
-        else {
-          const dy = y - horizon;
-          const ripple = (fbm(x / 40, y / 4, 4) - 0.5) * (6 + dy * 0.12);
-          const my = Math.min(horizon - 1, Math.max(0, Math.round(horizon - 1 - dy * 0.92 + ripple)));
-          const mx = Math.min(W - 1, Math.max(0, Math.round(x + ripple * 0.6)));
-          const o = (my * W + mx) * 3;
-          const k = 0.62 - dy / H * 0.6;
-          r = above[o] * k + P.water[0] * (1 - k); gg = above[o + 1] * k + P.water[1] * (1 - k); b = above[o + 2] * k + P.water[2] * (1 - k);
-          const spark = fbm(x / 9, y / 2.5, 3);
-          if (spark > 0.66) { const s2 = (spark - 0.66) * 2.2; r += (P.sun[0] - r) * s2 * 0.5; gg += (P.sun[1] - gg) * s2 * 0.5; b += (P.sun[2] - b) * s2 * 0.5; }
-          const shoreY = H * (0.9 + 0.05 * (fbm(x / 120 + 50, 3, 5) - 0.5) * 2);
-          if (y > shoreY) {
-            const t = fbm(x / 6 + 90, y / 6, 5);
-            const s = 0.55 + 0.9 * t;
-            r = P.shore[0] * s + 10 * t; gg = P.shore[1] * s + 14 * t; b = P.shore[2] * s;
-          }
-        }
-        const n = (rnd() - 0.5) * 7;
-        const i4 = (y * W + x) * 4;
-        out[i4] = r + n; out[i4 + 1] = gg + n; out[i4 + 2] = b + n; out[i4 + 3] = 255;
-      }
-    }
-    return { width: W, height: H, data: out, name: 'Generated sample · ' + P.name };
+    return sampleCache.get(S.file);
   }
 
   // -------------------------------------------------------------------------------------
@@ -2748,7 +2687,7 @@ void main() {
       $('mTime').textContent = ms < 1000 ? Math.round(ms) + ' ms' : nf(ms / 1000, 1) + ' s';
       updateSaveImage(rgba);
       if (state.view === 'original' || state.view === 'attacked') setView('marked'); else drawStage();
-      if (!state.hero && cover.name && cover.name.startsWith('Generated')) setHero(cover, rgba, psnr);
+      if (!state.hero && cover.sample) setHero(cover, rgba, psnr);
       updateCarrier();
       setTimeout(() => { const v = ssimRGB(cover, rgba); if (state.emb && state.emb.rgba === rgba) $('mSsim').textContent = nf(v, 4); }, 30);
       host.innerHTML = `<p class="hint">Embedded ${mode === 'signed' ? 'a signed codeword (hash ' + signed.info.H.slice(0, 12) + '…)' : mode === 'b100' ? 'a 100-bit message' : 'your message'} at s = ${nf(s, 2)}, λ = (${nf(lam[0], 2)}, ${nf(lam[1], 2)}). Choose an attack and decode.</p>`;
@@ -2904,10 +2843,13 @@ void main() {
   async function start() {
     buildStaticCharts();
     buildAttackSelect();
-    const sample = makeSample(0);
-    state.cover = sample;
-    $('imgInfo').textContent = `${sample.name} · ${sample.width} × ${sample.height}`;
-    drawStage(); drawReveal();
+    const firstSample = loadSample(0).then(img => {
+      if (state.cover) return;
+      state.cover = img;
+      $('imgInfo').textContent = `${img.name} · ${img.width} × ${img.height}${img.note}`;
+      drawStage(); drawReveal();
+    });
+    firstSample.catch(e => { $('imgInfo').textContent = 'The sample photo could not load: ' + (e.message || e); });
     $('hexIn').value = randomHex(25);
     const tb = () => { const n = new TextEncoder().encode($('textIn').value).length; $('textBytes').textContent = n; $('textBytes').style.color = n > 128 ? 'var(--bad-ink)' : ''; };
     $('textIn').addEventListener('input', () => { tb(); if (!state.emb) drawCarrier(); }); tb();
@@ -2919,7 +2861,10 @@ void main() {
     $('allBtn').addEventListener('click', doRunAll);
     $('newHexBtn').addEventListener('click', () => { $('hexIn').value = randomHex(25); });
     $('newKeyBtn').addEventListener('click', newSigner);
-    $('sampleBtn').addEventListener('click', () => { state.sampleIdx++; const s = makeSample(state.sampleIdx); setCover(s, s.name); });
+    $('sampleBtn').addEventListener('click', async () => {
+      state.sampleIdx = (state.sampleIdx + 1) % SAMPLES.length;
+      try { const img = await loadSample(state.sampleIdx); await setCover(img, img.name); } catch (err) { renderError($('result'), err); }
+    });
     $('fileIn').addEventListener('change', async (e) => { const f = e.target.files[0]; if (!f) return; try { const img = await fileToRGBA(f); await setCover(img, f.name); } catch (err) { renderError($('result'), err); } e.target.value = ''; });
     $('decodeFileIn').addEventListener('change', (e) => { const f = e.target.files[0]; if (f) doDecodeFile(f); e.target.value = ''; });
     const sw = $('stageWrap');
@@ -2965,6 +2910,7 @@ void main() {
       state.ready = true;
       setBusy(false);
       $('revealStatus').textContent = 'Embedding…';
+      await firstSample.catch(() => {});
       await doEmbed(true);
     } catch (e) {
       setEngine('err', 'The model could not load');

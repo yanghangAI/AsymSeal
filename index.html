@@ -1,0 +1,2981 @@
+<title>AsymSeal</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="AsymSeal: a kilobit invisible image watermark with a tiny signer and a strong verifier. Live demo runs in your browser.">
+<style>
+/* Layout: an Apple-style product page. Full-width bands alternate two grounds; a 980px content
+   column; a frosted sticky local nav; one gradient headline in the hero; the demo is the product shot. */
+:root {
+  --bg: #ffffff;
+  --bg-alt: #f5f5f7;
+  --card: #ffffff;
+  --fg: #1d1d1f;
+  --fg-2: #6e6e73;
+  --fg-3: #86868b;
+  --hair: #d2d2d7;
+  --accent: #0071e3;
+  --link: #0066cc;
+  --accent-soft: rgba(0, 113, 227, 0.09);
+  --nav-bg: rgba(251, 251, 253, 0.78);
+  --s1: #2a78d6;
+  --s2: #eb6834;
+  --s3: #1baf7a;
+  --good: #0ca30c;
+  --good-ink: #1a7f37;
+  --bad: #d03b3b;
+  --bad-ink: #c4262e;
+  --warn-ink: #8a5a00;
+  --learned: #e9f2fd;
+  --learned-line: #2a78d6;
+  --fixed: #f2f2f4;
+  --grid-ok: #e3e3e8;
+  --hero-a: #0071e3;
+  --hero-b: #7a3cf0;
+  --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Helvetica, Arial, system-ui, sans-serif;
+  --font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", Helvetica, Arial, system-ui, sans-serif;
+  --mono: "SF Mono", ui-monospace, Menlo, Consolas, "Liberation Mono", monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #000000; --bg-alt: #111113; --card: #1d1d1f; --fg: #f5f5f7; --fg-2: #a1a1a6; --fg-3: #86868b;
+    --hair: #38383a; --accent: #2997ff; --link: #2997ff; --accent-soft: rgba(41, 151, 255, 0.14);
+    --nav-bg: rgba(22, 22, 23, 0.78); --s1: #3987e5; --s2: #d95926; --s3: #199e70; --good: #0ca30c;
+    --good-ink: #30d158; --bad: #d03b3b; --bad-ink: #ff6b6b; --warn-ink: #ffcc66; --learned: #0e2541;
+    --learned-line: #3987e5; --fixed: #2a2a2d; --grid-ok: #3a3a3d; --hero-a: #2997ff; --hero-b: #a77bff;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #000000; --bg-alt: #111113; --card: #1d1d1f; --fg: #f5f5f7; --fg-2: #a1a1a6; --fg-3: #86868b;
+  --hair: #38383a; --accent: #2997ff; --link: #2997ff; --accent-soft: rgba(41, 151, 255, 0.14);
+  --nav-bg: rgba(22, 22, 23, 0.78); --s1: #3987e5; --s2: #d95926; --s3: #199e70; --good: #0ca30c;
+  --good-ink: #30d158; --bad: #d03b3b; --bad-ink: #ff6b6b; --warn-ink: #ffcc66; --learned: #0e2541;
+  --learned-line: #3987e5; --fixed: #2a2a2d; --grid-ok: #3a3a3d; --hero-a: #2997ff; --hero-b: #a77bff;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 64px; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { transition: none !important; animation: none !important; } }
+body {
+  background: var(--bg); color: var(--fg); font-family: var(--font); font-size: 17px; line-height: 1.47;
+  letter-spacing: -0.022em; -webkit-font-smoothing: antialiased; margin: 0;
+}
+a { color: var(--link); text-decoration: none; }
+a:hover { text-decoration: underline; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; margin: 0; }
+p { margin: 0; }
+.mono, code { font-family: var(--mono); font-size: 0.88em; letter-spacing: 0; }
+.num { font-variant-numeric: tabular-nums; }
+
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--nav-bg); }
+.band { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.band.alt { background: var(--bg-alt); }
+.wrap { max-width: 980px; margin: 0 auto; }
+.section { padding-block: 96px; }
+@media (max-width: 640px) { .section { padding-block: 64px; } }
+
+/* local nav */
+.nav { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; background: var(--nav-bg);
+  -webkit-backdrop-filter: saturate(180%) blur(20px); backdrop-filter: saturate(180%) blur(20px);
+  border-bottom: 1px solid var(--hair); }
+.nav .wrap { display: flex; align-items: center; gap: 16px; height: 52px; }
+.nav .brand { font-family: var(--font-display); font-weight: 600; font-size: 21px; letter-spacing: -0.01em; color: var(--fg); }
+.nav .links { display: flex; gap: 22px; margin-left: auto; font-size: 12px; letter-spacing: -0.01em; }
+.nav .links a { color: var(--fg); opacity: 0.8; }
+.nav .links a:hover { opacity: 1; text-decoration: none; color: var(--link); }
+.pill { display: inline-flex; align-items: center; gap: 6px; border-radius: 980px; border: 0; cursor: pointer;
+  font: inherit; font-size: 14px; line-height: 1; padding: 9px 16px; background: var(--accent); color: #fff; text-decoration: none; }
+.pill:hover { filter: brightness(1.08); text-decoration: none; }
+.pill.small { font-size: 12px; padding: 6px 12px; }
+.pill.ghost { background: transparent; color: var(--link); border: 1px solid var(--link); }
+.pill:disabled { opacity: 0.45; cursor: default; filter: none; }
+@media (max-width: 760px) { .nav .links { display: none; } .nav .pill { margin-left: auto; } }
+
+/* hero */
+.hero { padding-block: 72px 40px; text-align: center; }
+.eyebrow { font-size: 17px; font-weight: 600; color: var(--fg-2); letter-spacing: -0.01em; }
+.hero h1 { font-size: clamp(44px, 8.2vw, 88px); line-height: 1.04; font-weight: 700; letter-spacing: -0.035em; margin-top: 10px; }
+.hero h1 .grad { background: linear-gradient(90deg, var(--hero-a), var(--hero-b)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.hero .lede { font-size: clamp(19px, 2.4vw, 24px); line-height: 1.33; color: var(--fg-2); max-width: 760px; margin: 22px auto 0; letter-spacing: -0.01em; }
+.hero .ctas { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; margin-top: 30px; }
+.hero .ctas .pill { font-size: 17px; padding: 12px 22px; }
+.reveal { margin-top: 48px; position: relative; border-radius: 22px; overflow: hidden; background: var(--bg-alt); }
+.reveal canvas { display: block; width: 100%; height: auto; }
+.reveal input[type=range] { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: ew-resize; margin: 0; }
+.reveal .tag { position: absolute; top: 14px; font-size: 12px; font-weight: 600; padding: 5px 10px; border-radius: 980px;
+  background: rgba(0, 0, 0, 0.55); color: #fff; letter-spacing: 0; pointer-events: none; }
+.reveal .tag.l { left: 14px; } .reveal .tag.r { right: 14px; }
+.reveal .status { position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); font-size: 12px; padding: 6px 12px;
+  border-radius: 980px; background: rgba(0, 0, 0, 0.55); color: #fff; letter-spacing: 0; pointer-events: none; white-space: nowrap; }
+.caption { font-size: 14px; color: var(--fg-2); margin-top: 12px; line-height: 1.45; }
+.hero .caption { text-align: center; }
+.stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 24px; margin-top: 56px; text-align: center; }
+.stat .v { font-family: var(--font-display); font-size: clamp(30px, 4.4vw, 44px); font-weight: 700; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+.stat .k { font-size: 14px; color: var(--fg-2); line-height: 1.35; margin-top: 4px; }
+@media (max-width: 760px) { .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* section heads */
+.kicker { font-size: 17px; font-weight: 600; color: var(--accent); }
+.h2 { font-size: clamp(34px, 5.4vw, 56px); line-height: 1.07; font-weight: 700; letter-spacing: -0.03em; margin-top: 8px; }
+.sub { font-size: clamp(19px, 2.2vw, 21px); line-height: 1.38; color: var(--fg-2); margin-top: 18px; max-width: 760px; }
+.h3 { font-size: 24px; line-height: 1.17; font-weight: 600; letter-spacing: -0.015em; }
+.prose { max-width: 680px; }
+.prose p + p { margin-top: 14px; }
+.muted { color: var(--fg-2); }
+.small { font-size: 14px; line-height: 1.45; }
+
+/* tiles */
+.tiles { display: grid; gap: 20px; margin-top: 48px; }
+.tiles.c4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.tiles.c3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.tiles.c2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@media (max-width: 860px) { .tiles.c4 { grid-template-columns: repeat(2, minmax(0, 1fr)); } .tiles.c3 { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 560px) { .tiles.c4, .tiles.c2 { grid-template-columns: minmax(0, 1fr); } }
+.tile { background: var(--card); border-radius: 18px; padding: 26px 24px; min-width: 0; }
+.band.alt .tile { background: var(--card); }
+.band:not(.alt) .tile { background: var(--bg-alt); }
+.tile .t { font-size: 19px; font-weight: 600; letter-spacing: -0.012em; }
+.tile .big { font-family: var(--font-display); font-size: 40px; font-weight: 700; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; line-height: 1.1; }
+.tile .d { font-size: 15px; color: var(--fg-2); margin-top: 8px; line-height: 1.42; }
+
+/* figures */
+figure { margin: 0; }
+.fig { margin-top: 48px; }
+.fig-head { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; flex-wrap: wrap; }
+.scroll-x { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.diagram { min-width: 760px; }
+svg text { font-family: var(--font); letter-spacing: 0; }
+.legend { display: flex; gap: 18px; flex-wrap: wrap; font-size: 13px; color: var(--fg-2); margin-top: 10px; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.tooltip { position: fixed; z-index: 50; pointer-events: none; background: var(--card); color: var(--fg); border: 1px solid var(--hair);
+  border-radius: 10px; padding: 8px 10px; font-size: 13px; line-height: 1.35; box-shadow: 0 8px 28px rgba(0, 0, 0, 0.14); max-width: 260px; letter-spacing: 0; }
+[hidden] { display: none !important; }
+
+/* tables */
+.table-wrap { overflow-x: auto; margin-top: 18px; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; letter-spacing: 0; }
+th, td { text-align: right; padding: 8px 10px; border-bottom: 1px solid var(--hair); font-variant-numeric: tabular-nums; white-space: nowrap; }
+th:first-child, td:first-child { text-align: left; }
+th { font-weight: 600; color: var(--fg-2); font-size: 12px; }
+details { margin-top: 14px; }
+summary { cursor: pointer; color: var(--link); font-size: 14px; }
+
+/* demo */
+.demo { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); gap: 24px; margin-top: 44px; align-items: start; }
+@media (max-width: 900px) { .demo { grid-template-columns: minmax(0, 1fr); } }
+.panel { background: var(--card); border-radius: 22px; padding: 20px; min-width: 0; }
+.stage-wrap { position: relative; border-radius: 14px; overflow: hidden; background: repeating-conic-gradient(var(--bg-alt) 0% 25%, var(--card) 0% 50%) 50% / 20px 20px; }
+.stage-wrap canvas, .stage-wrap img { display: block; width: 100%; height: auto; }
+.stage-wrap.drag { outline: 3px dashed var(--accent); outline-offset: -6px; }
+.progress { position: absolute; left: 0; bottom: 0; height: 3px; background: var(--accent); width: 0; transition: width 0.15s; }
+.seg { display: inline-flex; background: var(--bg-alt); border-radius: 10px; padding: 3px; gap: 2px; flex-wrap: wrap; }
+.seg button { border: 0; background: transparent; color: var(--fg); font: inherit; font-size: 13px; padding: 6px 12px; border-radius: 8px; cursor: pointer; letter-spacing: -0.01em; }
+.seg button[aria-pressed="true"] { background: var(--card); box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12); font-weight: 600; }
+.band:not(.alt) .seg button[aria-pressed="true"] { background: var(--bg); }
+.row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.row.spread { justify-content: space-between; }
+.stage-bar { margin-top: 14px; }
+.chip { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; padding: 4px 10px; border-radius: 980px; background: var(--bg-alt); color: var(--fg-2); letter-spacing: 0; }
+.chip .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--fg-3); }
+.chip.ok .dot { background: var(--good); }
+.chip.busy .dot { background: var(--accent); }
+.chip.err .dot { background: var(--bad); }
+.metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-top: 14px; }
+.metric { background: var(--bg-alt); border-radius: 12px; padding: 10px 12px; min-width: 0; }
+.metric .k { font-size: 12px; color: var(--fg-2); letter-spacing: 0; }
+.metric .v { font-size: 20px; font-weight: 600; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; overflow-wrap: anywhere; }
+@media (max-width: 520px) { .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.step { border-top: 1px solid var(--hair); padding-top: 16px; margin-top: 16px; }
+.step:first-child { border-top: 0; padding-top: 0; margin-top: 0; }
+.step-h { font-size: 13px; font-weight: 600; color: var(--fg-2); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 10px; }
+label.f { display: block; font-size: 13px; color: var(--fg-2); margin: 10px 0 6px; letter-spacing: 0; }
+textarea, select, input[type=text] { width: 100%; font: inherit; font-size: 15px; color: var(--fg); background: var(--bg-alt); border: 1px solid var(--hair);
+  border-radius: 10px; padding: 9px 11px; letter-spacing: -0.01em; }
+textarea { resize: vertical; min-height: 64px; font-family: var(--mono); font-size: 13px; }
+input[type=range] { width: 100%; accent-color: var(--accent); }
+.range-labels { display: flex; justify-content: space-between; font-size: 12px; color: var(--fg-3); letter-spacing: 0; }
+.hint { font-size: 12px; color: var(--fg-3); margin-top: 6px; letter-spacing: 0; line-height: 1.4; }
+.result { margin-top: 12px; }
+.badge { display: inline-flex; align-items: center; gap: 8px; font-weight: 600; font-size: 15px; padding: 6px 12px; border-radius: 980px; letter-spacing: -0.01em; }
+.badge.ok { background: rgba(12, 163, 12, 0.12); color: var(--good-ink); }
+.badge.bad { background: rgba(208, 59, 59, 0.12); color: var(--bad-ink); }
+.badge.warn { background: rgba(250, 178, 25, 0.16); color: var(--warn-ink); }
+.decoded { font-family: var(--mono); font-size: 13px; background: var(--bg-alt); border-radius: 10px; padding: 10px 12px; margin-top: 10px; overflow-wrap: anywhere; white-space: pre-wrap; letter-spacing: 0; min-height: 40px; }
+.bitmap-row { display: flex; gap: 14px; align-items: flex-start; margin-top: 12px; }
+.bitmap-row canvas { width: 128px; height: 128px; border-radius: 6px; image-rendering: pixelated; flex: none; background: var(--bg-alt); }
+.kv { font-size: 13px; line-height: 1.6; letter-spacing: 0; min-width: 0; }
+.kv b { font-weight: 600; font-variant-numeric: tabular-nums; }
+.attack-table td.ba { width: 40%; }
+.bar { height: 8px; border-radius: 4px; background: var(--s1); }
+.bar-track { background: var(--bg-alt); border-radius: 4px; height: 8px; width: 100%; }
+.drop-hint { font-size: 13px; color: var(--fg-2); }
+.file-btn { position: relative; overflow: hidden; }
+.file-btn input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+
+/* verification bar table */
+.vt { width: 100%; }
+.vt td { padding: 7px 8px; }
+.vt td.l { text-align: left; white-space: normal; min-width: 150px; }
+.vt td.b { width: 42%; min-width: 120px; }
+.vt .grp td { font-size: 12px; font-weight: 600; color: var(--fg-2); padding-top: 18px; text-transform: uppercase; letter-spacing: 0.05em; text-align: left; }
+.vbar { height: 10px; border-radius: 4px; background: var(--s1); }
+.vbar.edit { background: var(--fg-3); }
+
+/* carrier explorer */
+.carrier { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: 28px; align-items: start; margin-top: 36px; }
+@media (max-width: 760px) { .carrier { grid-template-columns: minmax(0, 1fr); } }
+.carrier canvas { width: 100%; height: auto; image-rendering: pixelated; border-radius: 10px; display: block; background: var(--bg-alt); cursor: crosshair; touch-action: none; }
+.cap-h { font-size: 13px; font-weight: 600; margin-bottom: 8px; letter-spacing: 0; }
+
+/* findings */
+.finding .big { color: var(--fg); }
+.finding .src { font-size: 12px; color: var(--fg-3); margin-top: 10px; letter-spacing: 0; }
+
+/* payload layout */
+.steps-list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; margin-top: 28px; counter-reset: st; }
+@media (max-width: 760px) { .steps-list { grid-template-columns: minmax(0, 1fr); } }
+.steps-list > div { background: var(--card); border-radius: 18px; padding: 22px; min-width: 0; }
+.steps-list .n { font-size: 13px; font-weight: 600; color: var(--accent); }
+
+/* limitations */
+.lim { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 40px; margin-top: 36px; }
+@media (max-width: 760px) { .lim { grid-template-columns: minmax(0, 1fr); } }
+.lim div { border-top: 1px solid var(--hair); padding-top: 14px; font-size: 15px; color: var(--fg-2); line-height: 1.45; }
+.lim b { color: var(--fg); font-weight: 600; display: block; margin-bottom: 4px; font-size: 17px; }
+
+footer { padding-block: 40px 56px; font-size: 12px; color: var(--fg-2); line-height: 1.5; letter-spacing: 0; }
+footer pre { font-family: var(--mono); font-size: 12px; background: var(--card); border-radius: 12px; padding: 14px; overflow-x: auto; margin-top: 10px; color: var(--fg); }
+footer .row { margin-top: 14px; }
+</style>
+
+<nav class="nav band" aria-label="Sections">
+  <div class="wrap">
+    <a class="brand" href="#top">AsymSeal</a>
+    <div class="links">
+      <a href="#task">Overview</a><a href="#demo">Demo</a><a href="#performance">Performance</a><a href="#method">Method</a><a href="#signed">Signed payload</a><a href="#limits">Limits</a>
+    </div>
+    <a class="pill small" href="#demo">Try it</a>
+  </div>
+</nav>
+
+<header class="band" id="top">
+  <div class="wrap hero">
+    <p class="eyebrow">Invisible image watermarking · paper under review</p>
+    <h1>1,024 bits. Invisible.<br><span class="grad">Verifiable.</span></h1>
+    <p class="lede">AsymSeal writes a kilobit watermark into a photo with a 10,412-parameter network, and reads it back after the resizing and recompression of social platforms. Enough bits to carry a digital signature inside the pixels.</p>
+    <div class="ctas"><a class="pill" href="#demo">Try it in your browser</a><a class="pill ghost" href="#method">How it works</a></div>
+    <figure class="reveal" id="reveal">
+      <canvas id="revealCanvas" width="1024" height="640" aria-label="Watermarked image; drag to compare with the watermark residual amplified 30 times"></canvas>
+      <input type="range" id="revealRange" min="0" max="1000" value="560" aria-label="Divider between the watermarked image and the amplified watermark">
+      <span class="tag l">Watermarked</span><span class="tag r">Watermark ×30</span>
+      <span class="status" id="revealStatus">Loading the model (3.5 MB)…</span>
+    </figure>
+    <p class="caption">A generated sample image after embedding 1,024 bits at the released operating point. Drag across it to see the change, amplified 30 times. PSNR <span id="revealPsnr" class="num">–</span>.</p>
+    <div class="stats">
+      <div class="stat"><div class="v">10,412</div><div class="k">parameters in the signer's write network</div></div>
+      <div class="stat"><div class="v">44.18 dB</div><div class="k">PSNR on the test set</div></div>
+      <div class="stat"><div class="v">98.04%</div><div class="k">bit accuracy over 16 attacks × 7 sizes</div></div>
+      <div class="stat"><div class="v">99.9%</div><div class="k">of signed images verify with no attack</div></div>
+    </div>
+  </div>
+</header>
+
+<section class="band alt" id="task">
+  <div class="wrap section">
+    <p class="kicker">The task</p>
+    <h2 class="h2">Proof that survives the upload.</h2>
+    <p class="sub">Provenance metadata such as C2PA manifests is stripped by most platforms that re-encode uploaded images. AsymSeal puts the proof into the pixels instead: a camera signs a perceptual hash of the photo it took, and the signature travels as an invisible watermark.</p>
+    <figure class="fig">
+      <div class="scroll-x"><svg class="diagram" viewBox="0 0 980 190" role="img" aria-label="Sign on the device, survive the platform's resize and JPEG, verify with the public key.">
+        <defs><marker id="ah1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
+        <g fill="none" stroke="currentColor" stroke-width="1.4" color="var(--fg-3)">
+          <line x1="262" y1="80" x2="370" y2="80" marker-end="url(#ah1)"/>
+          <line x1="612" y1="80" x2="718" y2="80" marker-end="url(#ah1)"/>
+        </g>
+        <g font-size="13" fill="var(--fg)">
+          <rect x="20" y="30" width="240" height="100" rx="16" fill="var(--learned)" stroke="var(--learned-line)"/>
+          <text x="140" y="62" text-anchor="middle" font-weight="600" font-size="15">Sign on the device</text>
+          <text x="140" y="84" text-anchor="middle" fill="var(--fg-2)">hash the photo, sign it (Ed25519),</text>
+          <text x="140" y="102" text-anchor="middle" fill="var(--fg-2)">embed 1,024 bits · 0.68 GMACs</text>
+          <rect x="372" y="30" width="238" height="100" rx="16" fill="var(--fixed)" stroke="var(--hair)"/>
+          <text x="491" y="62" text-anchor="middle" font-weight="600" font-size="15">Platform</text>
+          <text x="491" y="84" text-anchor="middle" fill="var(--fg-2)">downscale, JPEG, re-share</text>
+          <text x="491" y="102" text-anchor="middle" fill="var(--fg-2)">e.g. WeChat-like: 0.3×, quality 50</text>
+          <rect x="720" y="30" width="240" height="100" rx="16" fill="var(--learned)" stroke="var(--learned-line)"/>
+          <text x="840" y="62" text-anchor="middle" font-weight="600" font-size="15">Verify anywhere</text>
+          <text x="840" y="84" text-anchor="middle" fill="var(--fg-2)">decode the bits, correct errors,</text>
+          <text x="840" y="102" text-anchor="middle" fill="var(--fg-2)">check the signature · 47.6 GMACs</text>
+          <text x="316" y="70" text-anchor="middle" font-size="12" fill="var(--fg-2)">posts</text>
+          <text x="665" y="70" text-anchor="middle" font-size="12" fill="var(--fg-2)">downloads</text>
+          <text x="140" y="160" text-anchor="middle" font-size="12" fill="var(--fg-3)">tiny, fixed once images are signed</text>
+          <text x="491" y="160" text-anchor="middle" font-size="12" fill="var(--fg-3)">not under anyone's control</text>
+          <text x="840" y="160" text-anchor="middle" font-size="12" fill="var(--fg-3)">heavier, can be upgraded later</text>
+        </g>
+      </svg></div>
+      <figcaption class="caption">The two halves are deployed very differently, so they get different budgets: a tiny signer on the capture device and a heavier verifier wherever provenance is checked.</figcaption>
+    </figure>
+    <div class="tiles c4">
+      <div class="tile"><div class="t">A kilobit</div><p class="d">An Ed25519 signature is 512 bits. With the public key (256), a hash syndrome (28) and Reed–Solomon error correction, the payload is 1,024 bits.</p></div>
+      <div class="tile"><div class="t">Invisible</div><p class="d">44.18 dB PSNR, 0.9958 SSIM and 0.0098 LPIPS on the test set at the released operating point.</p></div>
+      <div class="tile"><div class="t">Robust</div><p class="d">Real JPEG down to quality 30, JPEG chains, noise, down-up resizing and four platform-like chains, at 7 image sizes up to 2048 × 1536.</p></div>
+      <div class="tile"><div class="t">Cheap to sign</div><p class="d">The network runs on a canvas of at most 512 × 512, so signing costs the same 0.68 GMACs for a 12-megapixel photo as for a thumbnail.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="demo">
+  <div class="wrap section">
+    <p class="kicker">Live demo</p>
+    <h2 class="h2">Try it. Nothing leaves your browser.</h2>
+    <p class="sub">The released model (seed 0) runs here on your GPU through WebGL2, or on the CPU if WebGL2 is unavailable. Embed a message, attack the image, and read it back. Your photos are never uploaded.</p>
+
+    <div class="demo">
+      <div class="panel" id="stagePanel">
+        <div class="row spread">
+          <div class="seg" role="group" aria-label="Image view" id="viewSeg">
+            <button type="button" data-view="original" aria-pressed="false">Original</button>
+            <button type="button" data-view="marked" aria-pressed="true">Watermarked</button>
+            <button type="button" data-view="diff" aria-pressed="false">Difference ×30</button>
+            <button type="button" data-view="attacked" aria-pressed="false">Attacked</button>
+          </div>
+          <span class="chip busy" id="engineChip"><span class="dot"></span><span id="engineText">Loading the model…</span></span>
+        </div>
+        <div class="stage-wrap stage-bar" id="stageWrap">
+          <canvas id="stage" width="1024" height="640" aria-label="Demo image"></canvas>
+          <img id="saveImg" alt="Watermarked image (PNG)" hidden>
+          <div class="progress" id="progress"></div>
+        </div>
+        <div class="row spread stage-bar">
+          <span class="drop-hint" id="imgInfo">Generated sample · 1024 × 640</span>
+          <div class="row">
+            <span class="pill small ghost file-btn">Use your own photo<input type="file" id="fileIn" accept="image/*" aria-label="Choose a photo"></span>
+            <button class="pill small ghost" type="button" id="sampleBtn">New sample</button>
+          </div>
+        </div>
+        <div class="metrics" aria-live="polite">
+          <div class="metric"><div class="k">PSNR (8-bit)</div><div class="v" id="mPsnr">–</div></div>
+          <div class="metric"><div class="k">SSIM</div><div class="v" id="mSsim">–</div></div>
+          <div class="metric"><div class="k">Embedding canvas</div><div class="v" id="mCanvas">–</div></div>
+          <div class="metric"><div class="k">Time</div><div class="v" id="mTime">–</div></div>
+        </div>
+        <p class="hint">To keep the watermarked image, right-click or long-press it in the Watermarked view and save it as PNG. JPEG is one of the attacks, not a storage format. Drop any image onto the picture to use it.</p>
+      </div>
+
+      <div class="panel">
+        <div class="step">
+          <div class="step-h">1 · Payload</div>
+          <div class="seg" role="group" aria-label="Payload type" id="modeSeg">
+            <button type="button" data-mode="text" aria-pressed="true">Text</button>
+            <button type="button" data-mode="signed" aria-pressed="false">Signed</button>
+            <button type="button" data-mode="b100" aria-pressed="false">100-bit</button>
+          </div>
+          <div id="modeText">
+            <label class="f" for="textIn">Message (up to 128 bytes of UTF-8; no error correction)</label>
+            <textarea id="textIn" maxlength="200">Signed at capture. Still here after the upload.</textarea>
+            <div class="hint"><span id="textBytes" class="num">0</span> / 128 bytes</div>
+          </div>
+          <div id="modeSigned" hidden>
+            <p class="hint" style="margin-top:10px">The page made an Ed25519 key pair for you. Embedding hashes the photo, signs the hash and embeds the 1,024-bit codeword. Verifying uses your public key.</p>
+            <div class="decoded" id="pkBox">Public key: –</div>
+            <div class="row" style="margin-top:8px"><button class="pill small ghost" type="button" id="newKeyBtn">New key pair</button></div>
+          </div>
+          <div id="mode100" hidden>
+            <label class="f" for="hexIn">100-bit message as 25 hex digits (each bit is repeated about 10 times)</label>
+            <input type="text" id="hexIn" spellcheck="false" autocomplete="off">
+            <div class="row" style="margin-top:8px"><button class="pill small ghost" type="button" id="newHexBtn">Random message</button></div>
+          </div>
+          <label class="f" for="sIn">Embedding strength <span class="mono" id="sVal">s = 0.90</span></label>
+          <input type="range" id="sIn" min="0.35" max="1" step="0.05" value="0.9">
+          <div class="range-labels"><span>0.35 · fainter</span><span>0.55 robust floor</span><span>0.90 released</span><span>1.0</span></div>
+          <details>
+            <summary>Trade-off λ</summary>
+            <label class="f" for="lamIn">λ = (λ_pareto, λ_struct). Extraction uses the same λ.</label>
+            <select id="lamIn">
+              <option value="0.35,0.95">(0.35, 0.95), released</option>
+              <option value="0.30,0.95">(0.30, 0.95)</option>
+              <option value="0.30,0.85">(0.30, 0.85)</option>
+              <option value="0.35,0.85">(0.35, 0.85)</option>
+            </select>
+          </details>
+          <div class="row" style="margin-top:14px"><button class="pill" type="button" id="embedBtn" disabled>Embed watermark</button></div>
+        </div>
+
+        <div class="step">
+          <div class="step-h">2 · Attack and decode</div>
+          <label class="f" for="attackIn">Attack</label>
+          <select id="attackIn"></select>
+          <div class="row" style="margin-top:12px">
+            <button class="pill" type="button" id="decodeBtn" disabled>Decode</button>
+            <button class="pill ghost" type="button" id="allBtn" disabled>Run all 16 attacks</button>
+          </div>
+          <div class="result" id="result" aria-live="polite"></div>
+        </div>
+
+        <div class="step">
+          <div class="step-h">3 · Decode a file</div>
+          <p class="hint">Save the watermarked image, send it through a messenger or post it, download it again, and drop it here. It is compared with the payload you embedded above.</p>
+          <div class="row" style="margin-top:8px"><span class="pill small ghost file-btn">Choose image to decode<input type="file" id="decodeFileIn" accept="image/*" aria-label="Choose an image to decode"></span></div>
+          <div class="result" id="fileResult" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <figure class="fig" id="allFig" hidden>
+      <div class="fig-head"><h3 class="h3">Your image under the 16 attacks of the evaluation</h3><span class="small muted" id="allNote"></span></div>
+      <div class="table-wrap"><table class="attack-table"><thead><tr><th>attack</th><th>bit accuracy</th><th class="ba"></th><th id="allExtraHead">bit errors</th></tr></thead><tbody id="allBody"></tbody></table></div>
+      <figcaption class="caption">One image, one payload. JPEG here is your browser's encoder, not the libjpeg build of the paper, so values differ slightly from the evaluation's.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section class="band alt" id="performance">
+  <div class="wrap section">
+    <p class="kicker">Performance</p>
+    <h2 class="h2">Measured, not cherry-picked.</h2>
+    <p class="sub">The released checkpoint (seed 0) at its deployed point on the 100 DIV2K validation images, each at 7 sizes, under 16 attacks. The operating point was fixed on 24 separate held-out images; neither the test set nor CLIC 2020 entered any decision.</p>
+    <div class="tiles c4">
+      <div class="tile"><div class="big">44.18<span style="font-size:22px"> dB</span></div><p class="d">PSNR, mean over 7 sizes. Three training seeds: 44.28 ± 0.11.</p></div>
+      <div class="tile"><div class="big">0.9958</div><p class="d">SSIM. LPIPS (AlexNet) 0.0098.</p></div>
+      <div class="tile"><div class="big">0.9804</div><p class="d">Bit accuracy over all 16 attacks × 7 sizes. Three seeds: 0.9799 ± 0.0005.</p></div>
+      <div class="tile"><div class="big">0.99996</div><p class="d">Bit accuracy with no attack (8-bit PNG). Worst size: 0.99974.</p></div>
+    </div>
+
+    <figure class="fig">
+      <div class="fig-head"><h3 class="h3">Bit accuracy by image size</h3><span class="small muted">test set · seed 0</span></div>
+      <div class="legend" id="sizeLegend"></div>
+      <div id="sizeChart"></div>
+      <figcaption class="caption">Larger images spread each bit over more pixels before the canvas downscale, so they decode better. 256 × 256 is the weak point: 0.8890 over all attacks and 0.6715 under the WeChat-like chain.</figcaption>
+      <details><summary>Table: every size</summary>
+        <div class="table-wrap"><table><thead><tr><th>size</th><th>PSNR</th><th>SSIM</th><th>LPIPS</th><th>BA, 16 attacks</th><th>BA, no attack</th><th>WeChat-like</th></tr></thead><tbody id="sizeTable"></tbody></table></div>
+      </details>
+    </figure>
+
+    <figure class="fig">
+      <div class="fig-head"><h3 class="h3">Quality against robustness</h3><span class="small muted">24 held-out images · the 13 candidates of the selection</span></div>
+      <div class="legend" id="tradeLegend"></div>
+      <div id="tradeChart"></div>
+      <figcaption class="caption">Each point is one candidate operating point, averaged over 7 sizes (PSNR) and 16 attacks × 7 sizes (bit accuracy). The line sweeps the strength s at λ = (0.35, 0.95). The deployed point has the highest PSNR among the candidates with bit accuracy ≥ 0.976. This describes the deployed point; it is not the procedure that chose it.</figcaption>
+    </figure>
+
+    <div class="tiles c3">
+      <div class="tile"><div class="t">CLIC 2020</div><div class="big" style="margin-top:8px">45.94<span style="font-size:22px"> dB</span></div><p class="d">PSNR on 530 independent images, same protocol; bit accuracy 0.9775 over 16 attacks × 7 sizes, 0.99997 with no attack.</p></div>
+      <div class="tile"><div class="t">100-bit mode</div><div class="big" style="margin-top:8px">0.99887</div><p class="d">Bit accuracy of a 100-bit message on the same model, each bit repeated about 10 times (held-out images). 0.11 wrong bits per message, against 20.83 of 1,024.</p></div>
+      <div class="tile"><div class="t">Asymmetric cost</div>
+        <div style="margin-top:14px" aria-label="Signer 0.68 GMACs versus verifier 47.59 GMACs per image">
+          <div class="small"><span>Signer</span> <b class="num">0.68 GMACs</b></div>
+          <div class="bar-track" style="margin:4px 0 10px"><div class="bar" style="width:1.43%;min-width:3px"></div></div>
+          <div class="small"><span>Verifier</span> <b class="num">47.59 GMACs</b></div>
+          <div class="bar-track" style="margin-top:4px"><div class="bar" style="width:100%"></div></div>
+        </div>
+        <p class="d">Per image at a 512 × 512 canvas, the same for every larger image.</p></div>
+    </div>
+
+    <figure class="fig">
+      <div class="fig-head"><h3 class="h3">Signed images that verify</h3><span class="small muted">530 CLIC 2020 images × 6 sizes · one key pair · one run</span></div>
+      <div class="table-wrap"><table class="vt"><thead><tr><th>condition</th><th style="text-align:left">all six sizes</th><th></th><th>256²</th><th>1024²</th><th>2048 × 1536</th></tr></thead><tbody id="verifyBody"></tbody></table></div>
+      <figcaption class="caption">Percent of images whose codeword decodes and whose signature checks out with the trusted public key. For the edits the percentage is how often the edited image is still accepted, so lower is better. "Platform order" compresses the downscaled image before upscaling, which is much harder.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section class="band" id="method">
+  <div class="wrap section">
+    <p class="kicker">Method</p>
+    <h2 class="h2">A tiny signer. A strong verifier.</h2>
+    <p class="sub">The embedder writes once, on the device, and can never be updated. The verifier runs only when provenance is checked. AsymSeal gives each side the capacity its job needs.</p>
+
+    <figure class="fig">
+      <div class="scroll-x"><svg class="diagram" viewBox="0 0 980 450" role="img" aria-label="Architecture. Signer: the cover is downscaled to a canvas, split into 2 by 2 polyphase components X; the payload is scattered by a fixed carrier into M; a two-convolution write network adds w to X; the residual is upsampled and added to the full image with strength s. Verifier: the received image is downscaled and split into Z, sharpened with a learned cover prediction, decoded by 32 residual units, and read out by fixed slot means weighted by a router.">
+        <defs><marker id="ah2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
+        <g font-size="12.5" fill="var(--fg)">
+          <text x="20" y="26" font-weight="600" font-size="14">Signer · on the device</text>
+          <text x="20" y="252" font-weight="600" font-size="14">Verifier · anywhere</text>
+        </g>
+        <g fill="none" stroke="currentColor" stroke-width="1.3" color="var(--fg-3)">
+          <line x1="130" y1="72" x2="158" y2="72" marker-end="url(#ah2)"/>
+          <line x1="298" y1="72" x2="326" y2="72" marker-end="url(#ah2)"/>
+          <line x1="466" y1="72" x2="494" y2="72" marker-end="url(#ah2)"/>
+          <line x1="654" y1="72" x2="682" y2="72" marker-end="url(#ah2)"/>
+          <line x1="808" y1="72" x2="836" y2="72" marker-end="url(#ah2)"/>
+          <line x1="298" y1="150" x2="326" y2="150" marker-end="url(#ah2)"/>
+          <path d="M466 150 H574 V96" marker-end="url(#ah2)"/>
+          <line x1="574" y1="20" x2="574" y2="48" marker-end="url(#ah2)" stroke-dasharray="4 3"/>
+          <path d="M75 96 V200 H895 V96" marker-end="url(#ah2)" stroke-dasharray="4 3"/>
+          <line x1="130" y1="298" x2="158" y2="298" marker-end="url(#ah2)"/>
+          <line x1="298" y1="298" x2="326" y2="298" marker-end="url(#ah2)"/>
+          <line x1="466" y1="298" x2="494" y2="298" marker-end="url(#ah2)"/>
+          <line x1="654" y1="298" x2="682" y2="298" marker-end="url(#ah2)"/>
+          <line x1="808" y1="298" x2="836" y2="298" marker-end="url(#ah2)"/>
+          <path d="M228 322 V376 H326" marker-end="url(#ah2)"/>
+          <path d="M466 376 H574 V322" marker-end="url(#ah2)"/>
+          <path d="M228 376 V420 H682" marker-end="url(#ah2)"/>
+          <path d="M808 420 H895 V322" marker-end="url(#ah2)"/>
+        </g>
+        <g font-size="12.5" text-anchor="middle">
+          <rect x="20" y="48" width="110" height="48" rx="10" fill="var(--fixed)" stroke="var(--hair)"/>
+          <text x="75" y="70" fill="var(--fg)" font-weight="600">Cover</text><text x="75" y="86" fill="var(--fg-2)" font-size="11">any size H × W</text>
+          <rect x="160" y="48" width="138" height="48" rx="10" fill="var(--fixed)" stroke="var(--hair)"/>
+          <text x="229" y="70" fill="var(--fg)" font-weight="600">Downscale</text><text x="229" y="86" fill="var(--fg-2)" font-size="11">canvas ≤ 512 × 512</text>
+          <rect x="328" y="48" width="138" height="48" rx="10" fill="var(--fixed)" stroke="var(--hair)"/>
+          <text x="397" y="70" fill="var(--fg)" font-weight="600">2×2 polyphase</text><text x="397" y="86" fill="var(--fg-2)" font-size="11">X: 12 channels</text>
+          <rect x="496" y="48" width="158" height="48" rx="10" fill="var(--learned)" stroke="var(--learned-line)"/>
+          <text x="575" y="70" fill="var(--fg)" font-weight="600">Write network f</text><text x="575" y="86" fill="var(--fg-2)" font-size="11">2 convs · 10,412 params</text>
+          <rect x="684" y="48" width="124" height="48" rx="10" fill="var(--fixed)" stroke="var(--hair)"/>
+          <text x="746" y="70" fill="var(--fg)" font-weight="600">X + f([M; X])</text><text x="746" y="86" fill="var(--fg-2)" font-size="11">merge → residual</text>
+          <rect x="838" y="48" width="122" height="48" rx="10" fill="var(--fixed)" stroke="var(--hair)"/>
+          <text x="899" y="70" fill="var(--fg)" font-weight="600">Upsample × s</text><text x="899" y="86" fill="var(--fg-2)" font-size="11">add to the cover</text>
+          <rect x="160" y="126" width="138" height="48" rx="10" fill="var(--fixed)" stroke="var(--hair)"/>
+          <text x="229" y="148" fill="var(--fg)" font-weight="600">Payload</text><text x="229" y="164" fill="var(--fg-2)" font-size="11">1,024 bits</text>
+          <rect x="328" y="126" width="138" height="48" rx="10" fill="var(--fixed)" stroke="var(--hair)"/>
+          <text x="397" y="148" fill="var(--fg)" font-weight="600">Scatter carrier</text><text x="397" y="164" fill="var(--fg-2)" font-size="11">M: fixed, no parameters</text>
+          <text x="610" y="22" fill="var(--fg-2)" font-size="11" text-anchor="start">λ via FiLM</text>
+          <text x="485" y="214" fill="var(--fg-3)" font-size="11">full-resolution cover</text>
+
+          <rect x="20" y="274" width="110" height="48" rx="10" fill="var(--fixed)" stroke="var(--hair)"/>
+          <text x="75" y="296" fill="var(--fg)" font-weight="600">Received</text><text x="75" y="312" fill="var(--fg-2)" font-size="11">after the platform</text>
+          <rect x="160" y="274" width="138" height="48" rx="10" fill="var(--fixed)" stroke="var(--hair)"/>
+          <text x="229" y="296" fill="var(--fg)" font-weight="600">Downscale</text><text x="229" y="312" fill="var(--fg-2)" font-size="11">same canvas</text>
+          <rect x="328" y="274" width="138" height="48" rx="10" fill="var(--fixed)" stroke="var(--hair)"/>
+          <text x="397" y="296" fill="var(--fg)" font-weight="600">2×2 polyphase</text><text x="397" y="312" fill="var(--fg-2)" font-size="11">Z: 12 channels</text>
+          <rect x="496" y="274" width="158" height="48" rx="10" fill="var(--fixed)" stroke="var(--hair)"/>
+          <text x="575" y="296" fill="var(--fg)" font-weight="600">Z + ½ (Z − X̂)</text><text x="575" y="312" fill="var(--fg-2)" font-size="11">sharpened input</text>
+          <rect x="684" y="274" width="124" height="48" rx="10" fill="var(--learned)" stroke="var(--learned-line)"/>
+          <text x="746" y="296" fill="var(--fg)" font-weight="600">Decoder</text><text x="746" y="312" fill="var(--fg-2)" font-size="11">32 residual units</text>
+          <rect x="838" y="274" width="122" height="48" rx="10" fill="var(--fixed)" stroke="var(--hair)"/>
+          <text x="899" y="296" fill="var(--fg)" font-weight="600">Slot means</text><text x="899" y="312" fill="var(--fg-2)" font-size="11">→ 1,024 logits</text>
+          <rect x="328" y="352" width="138" height="48" rx="10" fill="var(--learned)" stroke="var(--learned-line)"/>
+          <text x="397" y="374" fill="var(--fg)" font-weight="600">Cover predictor</text><text x="397" y="390" fill="var(--fg-2)" font-size="11">X̂ · 60,524 params</text>
+          <rect x="684" y="396" width="124" height="48" rx="10" fill="var(--learned)" stroke="var(--learned-line)"/>
+          <text x="746" y="418" fill="var(--fg)" font-weight="600">Router</text><text x="746" y="434" fill="var(--fg-2)" font-size="11">channel weights</text>
+        </g>
+      </svg></div>
+      <figcaption class="caption">Blue: learned (every block FiLM-modulated by the trade-off λ). Gray: fixed operators. The payload reaches the image only through the fixed carrier; the decoder is the part worth scaling. Only the canvas residual is upsampled, so the signer's cost does not grow with the photo.</figcaption>
+    </figure>
+
+    <div class="tiles c2">
+      <div class="tile finding"><div class="t">The decoder sets the frontier</div><div class="big" style="margin-top:10px">+0.87 dB</div><p class="d">PSNR at matched bit accuracy from a 32-unit residual decoder, with 17% fewer bit errors at matched PSNR and LPIPS. Depth pays from 16 to 32 units and then stops: 64 and 128 units add +0.04 and +0.03 dB.</p><p class="src">Screening study: 51 configurations × 3 seeds, compared at matched PSNR, SSIM and LPIPS.</p></div>
+      <div class="tile finding"><div class="t">The signer can stay tiny</div><div class="big" style="margin-top:10px">10,412</div><p class="d">parameters. No embedder we tried improved on this two-convolution write on all quality axes at once, including coupling INNs and deep convolutional embedders at 33× its cost.</p><p class="src">Taking an 8-block INN apart: block 0 alone builds 86% of the recovered message.</p></div>
+      <div class="tile finding"><div class="t">A fixed carrier does the spreading</div><div class="big" style="margin-top:10px">3.7–6.8 dB</div><p class="d">PSNR lost at matched bit accuracy when the fixed scatter is replaced by a learned linear, block-local or learned-upsampling message code. A random scatter is as good as any rule we tried; a periodic one costs 1.06 dB.</p><p class="src">Every bit gets its own disjoint, exactly orthogonal set of positions.</p></div>
+      <div class="tile finding"><div class="t">Better than our previous system</div><div class="big" style="margin-top:10px">−34.5%</div><p class="d">structural error (1 − SSIM) at matched bit accuracy against our coupling-INN system, with +0.52 dB PSNR and 8.9% and 19.8% fewer bit errors at matched PSNR and LPIPS (all p &lt; 0.05).</p><p class="src">Three seeds per system, seed-paired where the construction allows.</p></div>
+    </div>
+
+    <figure class="fig" id="carrierFig">
+      <div class="fig-head"><h3 class="h3">Inside the carrier</h3><span class="small muted">256 × 256 canvas · the released layout</span></div>
+      <p class="sub" style="font-size:17px;margin-top:10px">Each of the 1,024 bits owns 16 scattered positions in each of the 12 polyphase channels: 192 places in the image. Point at a slot to see where its bit goes; point at a position to find its slot.</p>
+      <div class="carrier">
+        <div><div class="cap-h">Payload slots (32 × 32)</div><canvas id="slotCanvas" width="256" height="256" aria-label="The 1,024 payload slots"></canvas></div>
+        <div>
+          <div class="row spread"><div class="cap-h" id="mTitle">Message tensor M, channel 1 (128 × 128)</div>
+            <select id="chanSel" style="width:auto;font-size:13px;padding:5px 8px" aria-label="Channel"></select></div>
+          <canvas id="mCanvas2" width="512" height="512" aria-label="Message tensor of one channel"></canvas>
+        </div>
+      </div>
+      <p class="caption" id="carrierInfo">Loading the layout…</p>
+    </figure>
+
+    <div class="tiles c3">
+      <div class="tile"><div class="t">Training</div><p class="d">100,000 steps from scratch on COCO 2017 (256 × 256 crops, batch 16), AdamW at 4·10⁻⁴ with a warmup-stable-decay schedule, on one GTX 1080 Ti in 25.2 hours.</p></div>
+      <div class="tile"><div class="t">Attacks in the loop</div><p class="d">The 16 evaluation attacks, real JPEG included, run in the forward pass from step 5,000; gradients flow through a differentiable JPEG surrogate.</p></div>
+      <div class="tile"><div class="t">Six loss terms</div><p class="d">L1, NLPD, LPIPS and SSIM structure for quality, bit cross-entropy for the payload, and a low-band term; λ, drawn per step, conditions every block through FiLM.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="band alt" id="signed">
+  <div class="wrap section">
+    <p class="kicker">Signed payload</p>
+    <h2 class="h2">A signature in 1,024 bits.</h2>
+    <p class="sub">The signer hashes the photo with a 128-bit PDQ-style perceptual hash, signs the hash with Ed25519 and embeds one Reed–Solomon codeword. The hash itself is not sent; only its BCH syndrome is.</p>
+    <figure class="fig">
+      <div class="scroll-x"><svg class="diagram" viewBox="0 0 980 120" role="img" aria-label="The 1,024 bits: 28-bit hash syndrome, 512-bit signature, 256-bit public key, 4 zero bits, and 224 bits of Reed-Solomon parity.">
+        <g font-size="12.5" text-anchor="middle">
+          <rect x="10" y="30" width="28" height="44" fill="var(--s3)"/>
+          <rect x="40" y="30" width="487" height="44" fill="var(--s1)"/>
+          <rect x="529" y="30" width="242" height="44" fill="var(--s2)"/>
+          <rect x="773" y="30" width="4" height="44" fill="var(--fg-3)"/>
+          <rect x="779" y="30" width="191" height="44" fill="var(--fixed)" stroke="var(--hair)"/>
+          <text x="24" y="20" fill="var(--fg-2)" font-size="11">28</text>
+          <text x="283" y="57" fill="#ffffff" font-weight="600">Ed25519 signature · 512 bits</text>
+          <text x="650" y="57" fill="#ffffff" font-weight="600">public key · 256</text>
+          <text x="874" y="57" fill="var(--fg)" font-weight="600">RS parity · 224</text>
+          <text x="24" y="96" fill="var(--fg-2)" font-size="11" text-anchor="start">hash syndrome</text>
+          <text x="393" y="96" fill="var(--fg-2)" font-size="11">100 data bytes (796 bits + 4 zero bits)</text>
+          <text x="874" y="96" fill="var(--fg-2)" font-size="11">28 parity bytes</text>
+        </g>
+      </svg></div>
+      <figcaption class="caption">RS(128, 100) over bytes corrects up to 14 wrong bytes anywhere in the codeword. BCH(127, t = 4) lets the verifier recover the signed hash from its own hash of the received image when the two differ in at most 4 bits.</figcaption>
+    </figure>
+    <div class="steps-list">
+      <div><p class="n">Step 1</p><p class="h3" style="font-size:19px;margin-top:4px">Decode</p><p class="d small muted" style="margin-top:8px">Read the 1,024 bits and correct up to 14 bytes. More errors: <b>decode_fail</b>.</p></div>
+      <div><p class="n">Step 2</p><p class="h3" style="font-size:19px;margin-top:4px">Recover the hash</p><p class="d small muted" style="margin-top:8px">Hash the received image and use the syndrome to correct it back to the signed hash, if it drifted by at most 4 bits.</p></div>
+      <div><p class="n">Step 3</p><p class="h3" style="font-size:19px;margin-top:4px">Check the signature</p><p class="d small muted" style="margin-top:8px">Verify with the trusted public key: <b>verified</b>, otherwise <b>sig_mismatch</b>.</p></div>
+    </div>
+    <p class="caption" style="margin-top:22px">Without a trusted key the key carried in the payload is used, which shows only that the payload is self-consistent: anyone can sign an image with their own key. The signature binds the perceptual hash, not the pixels.</p>
+  </div>
+</section>
+
+<section class="band" id="limits">
+  <div class="wrap section">
+    <p class="kicker">Limits</p>
+    <h2 class="h2">What it does not do.</h2>
+    <div class="lim">
+      <div><b>Small images</b>At 256 × 256 the test-set bit accuracy is 0.8890, and no signed 256 × 256 CLIC 2020 image verifies after any of the four platform-like chains.</div>
+      <div><b>Geometry</b>No robustness to geometric attacks: after a crop to 95% of each side, no image decoded.</div>
+      <div><b>Platform order</b>When the platform compresses the downscaled image before upscaling, far fewer signed images verify: X-like 30.0% and WeChat-like 0.1% over six sizes.</div>
+      <div><b>Perceptual binding</b>Small local edits can keep the hash within 4 bits: a black box over 5% of each side is accepted for 44.4% of images, an inpainted rectangle of 8% of the area for 12.5%.</div>
+      <div><b>Adversaries</b>Not designed against adaptive or white-box attackers who know the model. Not legal evidence; a verified signature shows only possession of the signing key.</div>
+      <div><b>One run</b>The verification rates come from one training seed and one key pair, so no spread is given.</div>
+    </div>
+  </div>
+</section>
+
+<footer class="band alt">
+  <div class="wrap">
+    <p><b>Tiny Signer, Strong Verifier: The Decoder Sets the Frontier of Kilobit Image Watermarks.</b> Anonymous authors, under review. "AsymSeal" is a working name.</p>
+    <p style="margin-top:6px">Code and weights are released for non-commercial use under CC BY-NC 4.0. The demo runs the released checkpoint (seed 0, sha256 dbc90699…9a8d0d) in fp32; the paper's tables use fp16 autocast on a GTX 1080 Ti, and the demo's JPEG is your browser's encoder.</p>
+    <pre id="bib">@misc{asymseal2026,
+  title  = {Tiny Signer, Strong Verifier: The Decoder Sets the Frontier of Kilobit Image Watermarks},
+  author = {Anonymous Authors},
+  year   = {2026},
+  note   = {Under review}
+}</pre>
+    <div class="row"><button class="pill small ghost" type="button" id="copyBib">Copy BibTeX</button><span id="copyNote" class="small muted"></span></div>
+  </div>
+</footer>
+
+<div class="tooltip" id="tip" hidden></div>
+
+<script>
+/* AsymSeal in the browser: the released model (seed 0) ported to JavaScript.
+ *
+ * Mirrors the Python package: the polyphase split, the scatter carrier (seeded permutations
+ * rebuilt with PyTorch's CPU Mersenne Twister, the recorded tie order, and a sha256 check of
+ * every grid), FiLM, the write network, the cover predictor, the 32-unit residual decoder, the
+ * decode router and the canvas resampling. Tensors are channel-major Float32Arrays.
+ * The convolutions run on a backend: CpuBackend here, a WebGL2 backend in asymseal-gl.js.
+ * Works in browsers (window.AsymSeal) and in Node (module.exports).
+ */
+(function (root) {
+  'use strict';
+
+  const NUM_SLOTS = 1024;
+  const CHANNELS = 12;
+  const CANVAS_MAX = 512;
+  const CANVAS_MULTIPLE = 64;
+  const PERM_SEED = 0xD1FF5E;
+  const FILM_K = 8;
+  const COVPRED_GAMMA = 0.5;
+  const f32 = Math.fround;
+
+  // ---------------------------------------------------------------------------------------
+  // SHA-256 (digests of the carrier permutations)
+  // ---------------------------------------------------------------------------------------
+  const K256 = new Uint32Array([
+    0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
+    0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174,
+    0xe49b69c1, 0xefbe4786, 0x0fc19dc6, 0x240ca1cc, 0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da,
+    0x983e5152, 0xa831c66d, 0xb00327c8, 0xbf597fc7, 0xc6e00bf3, 0xd5a79147, 0x06ca6351, 0x14292967,
+    0x27b70a85, 0x2e1b2138, 0x4d2c6dfc, 0x53380d13, 0x650a7354, 0x766a0abb, 0x81c2c92e, 0x92722c85,
+    0xa2bfe8a1, 0xa81a664b, 0xc24b8b70, 0xc76c51a3, 0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070,
+    0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3,
+    0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2]);
+
+  function sha256Hex(bytes) {
+    const n = bytes.length;
+    const total = ((n + 9 + 63) >> 6) << 6;
+    const buf = new Uint8Array(total);
+    buf.set(bytes);
+    buf[n] = 0x80;
+    const bitLen = n * 8;
+    const dv = new DataView(buf.buffer);
+    dv.setUint32(total - 8, Math.floor(bitLen / 0x100000000));
+    dv.setUint32(total - 4, bitLen >>> 0);
+    const H = new Uint32Array([0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a,
+      0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19]);
+    const w = new Uint32Array(64);
+    for (let off = 0; off < total; off += 64) {
+      for (let i = 0; i < 16; i++) w[i] = dv.getUint32(off + 4 * i);
+      for (let i = 16; i < 64; i++) {
+        const a = w[i - 15], b = w[i - 2];
+        const s0 = ((a >>> 7) | (a << 25)) ^ ((a >>> 18) | (a << 14)) ^ (a >>> 3);
+        const s1 = ((b >>> 17) | (b << 15)) ^ ((b >>> 19) | (b << 13)) ^ (b >>> 10);
+        w[i] = (w[i - 16] + s0 + w[i - 7] + s1) >>> 0;
+      }
+      let a = H[0], b = H[1], c = H[2], d = H[3], e = H[4], f = H[5], g = H[6], h = H[7];
+      for (let i = 0; i < 64; i++) {
+        const S1 = ((e >>> 6) | (e << 26)) ^ ((e >>> 11) | (e << 21)) ^ ((e >>> 25) | (e << 7));
+        const ch = (e & f) ^ (~e & g);
+        const t1 = (h + S1 + ch + K256[i] + w[i]) >>> 0;
+        const S0 = ((a >>> 2) | (a << 30)) ^ ((a >>> 13) | (a << 19)) ^ ((a >>> 22) | (a << 10));
+        const mj = (a & b) ^ (a & c) ^ (b & c);
+        const t2 = (S0 + mj) >>> 0;
+        h = g; g = f; f = e; e = (d + t1) >>> 0; d = c; c = b; b = a; a = (t1 + t2) >>> 0;
+      }
+      H[0] = (H[0] + a) >>> 0; H[1] = (H[1] + b) >>> 0; H[2] = (H[2] + c) >>> 0; H[3] = (H[3] + d) >>> 0;
+      H[4] = (H[4] + e) >>> 0; H[5] = (H[5] + f) >>> 0; H[6] = (H[6] + g) >>> 0; H[7] = (H[7] + h) >>> 0;
+    }
+    let out = '';
+    for (let i = 0; i < 8; i++) out += H[i].toString(16).padStart(8, '0');
+    return out;
+  }
+
+  // ---------------------------------------------------------------------------------------
+  // PyTorch's CPU generator: mt19937 seeded with the low 32 bits; torch.rand(float32) keeps
+  // the low 24 bits of each 32-bit draw, divided by 2^24.
+  // ---------------------------------------------------------------------------------------
+  class MT19937 {
+    constructor(seed) {
+      const mt = this.mt = new Uint32Array(624);
+      mt[0] = seed >>> 0;
+      for (let i = 1; i < 624; i++) {
+        const prev = mt[i - 1] ^ (mt[i - 1] >>> 30);
+        mt[i] = (Math.imul(1812433253, prev) + i) >>> 0;
+      }
+      this.idx = 624;
+    }
+    twist() {
+      const mt = this.mt;
+      for (let i = 0; i < 624; i++) {
+        const y = (mt[i] & 0x80000000) | (mt[(i + 1) % 624] & 0x7fffffff);
+        let v = mt[(i + 397) % 624] ^ (y >>> 1);
+        if (y & 1) v ^= 0x9908b0df;
+        mt[i] = v >>> 0;
+      }
+      this.idx = 0;
+    }
+    nextU32() {
+      if (this.idx >= 624) this.twist();
+      let y = this.mt[this.idx++];
+      y ^= y >>> 11;
+      y ^= (y << 7) & 0x9d2c5680;
+      y ^= (y << 15) & 0xefc60000;
+      y ^= y >>> 18;
+      return y >>> 0;
+    }
+  }
+
+  function uniformKeys(n, seed) {
+    const g = new MT19937(Number(BigInt(seed) & 0xffffffffn));
+    const out = new Float32Array(n);
+    for (let i = 0; i < n; i++) out[i] = (g.nextU32() & 0xffffff) / 16777216;
+    return out;
+  }
+
+  function permSeed(channel, h, w) {
+    if (h === 128 && w === 128) return PERM_SEED ^ channel;
+    return (PERM_SEED ^ channel) ^ (h * 1000003 + w);
+  }
+
+  // Stable sorting order of the keys with the recorded tie groups put into their recorded order.
+  function balancedPermutation(n, seed, runs) {
+    const keys = uniformKeys(n, seed);
+    const order = new Uint32Array(n);
+    for (let i = 0; i < n; i++) order[i] = i;
+    const idx = Array.from(order);
+    idx.sort((a, b) => (keys[a] - keys[b]) || (a - b));
+    for (let i = 0; i < n; i++) order[i] = idx[i];
+    if (runs && runs.length) {
+      const pos = new Uint32Array(n);
+      for (let i = 0; i < n; i++) pos[order[i]] = i;
+      for (const run of runs) {
+        let a = Infinity;
+        for (const j of run) a = Math.min(a, pos[j]);
+        const v = keys[run[0]];
+        for (let t = 0; t < run.length; t++) {
+          if (keys[order[a + t]] !== v) throw new Error('tie run does not match the keys');
+        }
+        for (let t = 0; t < run.length; t++) order[a + t] = run[t];
+      }
+    }
+    return order;
+  }
+
+  function stackDigest(stack) {
+    // int64 little-endian bytes of the (12, 1024, p) stack, as the Python package hashes it
+    const bytes = new Uint8Array(stack.length * 8);
+    for (let i = 0; i < stack.length; i++) {
+      const v = stack[i], o = i * 8;
+      bytes[o] = v & 255; bytes[o + 1] = (v >>> 8) & 255; bytes[o + 2] = (v >>> 16) & 255; bytes[o + 3] = (v >>> 24) & 255;
+    }
+    return sha256Hex(bytes);
+  }
+
+  // ---------------------------------------------------------------------------------------
+  // Scatter carrier
+  // ---------------------------------------------------------------------------------------
+  class Carrier {
+    constructor(signMask, expertBank, tieTable) {
+      this.signMask = signMask;        // (1024,) +-1
+      this.expertBank = expertBank;    // (2, 12)
+      this.ties = tieTable;            // parsed carrier_ties.json
+      this.cache = new Map();
+    }
+    // (12 * 1024 * p) Uint32Array: channel c, slot k, copy j -> position
+    perm(h, w) {
+      const key = h + 'x' + w;
+      let stack = this.cache.get(key);
+      if (stack) return stack;
+      const entry = this.ties.grids[key];
+      if (!entry) throw new Error(`canvas ${2 * h}x${2 * w} is not supported (sides must be multiples of 64, at most 512)`);
+      const n = h * w;
+      const runs = {};
+      for (const [c, run] of entry.ties) (runs[c] = runs[c] || []).push(run);
+      stack = new Uint32Array(CHANNELS * n);
+      for (let c = 0; c < CHANNELS; c++) {
+        stack.set(balancedPermutation(n, permSeed(c, h, w), runs[c]), c * n);
+      }
+      const digest = stackDigest(stack);
+      if (digest !== entry.sha256) throw new Error(`carrier layout of grid ${key} does not match its recorded digest`);
+      this.cache.set(key, stack);
+      return stack;
+    }
+    // bits (1024 of 0/1) -> message tensor (12, h, w) of +-1
+    encode(bits, h, w) {
+      const stack = this.perm(h, w);
+      const n = h * w, p = n / NUM_SLOTS;
+      const out = new Float32Array(CHANNELS * n);
+      for (let c = 0; c < CHANNELS; c++) {
+        const base = c * n;
+        for (let k = 0; k < NUM_SLOTS; k++) {
+          const v = (bits[k] * 2 - 1) * this.signMask[k];
+          const o = base + k * p;
+          for (let j = 0; j < p; j++) out[base + stack[o + j]] = v;
+        }
+      }
+      return { c: CHANNELS, h, w, data: out };
+    }
+    // decoded message tensor (12, h, w) and channel weights (12) -> 1024 logits
+    decode(t, cw) {
+      const { h, w, data } = t;
+      const stack = this.perm(h, w);
+      const n = h * w, p = n / NUM_SLOTS;
+      const perSlot = new Float64Array(NUM_SLOTS);
+      for (let c = 0; c < CHANNELS; c++) {
+        const base = c * n;
+        for (let k = 0; k < NUM_SLOTS; k++) {
+          let s = 0;
+          const o = base + k * p;
+          for (let j = 0; j < p; j++) s += data[base + stack[o + j]];
+          perSlot[k] += f32(s / p) * cw[c];
+        }
+      }
+      const logits = new Float32Array(NUM_SLOTS);
+      for (let k = 0; k < NUM_SLOTS; k++) logits[k] = perSlot[k] * this.signMask[k];
+      return logits;
+    }
+  }
+
+  // ---------------------------------------------------------------------------------------
+  // Tensors, polyphase split, resampling (CPU)
+  // ---------------------------------------------------------------------------------------
+  function tensor(c, h, w, data) { return { c, h, w, data: data || new Float32Array(c * h * w) }; }
+
+  function puSplit(x) {
+    const { c, h, w, data } = x, h2 = h >> 1, w2 = w >> 1;
+    const out = tensor(4 * c, h2, w2);
+    const phases = [[0, 0], [0, 1], [1, 0], [1, 1]];
+    for (let ph = 0; ph < 4; ph++) {
+      const [dy, dx] = phases[ph];
+      for (let ch = 0; ch < c; ch++) {
+        const src = ch * h * w, dst = (ph * c + ch) * h2 * w2;
+        for (let y = 0; y < h2; y++) {
+          const rs = src + (2 * y + dy) * w + dx, rd = dst + y * w2;
+          for (let xx = 0; xx < w2; xx++) out.data[rd + xx] = data[rs + 2 * xx];
+        }
+      }
+    }
+    return out;
+  }
+
+  function puMerge(y) {
+    const c = y.c / 4, h2 = y.h, w2 = y.w, h = 2 * h2, w = 2 * w2;
+    const out = tensor(c, h, w);
+    const phases = [[0, 0], [0, 1], [1, 0], [1, 1]];
+    for (let ph = 0; ph < 4; ph++) {
+      const [dy, dx] = phases[ph];
+      for (let ch = 0; ch < c; ch++) {
+        const src = (ph * c + ch) * h2 * w2, dst = ch * h * w;
+        for (let yy = 0; yy < h2; yy++) {
+          const rs = src + yy * w2, rd = dst + (2 * yy + dy) * w + dx;
+          for (let xx = 0; xx < w2; xx++) out.data[rd + 2 * xx] = y.data[rs + xx];
+        }
+      }
+    }
+    return out;
+  }
+
+  // Antialiased bilinear weights along one axis (PyTorch's interpolate(antialias=True)).
+  function aaWeights(inSize, outSize) {
+    const scale = f32(inSize / outSize);
+    const support = scale >= 1 ? scale : 1;
+    const invscale = scale >= 1 ? 1 / scale : 1;
+    const idx = new Int32Array(outSize), len = new Int32Array(outSize);
+    const ws = [];
+    for (let i = 0; i < outSize; i++) {
+      const center = scale * (i + 0.5);
+      const xmin = Math.max(Math.trunc(center - support + 0.5), 0);
+      const xsize = Math.min(Math.trunc(center + support + 0.5), inSize) - xmin;
+      const wv = new Float64Array(xsize);
+      let total = 0;
+      for (let j = 0; j < xsize; j++) {
+        const t = Math.abs((j + xmin - center + 0.5) * invscale);
+        const v = t < 1 ? 1 - t : 0;
+        wv[j] = v; total += v;
+      }
+      if (total !== 0) for (let j = 0; j < xsize; j++) wv[j] /= total;
+      idx[i] = xmin; len[i] = xsize; ws.push(wv);
+    }
+    return { idx, len, ws };
+  }
+
+  function resizeAA(x, ho, wo) {
+    const { c, h, w, data } = x;
+    const hw = aaWeights(w, wo), vw = aaWeights(h, ho);
+    const tmp = new Float32Array(c * h * wo);
+    for (let ch = 0; ch < c; ch++) {
+      for (let y = 0; y < h; y++) {
+        const rs = ch * h * w + y * w, rd = ch * h * wo + y * wo;
+        for (let i = 0; i < wo; i++) {
+          let s = 0; const x0 = hw.idx[i], wv = hw.ws[i];
+          for (let j = 0; j < wv.length; j++) s += wv[j] * data[rs + x0 + j];
+          tmp[rd + i] = s;
+        }
+      }
+    }
+    const out = tensor(c, ho, wo);
+    for (let ch = 0; ch < c; ch++) {
+      for (let i = 0; i < ho; i++) {
+        const y0 = vw.idx[i], wv = vw.ws[i], rd = ch * ho * wo + i * wo;
+        for (let xx = 0; xx < wo; xx++) {
+          let s = 0;
+          for (let j = 0; j < wv.length; j++) s += wv[j] * tmp[ch * h * wo + (y0 + j) * wo + xx];
+          out.data[rd + xx] = s;
+        }
+      }
+    }
+    return out;
+  }
+
+  // Plain bilinear (align_corners=False, no antialiasing), as F.interpolate(mode="bilinear").
+  function linIndex(inSize, outSize) {
+    const scale = f32(inSize / outSize);
+    const i0 = new Int32Array(outSize), i1 = new Int32Array(outSize), l1 = new Float32Array(outSize);
+    for (let d = 0; d < outSize; d++) {
+      let src = f32(scale * (d + 0.5) - 0.5);
+      if (src < 0) src = 0;
+      const a = Math.floor(src);
+      i0[d] = a; i1[d] = a + (a < inSize - 1 ? 1 : 0); l1[d] = src - a;
+    }
+    return { i0, i1, l1 };
+  }
+
+  function resizeBilinear(x, ho, wo) {
+    const { c, h, w, data } = x;
+    const ry = linIndex(h, ho), rx = linIndex(w, wo);
+    const out = tensor(c, ho, wo);
+    for (let ch = 0; ch < c; ch++) {
+      const base = ch * h * w, ob = ch * ho * wo;
+      for (let y = 0; y < ho; y++) {
+        const a = base + ry.i0[y] * w, b = base + ry.i1[y] * w, ly = ry.l1[y], ly0 = 1 - ly;
+        for (let xx = 0; xx < wo; xx++) {
+          const x0 = rx.i0[xx], x1 = rx.i1[xx], lx = rx.l1[xx], lx0 = 1 - lx;
+          out.data[ob + y * wo + xx] = ly0 * (lx0 * data[a + x0] + lx * data[a + x1]) +
+            ly * (lx0 * data[b + x0] + lx * data[b + x1]);
+        }
+      }
+    }
+    return out;
+  }
+
+  // ---------------------------------------------------------------------------------------
+  // Images <-> tensors
+  // ---------------------------------------------------------------------------------------
+  // RGBA (or RGB) bytes -> (3, H, W) in [-1, 1]: x / 255 * 2 - 1 in fp32
+  function imageToTensor(img) {
+    const { width: W, height: H, data } = img;
+    const step = data.length === W * H * 4 ? 4 : 3;
+    const t = tensor(3, H, W);
+    const n = H * W;
+    for (let i = 0; i < n; i++) {
+      for (let ch = 0; ch < 3; ch++) t.data[ch * n + i] = f32(f32(data[i * step + ch] / 255) * 2 - 1);
+    }
+    return t;
+  }
+
+  function roundHalfEven(v) {
+    const r = Math.round(v);
+    return (Math.abs(v % 1) === 0.5 && r % 2 !== 0) ? r - 1 : r;
+  }
+
+  // (3, H, W) in [-1, 1] -> RGBA bytes (clamped, rounded half to even), like the 8-bit save
+  function tensorToImage(t) {
+    const { h, w, data } = t, n = h * w;
+    const out = new Uint8ClampedArray(n * 4);
+    for (let i = 0; i < n; i++) {
+      for (let ch = 0; ch < 3; ch++) {
+        let v = data[ch * n + i];
+        if (!(v === v)) v = 0;
+        v = Math.min(1, Math.max(-1, v));
+        v = f32(Math.min(1, Math.max(0, f32((v + 1) * 0.5))) * 255);
+        out[i * 4 + ch] = roundHalfEven(v);
+      }
+      out[i * 4 + 3] = 255;
+    }
+    return { width: w, height: h, data: out };
+  }
+
+  // ---------------------------------------------------------------------------------------
+  // Canvas rule of the image API (floor64)
+  // ---------------------------------------------------------------------------------------
+  function canvasFor(H, W) {
+    if (H < CANVAS_MULTIPLE || W < CANVAS_MULTIPLE) throw new Error(`the image is ${W}x${H}; both sides must be at least 64 pixels`);
+    return [Math.min(CANVAS_MAX, CANVAS_MULTIPLE * Math.floor(H / CANVAS_MULTIPLE)),
+      Math.min(CANVAS_MAX, CANVAS_MULTIPLE * Math.floor(W / CANVAS_MULTIPLE))];
+  }
+
+  // ---------------------------------------------------------------------------------------
+  // Weights
+  // ---------------------------------------------------------------------------------------
+  class Weights {
+    constructor(manifest, buffer) {
+      this.manifest = manifest;
+      this.t = {};
+      for (const e of manifest.tensors) {
+        this.t[e.name] = { shape: e.shape, data: new Float32Array(buffer, e.offset, e.length) };
+      }
+    }
+    get(name) {
+      const v = this.t[name];
+      if (!v) throw new Error('missing tensor ' + name);
+      return v;
+    }
+    conv(prefix) {
+      const w = this.get(prefix + '.weight'), b = this.get(prefix + '.bias');
+      return { name: prefix, cout: w.shape[0], cin: w.shape[1], k: w.shape[2], weight: w.data, bias: b.data };
+    }
+  }
+
+  // FiLM (gamma, beta) of every block for lambda = (lp, ls): f, then dec.0 .. dec.31
+  function filmFor(weights, lam) {
+    const ks = [];
+    for (let k = 1; k <= FILM_K; k++) ks.push(k);
+    const twoPi = f32(2 * Math.PI);
+    const lp = f32(lam[0]), ls = f32(lam[1]);
+    const phi = [];
+    const ap = ks.map(k => f32(f32(twoPi * k) * lp));
+    const as = ks.map(k => f32(f32(twoPi * k) * ls));
+    for (const a of ap) phi.push(f32(Math.sin(a)));
+    for (const a of ap) phi.push(f32(Math.cos(a)));
+    for (const a of as) phi.push(f32(Math.sin(a)));
+    for (const a of as) phi.push(f32(Math.cos(a)));
+    const W = weights.get('film_head.weight'), B = weights.get('film_head.bias');
+    const nOut = W.shape[0], nIn = W.shape[1];
+    const out = new Float32Array(nOut);
+    for (let o = 0; o < nOut; o++) {
+      let s = B.data[o];
+      for (let i = 0; i < nIn; i++) s += W.data[o * nIn + i] * phi[i];
+      out[o] = s;
+    }
+    const widths = [32];
+    for (let i = 0; i < 32; i++) widths.push(48);
+    const nGamma = nOut / 2;
+    const pairs = [];
+    let off = 0;
+    for (const wd of widths) {
+      pairs.push({ gamma: out.slice(off, off + wd), beta: out.slice(nGamma + off, nGamma + off + wd) });
+      off += wd;
+    }
+    return pairs;
+  }
+
+  // ---------------------------------------------------------------------------------------
+  // CPU backend: conv with fused bias, residual, LeakyReLU and FiLM
+  //   y = conv(x) + bias; y += residual; y = lrelu(y); y = beta + y * gamma
+  // ---------------------------------------------------------------------------------------
+  class CpuBackend {
+    constructor() { this.name = 'cpu'; }
+    upload(t) { return t; }
+    download(t) { return t; }
+    free() {}
+    zeros(c, h, w) { return tensor(c, h, w); }
+    concat(a, b) {
+      const out = tensor(a.c + b.c, a.h, a.w);
+      out.data.set(a.data, 0); out.data.set(b.data, a.data.length);
+      return out;
+    }
+    sliceChannels(a, c0, c1) {
+      const n = a.h * a.w;
+      return tensor(c1 - c0, a.h, a.w, a.data.slice(c0 * n, c1 * n));
+    }
+    // z + gamma * (z - xhat)
+    sharpen(z, xhat, gamma) {
+      const out = tensor(z.c, z.h, z.w);
+      for (let i = 0; i < z.data.length; i++) out.data[i] = z.data[i] + gamma * f32(z.data[i] - xhat.data[i]);
+      return out;
+    }
+    conv(x, L, opt) {
+      const stride = opt.stride || 1, pad = opt.pad === undefined ? 1 : opt.pad;
+      const { c: cin, h, w, data } = x;
+      const k = L.k, cout = L.cout;
+      const ho = Math.floor((h + 2 * pad - k) / stride) + 1;
+      const wo = Math.floor((w + 2 * pad - k) / stride) + 1;
+      const out = tensor(cout, ho, wo);
+      const o = out.data, hw = h * w, ohw = ho * wo;
+      const acc = new Float64Array(ohw);
+      for (let co = 0; co < cout; co++) {
+        acc.fill(0);
+        for (let ci = 0; ci < cin; ci++) {
+          const xb = ci * hw;
+          for (let ky = 0; ky < k; ky++) {
+            for (let kx = 0; kx < k; kx++) {
+              const wv = L.weight[((co * cin + ci) * k + ky) * k + kx];
+              if (wv === 0) continue;
+              const ox0 = Math.max(0, Math.ceil((pad - kx) / stride));
+              const ox1 = Math.min(wo, Math.floor((w - 1 + pad - kx) / stride) + 1);
+              for (let oy = 0; oy < ho; oy++) {
+                const iy = oy * stride - pad + ky;
+                if (iy < 0 || iy >= h) continue;
+                const ob = oy * wo;
+                let xi = xb + iy * w + ox0 * stride - pad + kx;
+                if (stride === 1) {
+                  for (let ox = ox0; ox < ox1; ox++, xi++) acc[ob + ox] += wv * data[xi];
+                } else {
+                  for (let ox = ox0; ox < ox1; ox++, xi += stride) acc[ob + ox] += wv * data[xi];
+                }
+              }
+            }
+          }
+        }
+        const bias = L.bias[co], base = co * ohw;
+        const res = opt.residual ? opt.residual.data : null;
+        const slope = opt.slope, film = opt.film;
+        const g = film ? film.gamma[co] : 1, be = film ? film.beta[co] : 0;
+        for (let i = 0; i < ohw; i++) {
+          let v = f32(acc[i] + bias);
+          if (res) v = f32(v + res[base + i]);
+          if (slope !== undefined && slope !== null && v < 0) v = f32(v * slope);
+          if (film) v = f32(be + v * g);
+          o[base + i] = v;
+        }
+      }
+      return out;
+    }
+  }
+
+  // ---------------------------------------------------------------------------------------
+  // The model
+  // ---------------------------------------------------------------------------------------
+  class Model {
+    constructor(weights, tieTable, backend) {
+      this.w = weights;
+      this.backend = backend || new CpuBackend();
+      const m = weights.manifest;
+      this.deployed = { lambda: m.deployed.lambda.slice(), s: m.deployed.s };
+      this.carrier = new Carrier(weights.get('adapter.sign_mask').data,
+        weights.get('adapter.expert_bank').data, tieTable);
+      this.layers = {};
+      const L = (p) => (this.layers[p] = weights.conv(p));
+      L('inn.f.conv1'); L('inn.f.conv2');
+      for (let i = 0; i < 32; i++) { L(`inn.dec.${i}.conv1`); L(`inn.dec.${i}.conv2`); }
+      L('cover_predictor.stem'); L('cover_predictor.head');
+      for (let b = 0; b < 3; b++) { L(`cover_predictor.blocks.${b}.c1`); L(`cover_predictor.blocks.${b}.c2`); }
+      for (let i = 1; i <= 4; i++) L(`decode_router.conv${i}`);
+      this.filmCache = new Map();
+    }
+    setBackend(b) { this.backend = b; }
+    film(lam) {
+      const key = lam[0] + ',' + lam[1];
+      let f = this.filmCache.get(key);
+      if (!f) { f = filmFor(this.w, lam); this.filmCache.set(key, f); }
+      return f;
+    }
+    // canvas-sized cover (3, hc, wc) -> container (3, hc, wc)
+    async embedCanvas(coverC, bits, lam, progress) {
+      const B = this.backend, film = this.film(lam);
+      const X = puSplit(coverC);
+      const M = this.carrier.encode(bits, X.h, X.w);
+      const inp = B.upload(tensor(24, X.h, X.w, concatData(M.data, X.data)));
+      const xg = B.upload(X);
+      const hid = B.conv(inp, this.layers['inn.f.conv1'], { slope: 0.01, film: film[0] });
+      const out = B.conv(hid, this.layers['inn.f.conv2'], { residual: xg });
+      const C = B.download(out);
+      B.free(inp); B.free(xg); B.free(hid); B.free(out);
+      if (progress) progress(1);
+      return puMerge(C);
+    }
+    // canvas-sized image (3, hc, wc) -> { logits (1024), weights (12) }
+    async extractCanvas(xC, lam, progress) {
+      const B = this.backend, film = this.film(lam), Ls = this.layers;
+      const z = puSplit(xC);
+      const xg = B.upload(xC);
+      // cover predictor
+      let s = B.conv(xg, Ls['cover_predictor.stem'], { stride: 2, pad: 1, slope: 0.1 });
+      for (let b = 0; b < 3; b++) {
+        const r = B.conv(s, Ls[`cover_predictor.blocks.${b}.c1`], { slope: 0.1 });
+        const s2 = B.conv(r, Ls[`cover_predictor.blocks.${b}.c2`], { residual: s, slope: 0.1 });
+        B.free(r); B.free(s); s = s2;
+      }
+      const xhat = B.conv(s, Ls['cover_predictor.head'], {});
+      B.free(s);
+      const zg = B.upload(z);
+      const zaug = B.sharpen(zg, xhat, COVPRED_GAMMA);
+      B.free(zg); B.free(xhat);
+      let state = B.concat(zaug, B.zeros(12, z.h, z.w));
+      B.free(zaug);
+      // residual decoder, last unit first
+      for (let i = 31; i >= 0; i--) {
+        const h = B.conv(state, Ls[`inn.dec.${i}.conv1`], { slope: 0.01, film: film[i + 1] });
+        const ns = B.conv(h, Ls[`inn.dec.${i}.conv2`], { residual: state });
+        B.free(h); B.free(state); state = ns;
+        if (progress && i % 4 === 0) { progress((32 - i) / 34); await tick(); }
+      }
+      const secretG = B.sliceChannels(state, 12, 24);
+      const secret = B.download(secretG);
+      B.free(secretG); B.free(state);
+      // decode router
+      let r = xg;
+      for (let i = 1; i <= 4; i++) {
+        const nr = B.conv(r, Ls[`decode_router.conv${i}`], { stride: 2, pad: 1, slope: 0.1 });
+        if (r !== xg) B.free(r);
+        r = nr;
+      }
+      const feat = B.download(r);
+      B.free(r); B.free(xg);
+      const cw = this.routerWeights(feat);
+      const logits = this.carrier.decode(secret, cw);
+      if (progress) progress(1);
+      return { logits, channelWeights: cw };
+    }
+    routerWeights(feat) {
+      const n = feat.h * feat.w, C = feat.c;
+      const g = new Float64Array(C);
+      for (let c = 0; c < C; c++) { let s = 0; for (let i = 0; i < n; i++) s += feat.data[c * n + i]; g[c] = s / n; }
+      const W = this.w.get('decode_router.head.weight'), b = this.w.get('decode_router.head.bias');
+      const E = W.shape[0];
+      const zl = [];
+      for (let e = 0; e < E; e++) { let s = b.data[e]; for (let c = 0; c < C; c++) s += W.data[e * C + c] * g[c]; zl.push(s); }
+      const mx = Math.max(...zl);
+      const ex = zl.map(v => Math.exp(v - mx));
+      const sum = ex.reduce((a, v) => a + v, 0);
+      const probs = ex.map(v => v / sum);
+      const bank = this.carrier.expertBank;
+      const cw = new Float32Array(CHANNELS);
+      for (let c = 0; c < CHANNELS; c++) { let s = 0; for (let e = 0; e < E; e++) s += probs[e] * bank[e * CHANNELS + c]; cw[c] = s; }
+      return cw;
+    }
+    // full-size cover tensor (3, H, W) -> watermarked tensor (3, H, W), float
+    async embed(cover, bits, opt) {
+      opt = opt || {};
+      const lam = opt.lambda || this.deployed.lambda;
+      const s = f32(opt.s === undefined ? this.deployed.s : opt.s);
+      const [hc, wc] = canvasFor(cover.h, cover.w);
+      const native = hc === cover.h && wc === cover.w;
+      const coverC = native ? cover : resizeAA(cover, hc, wc);
+      const contC = await this.embedCanvas(coverC, bits, lam, opt.progress);
+      const out = tensor(3, cover.h, cover.w);
+      if (native) {
+        for (let i = 0; i < out.data.length; i++) out.data[i] = s === 1 ? contC.data[i] : f32(cover.data[i] + f32(f32(contC.data[i] - cover.data[i]) * s));
+      } else {
+        const r = tensor(3, hc, wc);
+        for (let i = 0; i < r.data.length; i++) r.data[i] = f32(contC.data[i] - coverC.data[i]);
+        const up = resizeBilinear(r, cover.h, cover.w);
+        for (let i = 0; i < out.data.length; i++) out.data[i] = f32(cover.data[i] + f32(up.data[i] * s));
+      }
+      return { image: out, canvas: [hc, wc] };
+    }
+    async extract(x, opt) {
+      opt = opt || {};
+      const lam = opt.lambda || this.deployed.lambda;
+      const [hc, wc] = canvasFor(x.h, x.w);
+      const xC = (hc === x.h && wc === x.w) ? x : resizeAA(x, hc, wc);
+      const r = await this.extractCanvas(xC, lam, opt.progress);
+      r.canvas = [hc, wc];
+      return r;
+    }
+  }
+
+  function concatData(a, b) { const o = new Float32Array(a.length + b.length); o.set(a); o.set(b, a.length); return o; }
+  function tick() { return new Promise(r => (typeof setTimeout === 'function' ? setTimeout(r, 0) : r())); }
+
+  // ---------------------------------------------------------------------------------------
+  // Payload helpers (match asymseal.api)
+  // ---------------------------------------------------------------------------------------
+  function bitsFromBytes(bytes, n) {
+    const bits = new Uint8Array(n || bytes.length * 8);
+    for (let i = 0; i < bytes.length && 8 * i < bits.length; i++) {
+      for (let b = 0; b < 8; b++) bits[8 * i + b] = (bytes[i] >> (7 - b)) & 1;
+    }
+    return bits;
+  }
+  function bytesFromBits(bits) {
+    const out = new Uint8Array(Math.floor(bits.length / 8));
+    for (let i = 0; i < out.length; i++) {
+      let v = 0;
+      for (let b = 0; b < 8; b++) v = (v << 1) | (bits[8 * i + b] & 1);
+      out[i] = v;
+    }
+    return out;
+  }
+  function bitsFromText(text) {
+    const raw = new TextEncoder().encode(text);
+    if (raw.length > NUM_SLOTS / 8) throw new Error(`the message is ${raw.length} bytes in UTF-8; at most 128 fit`);
+    return bitsFromBytes(raw, NUM_SLOTS);
+  }
+  function bitsToText(bits) {
+    let b = bytesFromBits(bits);
+    let end = b.length;
+    while (end > 0 && b[end - 1] === 0) end--;
+    return new TextDecoder('utf-8', { fatal: false }).decode(b.subarray(0, end));
+  }
+  function hardBits(logits) {
+    const out = new Uint8Array(logits.length);
+    for (let i = 0; i < logits.length; i++) out[i] = logits[i] > 0 ? 1 : 0;
+    return out;
+  }
+  // 100-bit mode: slot j carries message bit j mod 100
+  function expandRepetition(info) {
+    const k = info.length, out = new Uint8Array(NUM_SLOTS);
+    for (let j = 0; j < NUM_SLOTS; j++) out[j] = info[j % k];
+    return out;
+  }
+  function repetitionLogits(logits, k) {
+    const out = new Float32Array(k);
+    const rows = Math.ceil(NUM_SLOTS / k);
+    for (let r = 0; r < rows; r++) {
+      for (let b = 0; b < k; b++) { const j = r * k + b; if (j < NUM_SLOTS) out[b] = f32(out[b] + logits[j]); }
+    }
+    return out;
+  }
+
+  // PSNR between two RGBA byte images of equal size
+  function psnr8(a, b) {
+    let se = 0, n = 0;
+    for (let i = 0; i < a.data.length; i += 4) {
+      for (let c = 0; c < 3; c++) { const d = a.data[i + c] - b.data[i + c]; se += d * d; n++; }
+    }
+    return se === 0 ? Infinity : 10 * Math.log10(255 * 255 / (se / n));
+  }
+
+  async function loadModel(fetchFn, base, backend) {
+    const [manifest, buf, ties] = await Promise.all([
+      fetchFn(base + 'model.json').then(r => r.json()),
+      fetchFn(base + 'weights.bin').then(r => r.arrayBuffer()),
+      fetchFn(base + 'ties.json').then(r => r.json()),
+    ]);
+    if (buf.byteLength !== manifest.bytes) throw new Error('weights.bin has the wrong size');
+    return new Model(new Weights(manifest, buf), ties, backend);
+  }
+
+  const api = {
+    NUM_SLOTS, CHANNELS, sha256Hex, MT19937, uniformKeys, permSeed, balancedPermutation, stackDigest,
+    Carrier, tensor, puSplit, puMerge, resizeAA, resizeBilinear, imageToTensor, tensorToImage,
+    roundHalfEven, canvasFor, Weights, filmFor, CpuBackend, Model, loadModel,
+    bitsFromBytes, bytesFromBits, bitsFromText, bitsToText, hardBits, expandRepetition,
+    repetitionLogits, psnr8,
+  };
+  if (typeof module !== 'undefined' && module.exports) module.exports = api;
+  else root.AsymSeal = api;
+})(typeof self !== 'undefined' ? self : this);
+</script>
+<script>
+/* WebGL2 backend for AsymSeal: the same ops as CpuBackend (asymseal-core.js), on the GPU in fp32.
+ *
+ * A (C, H, W) tensor is an RGBA32F texture: 4 channels per texel, the ceil(C / 4) channel groups
+ * tiled TX across and TY down. One fragment shader does a convolution with its bias, residual,
+ * LeakyReLU and FiLM fused; the weights of each layer live in a texture. selfTest() compares
+ * every op against the CPU backend on random tensors before the backend is used.
+ */
+(function (root) {
+  'use strict';
+
+  const VS = `#version 300 es
+void main() {
+  vec2 p = vec2(float((gl_VertexID << 1) & 2), float(gl_VertexID & 2));
+  gl_Position = vec4(p * 2.0 - 1.0, 0.0, 1.0);
+}`;
+
+  const HEAD = `#version 300 es
+precision highp float;
+precision highp int;
+precision highp sampler2D;
+out vec4 o;
+// output layout
+uniform ivec2 uOutHW;
+uniform int uOutTX;
+uniform int uGout;
+int gOut; ivec2 oyx;
+bool outIndex() {
+  ivec2 p = ivec2(gl_FragCoord.xy);
+  int tx = p.x / uOutHW.y; int ty = p.y / uOutHW.x;
+  oyx = ivec2(p.y - ty * uOutHW.x, p.x - tx * uOutHW.y);
+  gOut = ty * uOutTX + tx;
+  return gOut < uGout;
+}
+ivec2 at(int g, int tx, ivec2 hw, int y, int x) {
+  return ivec2((g % tx) * hw.y + x, (g / tx) * hw.x + y);
+}
+`;
+
+  const FS_CONV = HEAD + `
+uniform sampler2D uX; uniform ivec2 uInHW; uniform int uInTX; uniform int uGin;
+uniform sampler2D uW; uniform sampler2D uB; uniform sampler2D uR; uniform sampler2D uF;
+uniform int uK; uniform int uStride; uniform int uPad;
+uniform int uHasRes; uniform int uHasAct; uniform int uHasFilm; uniform float uSlope;
+void main() {
+  if (!outIndex()) { o = vec4(0.0); return; }
+  int oy = oyx.x, ox = oyx.y;
+  vec4 acc = vec4(0.0);
+  for (int gi = 0; gi < uGin; gi++) {
+    for (int ky = 0; ky < uK; ky++) {
+      int iy = oy * uStride - uPad + ky;
+      if (iy < 0 || iy >= uInHW.x) continue;
+      for (int kx = 0; kx < uK; kx++) {
+        int ix = ox * uStride - uPad + kx;
+        if (ix < 0 || ix >= uInHW.y) continue;
+        vec4 v = texelFetch(uX, at(gi, uInTX, uInHW, iy, ix), 0);
+        int c = ((gi * uK + ky) * uK + kx) * 4;
+        acc += texelFetch(uW, ivec2(c, gOut), 0) * v.x + texelFetch(uW, ivec2(c + 1, gOut), 0) * v.y
+             + texelFetch(uW, ivec2(c + 2, gOut), 0) * v.z + texelFetch(uW, ivec2(c + 3, gOut), 0) * v.w;
+      }
+    }
+  }
+  acc += texelFetch(uB, ivec2(gOut, 0), 0);
+  if (uHasRes == 1) acc += texelFetch(uR, ivec2(gl_FragCoord.xy), 0);
+  if (uHasAct == 1) acc = max(acc, 0.0) + uSlope * min(acc, 0.0);
+  if (uHasFilm == 1) acc = texelFetch(uF, ivec2(gOut, 1), 0) + acc * texelFetch(uF, ivec2(gOut, 0), 0);
+  o = acc;
+}`;
+
+  // out = A + k * (A - B), same layout
+  const FS_SHARPEN = HEAD + `
+uniform sampler2D uA; uniform sampler2D uBt; uniform float uK;
+void main() {
+  if (!outIndex()) { o = vec4(0.0); return; }
+  ivec2 p = ivec2(gl_FragCoord.xy);
+  vec4 a = texelFetch(uA, p, 0);
+  o = a + uK * (a - texelFetch(uBt, p, 0));
+}`;
+
+  // regroup: output group g reads A's group g + uOffA when g < uGa, else B's group g - uGa (or 0)
+  const FS_REGROUP = HEAD + `
+uniform sampler2D uA; uniform int uATX; uniform int uGa; uniform int uOffA;
+uniform sampler2D uBt; uniform int uBTX; uniform int uHasB;
+void main() {
+  if (!outIndex()) { o = vec4(0.0); return; }
+  if (gOut < uGa) { o = texelFetch(uA, at(gOut + uOffA, uATX, uOutHW, oyx.x, oyx.y), 0); return; }
+  if (uHasB == 1) { o = texelFetch(uBt, at(gOut - uGa, uBTX, uOutHW, oyx.x, oyx.y), 0); return; }
+  o = vec4(0.0);
+}`;
+
+  class GLBackend {
+    constructor() {
+      this.name = 'webgl2';
+      const canvas = (typeof OffscreenCanvas !== 'undefined') ? new OffscreenCanvas(1, 1) : document.createElement('canvas');
+      const gl = canvas.getContext('webgl2', { antialias: false, depth: false, stencil: false, premultipliedAlpha: false, powerPreference: 'high-performance' });
+      if (!gl) throw new Error('WebGL2 is not available');
+      if (!gl.getExtension('EXT_color_buffer_float')) throw new Error('float render targets are not available');
+      this.gl = gl;
+      this.lost = false;
+      if (canvas.addEventListener) canvas.addEventListener('webglcontextlost', (e) => { e.preventDefault(); this.lost = true; });
+      this.maxTex = gl.getParameter(gl.MAX_TEXTURE_SIZE);
+      this.renderer = '';
+      try {
+        const dbg = gl.getExtension('WEBGL_debug_renderer_info');
+        this.renderer = dbg ? gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER);
+      } catch (e) { /* not exposed */ }
+      this.progs = { conv: this.program(FS_CONV), sharpen: this.program(FS_SHARPEN), regroup: this.program(FS_REGROUP) };
+      this.fb = gl.createFramebuffer();
+      this.vao = gl.createVertexArray();
+      this.dummy = this.texture(1, 1, new Float32Array(4));
+      this.layerCache = new Map();
+      this.filmCache = new Map();
+    }
+    program(fs) {
+      const gl = this.gl;
+      const sh = (type, src) => {
+        const s = gl.createShader(type);
+        gl.shaderSource(s, src); gl.compileShader(s);
+        if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error('shader: ' + gl.getShaderInfoLog(s));
+        return s;
+      };
+      const p = gl.createProgram();
+      gl.attachShader(p, sh(gl.VERTEX_SHADER, VS)); gl.attachShader(p, sh(gl.FRAGMENT_SHADER, fs));
+      gl.linkProgram(p);
+      if (!gl.getProgramParameter(p, gl.LINK_STATUS)) throw new Error('program: ' + gl.getProgramInfoLog(p));
+      const loc = {};
+      const n = gl.getProgramParameter(p, gl.ACTIVE_UNIFORMS);
+      for (let i = 0; i < n; i++) { const u = gl.getActiveUniform(p, i); loc[u.name] = gl.getUniformLocation(p, u.name); }
+      return { p, loc };
+    }
+    texture(w, h, data) {
+      const gl = this.gl;
+      const t = gl.createTexture();
+      gl.bindTexture(gl.TEXTURE_2D, t);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA32F, w, h, 0, gl.RGBA, gl.FLOAT, data || null);
+      return t;
+    }
+    layout(c, h, w) {
+      const G = Math.ceil(c / 4);
+      const TX = Math.max(1, Math.min(G, Math.floor(this.maxTex / w)));
+      const TY = Math.ceil(G / TX);
+      if (TY * h > this.maxTex) throw new Error('tensor too large for this GPU');
+      return { c, h, w, G, TX, TY, texW: TX * w, texH: TY * h };
+    }
+    alloc(c, h, w) {
+      const L = this.layout(c, h, w);
+      L.tex = this.texture(L.texW, L.texH, null);
+      return L;
+    }
+    upload(t) {
+      const L = this.layout(t.c, t.h, t.w);
+      const buf = new Float32Array(L.texW * L.texH * 4);
+      const n = t.h * t.w;
+      for (let ch = 0; ch < t.c; ch++) {
+        const g = ch >> 2, k = ch & 3, ox = (g % L.TX) * t.w, oy = Math.floor(g / L.TX) * t.h;
+        for (let y = 0; y < t.h; y++) {
+          const row = ((oy + y) * L.texW + ox) * 4 + k, src = ch * n + y * t.w;
+          for (let x = 0; x < t.w; x++) buf[row + 4 * x] = t.data[src + x];
+        }
+      }
+      L.tex = this.texture(L.texW, L.texH, buf);
+      return L;
+    }
+    download(L) {
+      const gl = this.gl;
+      gl.bindFramebuffer(gl.FRAMEBUFFER, this.fb);
+      gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, L.tex, 0);
+      const buf = new Float32Array(L.texW * L.texH * 4);
+      gl.readPixels(0, 0, L.texW, L.texH, gl.RGBA, gl.FLOAT, buf);
+      gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+      const out = { c: L.c, h: L.h, w: L.w, data: new Float32Array(L.c * L.h * L.w) };
+      const n = L.h * L.w;
+      for (let ch = 0; ch < L.c; ch++) {
+        const g = ch >> 2, k = ch & 3, ox = (g % L.TX) * L.w, oy = Math.floor(g / L.TX) * L.h;
+        for (let y = 0; y < L.h; y++) {
+          const row = ((oy + y) * L.texW + ox) * 4 + k, dst = ch * n + y * L.w;
+          for (let x = 0; x < L.w; x++) out.data[dst + x] = buf[row + 4 * x];
+        }
+      }
+      if (this.lost) throw new Error('the WebGL context was lost');
+      return out;
+    }
+    free(L) { if (L && L.tex) { this.gl.deleteTexture(L.tex); L.tex = null; } }
+    zeros(c, h, w) { return { zeros: true, c, h, w }; }
+    run(prog, out, bind) {
+      const gl = this.gl;
+      gl.useProgram(prog.p);
+      gl.bindFramebuffer(gl.FRAMEBUFFER, this.fb);
+      gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, out.tex, 0);
+      gl.viewport(0, 0, out.texW, out.texH);
+      gl.uniform2i(prog.loc.uOutHW, out.h, out.w);
+      gl.uniform1i(prog.loc.uOutTX, out.TX);
+      gl.uniform1i(prog.loc.uGout, out.G);
+      let unit = 0;
+      const tex = (name, t) => {
+        gl.activeTexture(gl.TEXTURE0 + unit);
+        gl.bindTexture(gl.TEXTURE_2D, t || this.dummy);
+        gl.uniform1i(prog.loc[name], unit);
+        unit++;
+      };
+      bind(tex, prog.loc);
+      gl.bindVertexArray(this.vao);
+      gl.drawArrays(gl.TRIANGLES, 0, 3);
+      gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+      return out;
+    }
+    layerTextures(L) {
+      let e = this.layerCache.get(L);
+      if (e) return e;
+      const Gin = Math.ceil(L.cin / 4), Gout = Math.ceil(L.cout / 4), K = L.k;
+      const wW = 4 * Gin * K * K;
+      const wbuf = new Float32Array(wW * Gout * 4);
+      for (let co = 0; co < L.cout; co++) {
+        const g = co >> 2, r = co & 3;
+        for (let ci = 0; ci < L.cin; ci++) {
+          const gi = ci >> 2, j = ci & 3;
+          for (let ky = 0; ky < K; ky++) for (let kx = 0; kx < K; kx++) {
+            const col = ((gi * K + ky) * K + kx) * 4 + j;
+            wbuf[(g * wW + col) * 4 + r] = L.weight[((co * L.cin + ci) * K + ky) * K + kx];
+          }
+        }
+      }
+      const bbuf = new Float32Array(Gout * 4);
+      for (let co = 0; co < L.cout; co++) bbuf[co] = L.bias[co];
+      e = { w: this.texture(wW, Gout, wbuf), b: this.texture(Gout, 1, bbuf), Gin, Gout };
+      this.layerCache.set(L, e);
+      return e;
+    }
+    filmTexture(film, cout) {
+      let t = this.filmCache.get(film);
+      if (t) return t;
+      const G = Math.ceil(cout / 4), buf = new Float32Array(G * 2 * 4);
+      for (let c = 0; c < cout; c++) { buf[c] = film.gamma[c]; buf[G * 4 + c] = film.beta[c]; }
+      t = this.texture(G, 2, buf);
+      this.filmCache.set(film, t);
+      return t;
+    }
+    conv(x, L, opt) {
+      const stride = opt.stride || 1, pad = opt.pad === undefined ? 1 : opt.pad;
+      const ho = Math.floor((x.h + 2 * pad - L.k) / stride) + 1;
+      const wo = Math.floor((x.w + 2 * pad - L.k) / stride) + 1;
+      const out = this.alloc(L.cout, ho, wo);
+      const lt = this.layerTextures(L);
+      const gl = this.gl;
+      return this.run(this.progs.conv, out, (tex, loc) => {
+        tex('uX', x.tex); tex('uW', lt.w); tex('uB', lt.b);
+        tex('uR', opt.residual ? opt.residual.tex : null);
+        tex('uF', opt.film ? this.filmTexture(opt.film, L.cout) : null);
+        gl.uniform2i(loc.uInHW, x.h, x.w); gl.uniform1i(loc.uInTX, x.TX); gl.uniform1i(loc.uGin, lt.Gin);
+        gl.uniform1i(loc.uK, L.k); gl.uniform1i(loc.uStride, stride); gl.uniform1i(loc.uPad, pad);
+        gl.uniform1i(loc.uHasRes, opt.residual ? 1 : 0);
+        const act = opt.slope !== undefined && opt.slope !== null;
+        gl.uniform1i(loc.uHasAct, act ? 1 : 0); gl.uniform1f(loc.uSlope, act ? opt.slope : 0);
+        gl.uniform1i(loc.uHasFilm, opt.film ? 1 : 0);
+      });
+    }
+    sharpen(z, xhat, k) {
+      const out = this.alloc(z.c, z.h, z.w);
+      const gl = this.gl;
+      return this.run(this.progs.sharpen, out, (tex, loc) => {
+        tex('uA', z.tex); tex('uBt', xhat.tex); gl.uniform1f(loc.uK, k);
+      });
+    }
+    concat(a, b) {
+      const out = this.alloc(a.c + b.c, a.h, a.w);
+      const gl = this.gl;
+      return this.run(this.progs.regroup, out, (tex, loc) => {
+        tex('uA', a.tex); tex('uBt', b.zeros ? null : b.tex);
+        gl.uniform1i(loc.uATX, a.TX); gl.uniform1i(loc.uGa, Math.ceil(a.c / 4)); gl.uniform1i(loc.uOffA, 0);
+        gl.uniform1i(loc.uBTX, b.zeros ? 1 : b.TX); gl.uniform1i(loc.uHasB, b.zeros ? 0 : 1);
+      });
+    }
+    sliceChannels(a, c0, c1) {
+      const out = this.alloc(c1 - c0, a.h, a.w);
+      const gl = this.gl;
+      return this.run(this.progs.regroup, out, (tex, loc) => {
+        tex('uA', a.tex); tex('uBt', null);
+        gl.uniform1i(loc.uATX, a.TX); gl.uniform1i(loc.uGa, out.G); gl.uniform1i(loc.uOffA, c0 >> 2);
+        gl.uniform1i(loc.uBTX, 1); gl.uniform1i(loc.uHasB, 0);
+      });
+    }
+    // Every op on random tensors against the CPU backend; returns the largest relative error.
+    selfTest(cpu) {
+      let seed = 12345;
+      const rnd = () => { seed = (Math.imul(seed, 1103515245) + 12345) >>> 0; return (seed / 4294967296) * 2 - 1; };
+      const T = (c, h, w) => ({ c, h, w, data: Float32Array.from({ length: c * h * w }, rnd) });
+      const layer = (cout, cin, k) => ({ cout, cin, k, weight: Float32Array.from({ length: cout * cin * k * k }, () => rnd() * 0.3), bias: Float32Array.from({ length: cout }, rnd) });
+      let worst = 0;
+      const cmp = (a, b) => {
+        let m = 0, s = 0;
+        for (let i = 0; i < a.data.length; i++) { m = Math.max(m, Math.abs(a.data[i] - b.data[i])); s = Math.max(s, Math.abs(a.data[i])); }
+        worst = Math.max(worst, m / Math.max(1, s));
+      };
+      const film = (n) => ({ gamma: Float32Array.from({ length: n }, rnd), beta: Float32Array.from({ length: n }, rnd) });
+      const cases = [
+        [T(24, 9, 11), layer(48, 24, 3), { slope: 0.01, film: film(48) }],
+        [T(3, 16, 20), layer(32, 3, 4), { stride: 2, pad: 1, slope: 0.1 }],
+        [T(16, 10, 14), layer(32, 16, 3), { stride: 2, pad: 1, slope: 0.1 }],
+      ];
+      for (const [x, L, opt] of cases) {
+        const xg = this.upload(x);
+        cmp(cpu.conv(x, L, opt), this.download(this.conv(xg, L, opt)));
+      }
+      const x = T(48, 12, 8), r = T(24, 12, 8), L = layer(24, 48, 3);
+      cmp(cpu.conv(x, L, { residual: r }), this.download(this.conv(this.upload(x), L, { residual: this.upload(r) })));
+      const z = T(12, 7, 9), xh = T(12, 7, 9);
+      const zg = this.upload(z), xhg = this.upload(xh);
+      cmp(cpu.sharpen(z, xh, 0.5), this.download(this.sharpen(zg, xhg, 0.5)));
+      const cat = this.concat(zg, this.zeros(12, 7, 9));
+      cmp(cpu.concat(z, cpu.zeros(12, 7, 9)), this.download(cat));
+      cmp(cpu.sliceChannels(cpu.concat(xh, z), 12, 24), this.download(this.sliceChannels(this.concat(xhg, zg), 12, 24)));
+      return worst;
+    }
+  }
+
+  if (typeof module !== 'undefined' && module.exports) module.exports = { GLBackend };
+  else root.AsymSealGL = { GLBackend };
+})(typeof self !== 'undefined' ? self : this);
+</script>
+<script>
+/* AsymSeal signed payload in the browser: the PDQ-style hash, BCH(127, t=4) syndrome coding,
+ * RS(128, 100) error correction, the 796-bit wire layout and Ed25519 (WebCrypto).
+ * Mirrors asymseal/payload/*.py; float64 sums run in the same order, so the hash matches the
+ * Python package bit for bit on the golden vectors.
+ * Works in browsers (window.AsymSealSigned) and in Node (module.exports).
+ */
+(function (root) {
+  'use strict';
+
+  // ---------------------------------------------------------------------------------------
+  // Bits and bytes (MSB first)
+  // ---------------------------------------------------------------------------------------
+  function bitsFromBytes(b) {
+    const out = new Uint8Array(b.length * 8);
+    for (let i = 0; i < b.length; i++) for (let k = 0; k < 8; k++) out[8 * i + k] = (b[i] >> (7 - k)) & 1;
+    return out;
+  }
+  function bytesFromBits(bits) {
+    const out = new Uint8Array(Math.ceil(bits.length / 8));
+    for (let i = 0; i < bits.length; i++) if (bits[i]) out[i >> 3] |= 0x80 >> (i & 7);
+    return out;
+  }
+  function hex(b) { return Array.from(b, v => v.toString(16).padStart(2, '0')).join(''); }
+  function fromHex(s) {
+    const out = new Uint8Array(s.length / 2);
+    for (let i = 0; i < out.length; i++) out[i] = parseInt(s.substr(2 * i, 2), 16);
+    return out;
+  }
+  function hamming(a, b) {
+    let n = 0;
+    for (let i = 0; i < a.length; i++) { let v = a[i] ^ b[i]; while (v) { n += v & 1; v >>= 1; } }
+    return n;
+  }
+
+  // ---------------------------------------------------------------------------------------
+  // PDQ-style 128-bit hash
+  // ---------------------------------------------------------------------------------------
+  const PDQ_N = 64;
+  const SQRT1_2 = 0.7071067811865476;
+  const COS = (() => {
+    const c = new Float64Array(16 * PDQ_N);
+    for (let u = 0; u < 16; u++) {
+      const cu = u === 0 ? SQRT1_2 : 1.0;
+      for (let x = 0; x < PDQ_N; x++) c[u * PDQ_N + x] = cu * Math.cos(((2 * x + 1) * u * Math.PI) / (2 * PDQ_N));
+    }
+    return c;
+  })();
+  const ZZ = (() => {
+    const out = [];
+    for (let s = 0; s < 31 && out.length < 128; s++) {
+      const lo = Math.max(0, s - 15), hi = Math.min(s, 15);
+      for (let k = lo; k <= hi && out.length < 128; k++) out.push(s & 1 ? [k, s - k] : [s - k, k]);
+    }
+    return out;  // (u, v)
+  })();
+
+  function boxH(src, H, W, win) {
+    const half = win >> 1, out = new Float64Array(H * W), pref = new Float64Array(W + 1);
+    for (let y = 0; y < H; y++) {
+      pref[0] = 0;
+      let acc = 0;
+      for (let x = 0; x < W; x++) { acc += src[y * W + x]; pref[x + 1] = acc; }
+      for (let x = 0; x < W; x++) {
+        const xa = Math.max(x - half, 0), xb = Math.min(x - half + win, W);
+        out[y * W + x] = (pref[xb] - pref[xa]) / (xb - xa);
+      }
+    }
+    return out;
+  }
+  function boxV(src, H, W, win) {
+    const half = win >> 1, out = new Float64Array(H * W), pref = new Float64Array((H + 1) * W);
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) pref[(y + 1) * W + x] = pref[y * W + x] + src[y * W + x];
+    for (let y = 0; y < H; y++) {
+      const ya = Math.max(y - half, 0), yb = Math.min(y - half + win, H), d = yb - ya;
+      for (let x = 0; x < W; x++) out[y * W + x] = (pref[yb * W + x] - pref[ya * W + x]) / d;
+    }
+    return out;
+  }
+  function decimate64(src, H, W) {
+    const I = new Float64Array((H + 1) * (W + 1));
+    const W1 = W + 1;
+    for (let y = 0; y < H; y++) {
+      let row = 0;
+      for (let x = 0; x < W; x++) {
+        row += src[y * W + x];
+        I[(y + 1) * W1 + x + 1] = I[y * W1 + x + 1] + row;
+      }
+    }
+    const out = new Float64Array(64 * 64);
+    for (let oy = 0; oy < 64; oy++) {
+      const yA = (oy * H) >> 6, yB = Math.max(((oy + 1) * H) >> 6, yA + 1);
+      for (let ox = 0; ox < 64; ox++) {
+        const xA = (ox * W) >> 6, xB = Math.max(((ox + 1) * W) >> 6, xA + 1);
+        const s = I[yB * W1 + xB] - I[yA * W1 + xB] - I[yB * W1 + xA] + I[yA * W1 + xA];
+        out[oy * 64 + ox] = s / ((xB - xA) * (yB - yA));
+      }
+    }
+    return out;
+  }
+  function dct16(small) {
+    const tmp = new Float64Array(PDQ_N * 16);  // tmp[y, u]
+    for (let x = 0; x < PDQ_N; x++) {
+      for (let y = 0; y < PDQ_N; y++) {
+        const v = small[y * PDQ_N + x];
+        for (let u = 0; u < 16; u++) tmp[y * 16 + u] += v * COS[u * PDQ_N + x];
+      }
+    }
+    const out = new Float64Array(256);  // out[v, u]
+    for (let y = 0; y < PDQ_N; y++) {
+      for (let v = 0; v < 16; v++) {
+        const c = COS[v * PDQ_N + y];
+        for (let u = 0; u < 16; u++) out[v * 16 + u] += tmp[y * 16 + u] * c;
+      }
+    }
+    return out;
+  }
+  // img: { width, height, data } with RGBA (or RGB) bytes
+  function pdq128Bits(img) {
+    const { width: W, height: H, data } = img;
+    const step = data.length === W * H * 4 ? 4 : 3;
+    const luma = new Float64Array(H * W);
+    for (let i = 0; i < H * W; i++) {
+      luma[i] = 0.299 * data[i * step] + 0.587 * data[i * step + 1] + 0.114 * data[i * step + 2];
+    }
+    const win = Math.max(2, Math.floor(Math.max(W, H) / 64));
+    let s = boxH(luma, H, W, win);
+    s = boxH(s, H, W, win);
+    s = boxV(s, H, W, win);
+    s = boxV(s, H, W, win);
+    const blk = dct16(decimate64(s, H, W));
+    const srt = Float64Array.from(blk).sort();
+    const median = (srt[127] + srt[128]) / 2;
+    const bits = new Uint8Array(128);
+    ZZ.forEach(([u, v], i) => { bits[i] = blk[v * 16 + u] > median ? 1 : 0; });
+    return bits;
+  }
+  function pdq128(img) { return bytesFromBits(pdq128Bits(img)); }
+  function canonicalize(h) { const b = Uint8Array.from(h); b[15] &= 0xfe; return b; }
+
+  // ---------------------------------------------------------------------------------------
+  // BCH(127, t=4) over GF(2^7), primitive polynomial 0x89
+  // ---------------------------------------------------------------------------------------
+  const BM = 7, BN = 127, BT = 4;
+  const BEXP = new Int32Array(2 * BN), BLOG = new Int32Array(BN + 1).fill(-1);
+  (() => { let x = 1; for (let i = 0; i < BN; i++) { BEXP[i] = x; BLOG[x] = i; x <<= 1; if (x & (1 << BM)) x ^= 0x89; } for (let i = BN; i < 2 * BN; i++) BEXP[i] = BEXP[i - BN]; })();
+  const bmul = (a, b) => (a === 0 || b === 0) ? 0 : BEXP[BLOG[a] + BLOG[b]];
+  const bsq = (a) => a === 0 ? 0 : BEXP[(2 * BLOG[a]) % BN];
+  const binv = (a) => BEXP[BN - BLOG[a]];
+  function synOdd(v) {
+    const out = [];
+    for (let i = 0; i < BT; i++) {
+      let s = 0;
+      for (let j = 0; j < BN; j++) if (v[j]) s ^= BEXP[((2 * i + 1) * j) % BN];
+      out.push(s);
+    }
+    return out;
+  }
+  function bchSyndrome(bits127) {
+    const out = new Uint8Array(BM * BT);
+    synOdd(bits127).forEach((s, i) => { for (let b = 0; b < BM; b++) out[i * BM + b] = (s >> (BM - 1 - b)) & 1; });
+    return out;
+  }
+  function bchBM(syn) {
+    let sigma = [1], prev = [1], L = 0, m = 1, b = 1;
+    for (let r = 0; r < 2 * BT; r++) {
+      let delta = syn[r];
+      for (let i = 1; i <= L && i < sigma.length; i++) { if (r - i < 0) break; delta ^= bmul(sigma[i], syn[r - i]); }
+      if (delta === 0) { m++; continue; }
+      const T0 = sigma.slice(), coef = bmul(delta, binv(b));
+      const shifted = new Array(prev.length + m).fill(0);
+      prev.forEach((p, k) => { shifted[k + m] = bmul(p, coef); });
+      const nxt = new Array(Math.max(sigma.length, shifted.length)).fill(0);
+      sigma.forEach((s, k) => { nxt[k] ^= s; });
+      shifted.forEach((s, k) => { nxt[k] ^= s; });
+      sigma = nxt;
+      if (2 * L <= r) { L = r + 1 - L; prev = T0; b = delta; m = 1; } else m++;
+    }
+    while (sigma.length > 1 && sigma[sigma.length - 1] === 0) sigma.pop();
+    return [sigma, L];
+  }
+  function bchDecode(syn28, guess127) {
+    const g = Uint8Array.from(guess127);
+    const sRx = [];
+    for (let i = 0; i < BT; i++) { let v = 0; for (let b = 0; b < BM; b++) v = (v << 1) | syn28[i * BM + b]; sRx.push(v); }
+    const sG = synOdd(g), se = new Array(2 * BT).fill(0);
+    for (let k = 0; k < BT; k++) se[2 * k] = sRx[k] ^ sG[k];
+    for (let k = 0; k < BT; k++) se[2 * k + 1] = bsq(se[k]);
+    if (!se.some(v => v)) return [g, 0, true];
+    const [sigma, L] = bchBM(se);
+    if (L === 0 || L > BT) return [g, -1, false];
+    const pos = [];
+    for (let j = 0; j < BN; j++) {
+      const xInv = BEXP[(BN - j) % BN];
+      let y = 0, pw = 1;
+      for (const s of sigma) { y ^= bmul(s, pw); pw = bmul(pw, xInv); }
+      if (y === 0) pos.push(j);
+    }
+    if (pos.length !== L) return [g, -1, false];
+    const out = Uint8Array.from(g);
+    for (const j of pos) out[j] ^= 1;
+    const chk = synOdd(out);
+    if (chk.some((v, i) => v !== sRx[i])) return [g, -1, false];
+    return [out, pos.length, true];
+  }
+
+  // ---------------------------------------------------------------------------------------
+  // RS(128, 100) over GF(2^8), primitive polynomial 0x11D, fcr = 0
+  // ---------------------------------------------------------------------------------------
+  const RS_N = 128, RS_K = 100, NSYM = 28, RS_T = 14;
+  const EXP = new Int32Array(510), LOG = new Int32Array(256).fill(-1);
+  (() => { let x = 1; for (let i = 0; i < 255; i++) { EXP[i] = x; LOG[x] = i; x <<= 1; if (x >> 8) x ^= 0x11d; } for (let i = 255; i < 510; i++) EXP[i] = EXP[i - 255]; })();
+  const gmul = (a, b) => (a === 0 || b === 0) ? 0 : EXP[LOG[a] + LOG[b]];
+  const gdiv = (a, b) => a === 0 ? 0 : EXP[(((LOG[a] - LOG[b]) % 255) + 255) % 255];
+  const mod255 = (x) => ((x % 255) + 255) % 255;
+  const GEN = (() => {
+    let g = [1];
+    for (let i = 0; i < NSYM; i++) {
+      const ai = EXP[i % 255], nxt = new Array(g.length + 1).fill(0);
+      g.forEach((c, j) => { nxt[j] ^= c; nxt[j + 1] ^= gmul(c, ai); });
+      g = nxt;
+    }
+    return g;
+  })();
+  function rsEncode(data) {
+    const work = Array.from(data).concat(new Array(NSYM).fill(0));
+    for (let i = 0; i < RS_K; i++) {
+      const lead = work[i];
+      if (lead) for (let j = 1; j < GEN.length; j++) if (GEN[j]) work[i + j] ^= gmul(GEN[j], lead);
+    }
+    return Uint8Array.from(Array.from(data).concat(work.slice(RS_K)));
+  }
+  function rsSyndromes(c) {
+    const S = new Array(NSYM).fill(0);
+    for (let p = 0; p < RS_N; p++) {
+      if (!c[p]) continue;
+      const lg = LOG[c[p]], pw = RS_N - 1 - p;
+      for (let j = 0; j < NSYM; j++) S[j] ^= EXP[(lg + j * pw) % 255];
+    }
+    return S;
+  }
+  function rsBM(S) {
+    let C = [1], B = [1], L = 0, m = 1, b = 1;
+    for (let r = 0; r < S.length; r++) {
+      let d = S[r];
+      for (let i = 1; i <= Math.min(L, C.length - 1); i++) if (C[i]) d ^= gmul(C[i], S[r - i]);
+      if (d === 0) { m++; continue; }
+      const coef = gdiv(d, b), T = C.slice();
+      if (C.length < B.length + m) C = C.concat(new Array(B.length + m - C.length).fill(0));
+      B.forEach((bi, i) => { if (bi) C[i + m] ^= gmul(coef, bi); });
+      if (2 * L <= r) { L = r + 1 - L; B = T; b = d; m = 1; } else m++;
+    }
+    while (C.length > 1 && C[C.length - 1] === 0) C.pop();
+    return [C, L];
+  }
+  function rsDecode(code) {
+    const c = Uint8Array.from(code);
+    const S = rsSyndromes(c);
+    if (!S.some(v => v)) return [true, c, 0];
+    const [sigma, L] = rsBM(S);
+    if (L > RS_T || sigma.length - 1 !== L) return [false, null, -1];
+    const pos = [];
+    for (let p = 0; p < RS_N; p++) {
+      const pw = RS_N - 1 - p;
+      let acc = 1;
+      for (let k = 1; k <= L; k++) if (sigma[k]) acc ^= EXP[mod255(LOG[sigma[k]] - k * pw)];
+      if (acc === 0) pos.push(p);
+    }
+    if (pos.length !== L) return [false, null, -1];
+    const omega = new Array(NSYM).fill(0);
+    for (let i = 0; i < NSYM; i++) {
+      let s = 0;
+      for (let a = Math.max(0, i - L); a <= i; a++) if (S[a] && sigma[i - a]) s ^= gmul(S[a], sigma[i - a]);
+      omega[i] = s;
+    }
+    for (const p of pos) {
+      const j = RS_N - 1 - p, xl = mod255(-j);
+      let om = 0;
+      omega.forEach((o, i) => { if (o) om ^= EXP[(LOG[o] + i * xl) % 255]; });
+      let sd = 0;
+      for (let k = 1; k <= L; k += 2) if (sigma[k]) sd ^= EXP[(LOG[sigma[k]] + (k - 1) * xl) % 255];
+      if (sd === 0) return [false, null, -1];
+      c[p] ^= gdiv(gmul(om, EXP[j % 255]), sd);
+    }
+    if (rsSyndromes(c).some(v => v)) return [false, null, -1];
+    return [true, c, L];
+  }
+
+  // ---------------------------------------------------------------------------------------
+  // Wire layout: syndrome (28) | signature (512) | public key (256) | 4 zero bits -> RS
+  // ---------------------------------------------------------------------------------------
+  const PAYLOAD_BITS = 796, OFF_SIG = 28, OFF_PK = 540;
+  function packWire(syn28, sig, pk) {
+    const out = new Uint8Array(PAYLOAD_BITS);
+    out.set(syn28, 0);
+    out.set(bitsFromBytes(sig), OFF_SIG);
+    out.set(bitsFromBytes(pk), OFF_PK);
+    return out;
+  }
+  function unpackWire(w) {
+    return [w.slice(0, OFF_SIG), bytesFromBits(w.slice(OFF_SIG, OFF_PK)), bytesFromBits(w.slice(OFF_PK, OFF_PK + 256))];
+  }
+  function eccEncode(wire) {
+    const padded = new Uint8Array(RS_K * 8);
+    padded.set(wire);
+    return bitsFromBytes(rsEncode(bytesFromBits(padded)));
+  }
+  function eccDecode(code1024) {
+    const cb = bytesFromBits(code1024);
+    const [ok, fixed, n] = rsDecode(cb);
+    const data = ok ? fixed.slice(0, RS_K) : cb.slice(0, RS_K);
+    return [bitsFromBytes(data).slice(0, PAYLOAD_BITS), ok ? n : -1, ok];
+  }
+
+  // ---------------------------------------------------------------------------------------
+  // Ed25519 through WebCrypto (deterministic; the same signatures as libsodium / PyNaCl)
+  // ---------------------------------------------------------------------------------------
+  const subtle = () => (typeof crypto !== 'undefined' && crypto.subtle) ? crypto.subtle : null;
+  const PKCS8_PREFIX = fromHex('302e020100300506032b657004220420');
+  function b64urlToBytes(s) {
+    const b64 = s.replace(/-/g, '+').replace(/_/g, '/') + '==='.slice((s.length + 3) % 4);
+    const bin = atob(b64);
+    return Uint8Array.from(bin, ch => ch.charCodeAt(0));
+  }
+  async function ed25519Supported() {
+    const S = subtle();
+    if (!S) return false;
+    try { await S.generateKey({ name: 'Ed25519' }, true, ['sign', 'verify']); return true; } catch (e) { return false; }
+  }
+  async function keyFromSeed(seed) {
+    const der = new Uint8Array(48);
+    der.set(PKCS8_PREFIX); der.set(seed, 16);
+    const key = await subtle().importKey('pkcs8', der, { name: 'Ed25519' }, true, ['sign']);
+    const jwk = await subtle().exportKey('jwk', key);
+    return { key, seed: Uint8Array.from(seed), publicKey: b64urlToBytes(jwk.x) };
+  }
+  async function generateKey() {
+    const kp = await subtle().generateKey({ name: 'Ed25519' }, true, ['sign', 'verify']);
+    const jwk = await subtle().exportKey('jwk', kp.privateKey);
+    return { key: kp.privateKey, seed: b64urlToBytes(jwk.d), publicKey: b64urlToBytes(jwk.x) };
+  }
+  async function sign(msg, signer) {
+    return new Uint8Array(await subtle().sign({ name: 'Ed25519' }, signer.key, msg));
+  }
+  async function verifySig(sig, msg, pk) {
+    try {
+      const key = await subtle().importKey('raw', pk, { name: 'Ed25519' }, false, ['verify']);
+      return await subtle().verify({ name: 'Ed25519' }, key, sig, msg);
+    } catch (e) { return false; }
+  }
+
+  // ---------------------------------------------------------------------------------------
+  // Sign and verify
+  // ---------------------------------------------------------------------------------------
+  async function signHash(hash16, signer) {
+    const H = canonicalize(hash16);
+    const syn = bchSyndrome(bitsFromBytes(H).slice(0, BN));
+    const sig = await sign(H, signer);
+    const code = eccEncode(packWire(syn, sig, signer.publicKey));
+    return { codeword: code, info: { H: hex(H), syndrome: Array.from(syn).join(''), sig: hex(sig), pk: hex(signer.publicKey) } };
+  }
+  async function signImage(coverRGBA, signer) { return signHash(pdq128(coverRGBA), signer); }
+
+  // bits: 1024 decoded bits; received: the image they came from; trustedPk: 32 bytes or null
+  async function verifyImage(bits, received, trustedPk, sentBits) {
+    const Hp = canonicalize(pdq128(received));
+    const info = { H_prime: hex(Hp) };
+    const [wire, nFix, rsOk] = eccDecode(bits);
+    info.rs_ok = rsOk; info.rs_corrected = nFix;
+    if (sentBits) {
+      const a = bytesFromBits(bits), b = bytesFromBits(sentBits);
+      let bad = 0; for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) bad++;
+      info.rs_bad_bytes = bad;
+    }
+    if (!rsOk) { info.sig_ok = false; return { outcome: 'decode_fail', info }; }
+    const [syn, sig, pkRx] = unpackWire(wire);
+    const [rec, nBch, bchOk] = bchDecode(syn, bitsFromBytes(Hp).slice(0, BN));
+    const recBits = new Uint8Array(128); recBits.set(rec);
+    const Hrec = bytesFromBits(recBits);
+    const pkUse = trustedPk || pkRx;
+    const sigOk = bchOk && await verifySig(sig, Hrec, pkUse);
+    Object.assign(info, { bch_ok: bchOk, bch_errors: nBch, H_rec: hex(Hrec), hash_drift: hamming(Hrec, Hp),
+      pk_rx: hex(pkRx), pk_match: !trustedPk || hex(pkRx) === hex(trustedPk), sig_ok: sigOk });
+    return { outcome: sigOk ? 'verified' : 'sig_mismatch', info };
+  }
+
+  const api = {
+    bitsFromBytes, bytesFromBits, hex, fromHex, hamming, pdq128Bits, pdq128, canonicalize,
+    bchSyndrome, bchDecode, rsEncode, rsDecode, GEN, packWire, unpackWire, eccEncode, eccDecode,
+    ed25519Supported, keyFromSeed, generateKey, sign, verifySig, signHash, signImage, verifyImage,
+  };
+  if (typeof module !== 'undefined' && module.exports) module.exports = api;
+  else root.AsymSealSigned = api;
+})(typeof self !== 'undefined' ? self : this);
+</script>
+<script>
+(function () {
+  'use strict';
+  const A = window.AsymSeal, S = window.AsymSealSigned, GLB = window.AsymSealGL;
+  const $ = (id) => document.getElementById(id);
+  const cssVar = (n) => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  const SVGNS = 'http://www.w3.org/2000/svg';
+  const nf = (v, d) => Number(v).toFixed(d);
+  const pct = (v, d) => (100 * v).toFixed(d === undefined ? 2 : d) + '%';
+
+  // -------------------------------------------------------------------------------------
+  // Tooltip
+  // -------------------------------------------------------------------------------------
+  const tip = $('tip');
+  function showTip(e, html) {
+    tip.innerHTML = html; tip.hidden = false;
+    const r = tip.getBoundingClientRect(), pad = 14;
+    let x = e.clientX + pad, y = e.clientY + pad;
+    if (x + r.width > innerWidth - 8) x = e.clientX - r.width - pad;
+    if (y + r.height > innerHeight - 8) y = e.clientY - r.height - pad;
+    tip.style.left = Math.max(8, x) + 'px'; tip.style.top = Math.max(8, y) + 'px';
+  }
+  function hideTip() { tip.hidden = true; }
+
+  // -------------------------------------------------------------------------------------
+  // Reported numbers (README of the release: test set, held-out selection, verification rates)
+  // -------------------------------------------------------------------------------------
+  const SIZES = [ // size, PSNR, SSIM, LPIPS, BA (16 attacks), BA no attack, WeChat-like
+    ['256 × 256', 41.83, 0.9952, 0.0044, 0.8890, 0.99974, 0.6715],
+    ['1024 × 1024', 44.81, 0.9965, 0.0079, 0.9940, 0.99998, 0.9707],
+    ['1088 × 1920', 44.59, 0.9957, 0.0113, 0.9984, 1.00000, 0.9950],
+    ['1920 × 1088', 44.57, 0.9956, 0.0123, 0.9987, 1.00000, 0.9958],
+    ['1280 × 768', 44.69, 0.9961, 0.0084, 0.9930, 1.00000, 0.9623],
+    ['2048 × 1536', 44.46, 0.9959, 0.0143, 0.9995, 1.00000, 0.9990],
+    ['random size', 44.29, 0.9956, 0.0100, 0.9899, 0.99999, 0.9456],
+  ];
+  const CANDS = [ // stage, lambda, s, PSNR, BA (held-out, 13 candidates)
+    [1, '(0.30, 0.85)', 1.00, 43.61, 0.9822], [1, '(0.30, 0.95)', 1.00, 43.85, 0.9811],
+    [1, '(0.35, 0.85)', 1.00, 43.22, 0.9839], [1, '(0.35, 0.95)', 1.00, 43.44, 0.9831],
+    [2, '(0.35, 0.95)', 0.35, 52.55, 0.8872], [2, '(0.35, 0.95)', 0.40, 51.39, 0.9105],
+    [2, '(0.35, 0.95)', 0.45, 50.37, 0.9280], [2, '(0.35, 0.95)', 0.50, 49.46, 0.9411],
+    [2, '(0.35, 0.95)', 0.55, 48.63, 0.9510], [2, '(0.35, 0.95)', 0.60, 47.87, 0.9584],
+    [2, '(0.35, 0.95)', 0.70, 46.54, 0.9685], [2, '(0.35, 0.95)', 0.80, 45.38, 0.9751],
+    [2, '(0.35, 0.95)', 0.90, 44.36, 0.9797],
+  ];
+  const VERIFY = [ // [group] or [label, six sizes, 256, 1024, 2048 x 1536, edit]
+    ['No attack'], ['8-bit PNG', 99.9, 99.6, 100.0, 100.0],
+    ['JPEG'], ['Quality 90', 91.2, 48.1, 100.0, 100.0], ['Quality 70', 81.9, 1.5, 96.8, 100.0],
+    ['Quality 50', 76.2, 0.2, 85.7, 99.1], ['Quality 30', 54.4, 0.0, 47.2, 92.8],
+    ['85, then 60', 78.3, 0.6, 90.4, 98.9], ['70, three times', 81.9, 1.9, 96.6, 100.0],
+    ['Down-up resize'], ['0.9×', 99.9, 99.4, 100.0, 100.0], ['0.7×', 99.9, 99.4, 100.0, 100.0], ['0.5×', 98.4, 90.2, 100.0, 100.0],
+    ['Platform-like chains'], ['Insta-like (0.5×, q85)', 82.6, 0.0, 98.7, 100.0], ['X-like (0.4×, q75)', 79.0, 0.0, 91.3, 100.0],
+    ['WhatsApp-like (0.5×, q70)', 79.0, 0.0, 91.1, 99.6], ['WeChat-like (0.3×, q50)', 45.5, 0.0, 12.5, 96.6],
+    ['Platform order'], ['Insta-like', 68.0, 0.0, 72.1, 98.3], ['X-like', 30.0, 0.0, 0.6, 84.9],
+    ['WhatsApp-like', 43.5, 0.0, 18.7, 93.0], ['WeChat-like', 0.1, 0.0, 0.0, 0.8],
+    ['Edits · acceptance, lower is better'], ['Crop to 95% of each side', 0.0, 0.0, 0.0, 0.0, true],
+    ['Black box, 5% of each side', 44.4, 44.3, 48.7, 45.1, true], ['Pasted rectangle, 8% of the area', 0.3, 0.4, 0.0, 0.8, true],
+    ['Inpainted rectangle, 8% of the area', 12.5, 13.2, 11.5, 11.1, true],
+    ['Summary'], ['13 attacks: JPEG, resize, chains', 80.6, 26.3, 85.4, 99.0], ['All 28 attacks', 69.9, 22.9, 70.5, 90.9],
+  ];
+
+  // -------------------------------------------------------------------------------------
+  // Charts (drawn at the container's width; colors are theme tokens)
+  // -------------------------------------------------------------------------------------
+  function el(tag, attrs, style, parent) {
+    const e = document.createElementNS(SVGNS, tag);
+    for (const k in attrs || {}) e.setAttribute(k, attrs[k]);
+    for (const k in style || {}) e.style.setProperty(k, style[k]);
+    if (parent) parent.appendChild(e);
+    return e;
+  }
+  function text(parent, x, y, s, attrs, style) {
+    const t = el('text', Object.assign({ x, y }, attrs || {}), Object.assign({ fill: 'var(--fg-2)', 'font-size': '12px' }, style || {}), parent);
+    t.textContent = s;
+    return t;
+  }
+  function marker(parent, shape, x, y, color, r, hollow) {
+    const st = hollow ? { fill: 'var(--card)', stroke: color, 'stroke-width': '2px' } : { fill: color, stroke: 'var(--card)', 'stroke-width': '2px' };
+    if (shape === 'circle') return el('circle', { cx: x, cy: y, r }, st, parent);
+    if (shape === 'square') return el('rect', { x: x - r, y: y - r, width: 2 * r, height: 2 * r, rx: 1.5 }, st, parent);
+    const d = `M${x} ${y - r * 1.25} L${x + r * 1.25} ${y} L${x} ${y + r * 1.25} L${x - r * 1.25} ${y} Z`;
+    return el('path', { d }, st, parent);
+  }
+  function legendSwatch(shape, color, label, hollow) {
+    const span = document.createElement('span');
+    const svg = el('svg', { width: 14, height: 14, viewBox: '0 0 14 14', 'aria-hidden': 'true' });
+    marker(svg, shape, 7, 7, color, 4.5, hollow);
+    span.appendChild(svg);
+    span.appendChild(document.createTextNode(label));
+    return span;
+  }
+
+  const SIZE_SERIES = [
+    { key: 5, label: 'No attack', shape: 'circle', color: 'var(--s1)' },
+    { key: 4, label: 'Mean of 16 attacks', shape: 'square', color: 'var(--s2)' },
+    { key: 6, label: 'WeChat-like chain', shape: 'diamond', color: 'var(--s3)' },
+  ];
+  function drawSizeChart() {
+    const host = $('sizeChart');
+    const W = Math.max(320, host.clientWidth || 900);
+    const narrow = W < 560;
+    const left = narrow ? 92 : 120, right = 24, top = 26, rowH = narrow ? 34 : 38;
+    const H = top + rowH * SIZES.length + 30;
+    const lo = 0.6, hi = 1.0;
+    const X = (v) => left + (v - lo) / (hi - lo) * (W - left - right);
+    host.innerHTML = '';
+    const svg = el('svg', { viewBox: `0 0 ${W} ${H}`, width: W, height: H, role: 'img',
+      'aria-label': 'Bit accuracy by image size: no attack near 1.0 at every size; mean over 16 attacks from 0.889 at 256 by 256 to 0.9995 at 2048 by 1536; WeChat-like chain from 0.672 to 0.999.' }, { display: 'block', 'max-width': '100%' }, host);
+    for (let t = 0.6; t <= 1.0001; t += 0.1) {
+      el('line', { x1: X(t), x2: X(t), y1: top - 8, y2: H - 26 }, { stroke: 'var(--hair)', 'stroke-width': '1px' }, svg);
+      text(svg, X(t), H - 8, t.toFixed(1), { 'text-anchor': 'middle' }, { 'font-variant-numeric': 'tabular-nums' });
+    }
+    SIZES.forEach((row, i) => {
+      const y = top + rowH * i + rowH / 2;
+      text(svg, left - 12, y + 4, row[0], { 'text-anchor': 'end' }, { fill: 'var(--fg)', 'font-size': narrow ? '11px' : '12.5px' });
+      const vals = SIZE_SERIES.map(s => row[s.key]);
+      el('line', { x1: X(Math.min(...vals)), x2: X(Math.max(...vals)), y1: y, y2: y }, { stroke: 'var(--fg-3)', 'stroke-width': '2px', 'stroke-linecap': 'round', opacity: '0.45' }, svg);
+      SIZE_SERIES.forEach(s => marker(svg, s.shape, X(row[s.key]), y, s.color, 5.5));
+      if (i === 0) {
+        text(svg, X(row[6]) - 9, y + 4, nf(row[6], 4), { 'text-anchor': 'end' }, { fill: 'var(--fg)', 'font-size': '11.5px' });
+        text(svg, X(row[4]), y - 10, nf(row[4], 4), { 'text-anchor': 'middle' }, { fill: 'var(--fg)', 'font-size': '11.5px' });
+      }
+      const hit = el('rect', { x: 0, y: y - rowH / 2, width: W, height: rowH }, { fill: 'transparent' }, svg);
+      hit.addEventListener('pointermove', (e) => showTip(e, `<b>${row[0]}</b><br>No attack: ${nf(row[5], 5)}<br>Mean of 16 attacks: ${nf(row[4], 4)}<br>WeChat-like chain: ${nf(row[6], 4)}<br><span style="color:var(--fg-2)">PSNR ${nf(row[1], 2)} dB · SSIM ${nf(row[2], 4)}</span>`));
+      hit.addEventListener('pointerleave', hideTip);
+    });
+    text(svg, left, 12, 'bit accuracy', {}, { 'font-size': '11px' });
+  }
+
+  function drawTradeChart() {
+    const host = $('tradeChart');
+    const W = Math.max(320, host.clientWidth || 900);
+    const narrow = W < 560;
+    const left = 48, right = narrow ? 16 : 150, top = 20, bottom = 40;
+    const H = narrow ? 320 : 380;
+    const xlo = 0.88, xhi = 0.99, ylo = 42.5, yhi = 53.5;
+    const X = (v) => left + (v - xlo) / (xhi - xlo) * (W - left - right);
+    const Y = (v) => top + (yhi - v) / (yhi - ylo) * (H - top - bottom);
+    host.innerHTML = '';
+    const svg = el('svg', { viewBox: `0 0 ${W} ${H}`, width: W, height: H, role: 'img',
+      'aria-label': 'Held-out PSNR against bit accuracy for 13 candidate operating points. Raising the strength s trades PSNR for bit accuracy; the deployed point s = 0.9 has PSNR 44.36 dB and bit accuracy 0.9797.' }, { display: 'block', 'max-width': '100%' }, host);
+    for (let v = 44; v <= 52; v += 2) {
+      el('line', { x1: left, x2: W - right, y1: Y(v), y2: Y(v) }, { stroke: 'var(--hair)', 'stroke-width': '1px' }, svg);
+      text(svg, left - 8, Y(v) + 4, String(v), { 'text-anchor': 'end' });
+    }
+    for (let v = 0.89; v <= 0.9901; v += 0.02) {
+      text(svg, X(v), H - 18, v.toFixed(2), { 'text-anchor': 'middle' });
+    }
+    text(svg, left, H - 2, 'bit accuracy (16 attacks × 7 sizes)', {}, { 'font-size': '11px' });
+    text(svg, 4, top - 6, 'PSNR (dB)', {}, { 'font-size': '11px' });
+    // threshold
+    el('line', { x1: X(0.976), x2: X(0.976), y1: top, y2: H - bottom }, { stroke: 'var(--fg-2)', 'stroke-width': '1.2px', 'stroke-dasharray': '4 4' }, svg);
+    text(svg, X(0.976) - 6, top + 12, 'BA ≥ 0.976', { 'text-anchor': 'end' }, { 'font-size': '11px' });
+    // sweep at lambda* (stage 2 plus s = 1 from stage 1)
+    const sweep = CANDS.filter(c => c[1] === '(0.35, 0.95)').sort((a, b) => a[2] - b[2]);
+    el('polyline', { points: sweep.map(c => `${X(c[4])},${Y(c[3])}`).join(' ') }, { fill: 'none', stroke: 'var(--s1)', 'stroke-width': '2px', 'stroke-linejoin': 'round' }, svg);
+    const pts = [];
+    CANDS.forEach(c => {
+      const onSweep = c[1] === '(0.35, 0.95)';
+      const deployed = c[2] === 0.9 && onSweep;
+      const x = X(c[4]), y = Y(c[3]);
+      if (deployed) el('circle', { cx: x, cy: y, r: 11 }, { fill: 'none', stroke: 'var(--accent)', 'stroke-width': '2px' }, svg);
+      const m = onSweep ? marker(svg, 'circle', x, y, 'var(--s1)', 4.5) : marker(svg, 'square', x, y, 'var(--s2)', 4.5, true);
+      pts.push([x, y, c, m]);
+      if (onSweep && [0.35, 0.55, 0.8, 1.0].includes(c[2])) text(svg, x + 8, y - 6, 's = ' + c[2].toFixed(2), {}, { 'font-size': '11px' });
+    });
+    const dep = CANDS[12];
+    if (!narrow) {
+      text(svg, X(dep[4]) + 16, Y(dep[3]) - 14, 'Deployed: s = 0.90', {}, { fill: 'var(--fg)', 'font-size': '12px', 'font-weight': '600' });
+      text(svg, X(dep[4]) + 16, Y(dep[3]) + 2, '44.36 dB · BA 0.9797', {}, { 'font-size': '11.5px' });
+    } else {
+      text(svg, X(dep[4]) - 14, Y(dep[3]) - 12, 'deployed', { 'text-anchor': 'end' }, { fill: 'var(--fg)', 'font-size': '11px', 'font-weight': '600' });
+    }
+    pts.forEach(([x, y, c]) => {
+      const hit = el('circle', { cx: x, cy: y, r: 13 }, { fill: 'transparent', cursor: 'default' }, svg);
+      hit.addEventListener('pointermove', (e) => showTip(e, `<b>λ = ${c[1]}, s = ${c[2].toFixed(2)}</b>${c[2] === 0.9 && c[1] === '(0.35, 0.95)' ? ' · deployed' : ''}<br>PSNR ${nf(c[3], 2)} dB<br>Bit accuracy ${nf(c[4], 4)}<br><span style="color:var(--fg-2)">Stage ${c[0]} candidate</span>`));
+      hit.addEventListener('pointerleave', hideTip);
+    });
+  }
+
+  function buildStaticCharts() {
+    const lg = $('sizeLegend');
+    SIZE_SERIES.forEach(s => lg.appendChild(legendSwatch(s.shape, s.color, s.label)));
+    const tl = $('tradeLegend');
+    tl.appendChild(legendSwatch('circle', 'var(--s1)', 'strength sweep at λ = (0.35, 0.95)'));
+    tl.appendChild(legendSwatch('square', 'var(--s2)', 'other λ at s = 1', true));
+    const tb = $('sizeTable');
+    tb.innerHTML = SIZES.map(r => `<tr><td>${r[0]}</td><td>${nf(r[1], 2)}</td><td>${nf(r[2], 4)}</td><td>${nf(r[3], 4)}</td><td>${nf(r[4], 4)}</td><td>${nf(r[5], 5)}</td><td>${nf(r[6], 4)}</td></tr>`).join('');
+    const vb = $('verifyBody');
+    vb.innerHTML = VERIFY.map(r => {
+      if (r.length === 1) return `<tr class="grp"><td colspan="6">${r[0]}</td></tr>`;
+      const [label, six, a, b, c, edit] = r;
+      return `<tr><td class="l">${label}</td><td class="b"><div class="bar-track" style="height:10px"><div class="vbar${edit ? ' edit' : ''}" style="width:${Math.max(six, 0.4)}%"></div></div></td>` +
+        `<td><b>${nf(six, 1)}</b></td><td>${nf(a, 1)}</td><td>${nf(b, 1)}</td><td>${nf(c, 1)}</td></tr>`;
+    }).join('');
+    drawSizeChart(); drawTradeChart();
+    let rt = 0;
+    const ro = new ResizeObserver(() => { clearTimeout(rt); rt = setTimeout(() => { drawSizeChart(); drawTradeChart(); }, 120); });
+    ro.observe($('sizeChart')); ro.observe($('tradeChart'));
+  }
+
+  // -------------------------------------------------------------------------------------
+  // Generated sample photos (no third-party images on this page)
+  // -------------------------------------------------------------------------------------
+  function mulberry32(a) {
+    return function () { a |= 0; a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+  }
+  const PALETTES = [
+    { name: 'Lake at sunset', top: [34, 46, 104], hor: [252, 172, 112], sun: [255, 238, 205], m: [[128, 112, 152], [92, 80, 124], [58, 52, 88], [30, 30, 48]], water: [44, 52, 96], shore: [22, 24, 26], sunX: 0.7, sunY: 0.2, snow: false },
+    { name: 'Alpine morning', top: [64, 124, 206], hor: [206, 228, 246], sun: [255, 255, 236], m: [[168, 184, 210], [104, 126, 156], [62, 88, 86], [34, 56, 36]], water: [38, 84, 112], shore: [36, 52, 26], sunX: 0.24, sunY: 0.2, snow: true },
+    { name: 'Desert dusk', top: [26, 38, 74], hor: [236, 128, 92], sun: [255, 214, 170], m: [[156, 104, 104], [126, 78, 70], [92, 56, 50], [52, 34, 30]], water: [70, 52, 70], shore: [40, 28, 22], sunX: 0.42, sunY: 0.52, snow: false },
+  ];
+  function makeSample(idx) {
+    const P = PALETTES[idx % PALETTES.length];
+    const W = 1024, H = 640, rnd = mulberry32(1000 + idx * 7919);
+    const G = 256, grid = new Float32Array(G * G);
+    for (let i = 0; i < grid.length; i++) grid[i] = rnd();
+    const g = (i, j) => grid[((j & 255) << 8) | (i & 255)];
+    const noise = (x, y) => {
+      const xi = Math.floor(x), yi = Math.floor(y), xf = x - xi, yf = y - yi;
+      const u = xf * xf * (3 - 2 * xf), v = yf * yf * (3 - 2 * yf);
+      const a = g(xi, yi) + (g(xi + 1, yi) - g(xi, yi)) * u, b = g(xi, yi + 1) + (g(xi + 1, yi + 1) - g(xi, yi + 1)) * u;
+      return a + (b - a) * v;
+    };
+    const fbm = (x, y, oct) => { let s = 0, amp = 0.5, f = 1; for (let o = 0; o < oct; o++) { s += amp * noise(x * f, y * f); f *= 2.03; amp *= 0.5; } return s; };
+    const horizon = Math.round(H * 0.66);
+    const layers = [
+      { base: 0.30, amp: 0.20, freq: 3.0, off: 11 }, { base: 0.42, amp: 0.17, freq: 4.2, off: 37 },
+      { base: 0.52, amp: 0.13, freq: 5.5, off: 71 }, { base: 0.60, amp: 0.08, freq: 7.0, off: 113 },
+    ];
+    const ridge = layers.map(L => { const r = new Float32Array(W); for (let x = 0; x < W; x++) r[x] = H * (L.base + L.amp * (0.5 - fbm(x / W * L.freq + L.off, L.off * 0.37, 6)) * 2); return r; });
+    const out = new Uint8ClampedArray(W * H * 4);
+    const above = new Float32Array(W * horizon * 3);
+    const sx = P.sunX * W, sy = P.sunY * H;
+    for (let y = 0; y < horizon; y++) {
+      const ty = y / horizon;
+      for (let x = 0; x < W; x++) {
+        let r = P.top[0] + (P.hor[0] - P.top[0]) * ty * ty, gg = P.top[1] + (P.hor[1] - P.top[1]) * ty * ty, b = P.top[2] + (P.hor[2] - P.top[2]) * ty * ty;
+        const d = Math.hypot(x - sx, y - sy);
+        const glow = Math.exp(-d / 140) * 0.55 + (d < 34 ? 1 : Math.exp(-(d - 34) / 6) * 0.8);
+        r += (P.sun[0] - r) * Math.min(1, glow); gg += (P.sun[1] - gg) * Math.min(1, glow); b += (P.sun[2] - b) * Math.min(1, glow);
+        const cl = fbm(x / 180 + 3, y / 60 + 9, 5);
+        const cloud = Math.max(0, cl - 0.52) * 2.2 * (1 - ty);
+        r += (255 - r) * cloud * 0.6; gg += (240 - gg) * cloud * 0.6; b += (235 - b) * cloud * 0.6;
+        for (let li = 0; li < 4; li++) {
+          if (y >= ridge[li][x]) {
+            const c = P.m[li], depth = (y - ridge[li][x]) / H;
+            const tex = fbm(x / (26 - li * 5) + li * 13, y / (14 - li * 2), 6);
+            const shade = 0.72 + 0.5 * tex - depth * 0.8;
+            let cr = c[0] * shade, cg = c[1] * shade, cb = c[2] * shade;
+            if (P.snow && li === 0 && depth < 0.05 + 0.04 * tex && tex > 0.42) { cr = 240 * (0.85 + 0.2 * tex); cg = 244 * (0.85 + 0.2 * tex); cb = 252 * (0.85 + 0.2 * tex); }
+            const haze = 0.42 - li * 0.12;
+            r = cr + (P.hor[0] - cr) * haze; gg = cg + (P.hor[1] - cg) * haze; b = cb + (P.hor[2] - cb) * haze;
+          }
+        }
+        const o = (y * W + x) * 3;
+        above[o] = r; above[o + 1] = gg; above[o + 2] = b;
+      }
+    }
+    for (let y = 0; y < H; y++) {
+      for (let x = 0; x < W; x++) {
+        let r, gg, b;
+        if (y < horizon) { const o = (y * W + x) * 3; r = above[o]; gg = above[o + 1]; b = above[o + 2]; }
+        else {
+          const dy = y - horizon;
+          const ripple = (fbm(x / 40, y / 4, 4) - 0.5) * (6 + dy * 0.12);
+          const my = Math.min(horizon - 1, Math.max(0, Math.round(horizon - 1 - dy * 0.92 + ripple)));
+          const mx = Math.min(W - 1, Math.max(0, Math.round(x + ripple * 0.6)));
+          const o = (my * W + mx) * 3;
+          const k = 0.62 - dy / H * 0.6;
+          r = above[o] * k + P.water[0] * (1 - k); gg = above[o + 1] * k + P.water[1] * (1 - k); b = above[o + 2] * k + P.water[2] * (1 - k);
+          const spark = fbm(x / 9, y / 2.5, 3);
+          if (spark > 0.66) { const s2 = (spark - 0.66) * 2.2; r += (P.sun[0] - r) * s2 * 0.5; gg += (P.sun[1] - gg) * s2 * 0.5; b += (P.sun[2] - b) * s2 * 0.5; }
+          const shoreY = H * (0.9 + 0.05 * (fbm(x / 120 + 50, 3, 5) - 0.5) * 2);
+          if (y > shoreY) {
+            const t = fbm(x / 6 + 90, y / 6, 5);
+            const s = 0.55 + 0.9 * t;
+            r = P.shore[0] * s + 10 * t; gg = P.shore[1] * s + 14 * t; b = P.shore[2] * s;
+          }
+        }
+        const n = (rnd() - 0.5) * 7;
+        const i4 = (y * W + x) * 4;
+        out[i4] = r + n; out[i4 + 1] = gg + n; out[i4 + 2] = b + n; out[i4 + 3] = 255;
+      }
+    }
+    return { width: W, height: H, data: out, name: 'Generated sample · ' + P.name };
+  }
+
+  // -------------------------------------------------------------------------------------
+  // Image I/O, JPEG through the browser's encoder, metrics
+  // -------------------------------------------------------------------------------------
+  const MAX_SIDE = 2048;
+  async function fileToRGBA(file) {
+    let bmp;
+    try { bmp = await createImageBitmap(file, { imageOrientation: 'from-image' }); } catch (e) { bmp = await createImageBitmap(file); }
+    let w = bmp.width, h = bmp.height, note = '';
+    if (Math.max(w, h) > MAX_SIDE) {
+      const k = MAX_SIDE / Math.max(w, h);
+      note = ` (scaled down from ${w} × ${h})`;
+      w = Math.round(w * k); h = Math.round(h * k);
+    }
+    if (w < 64 || h < 64) throw new Error(`This image is ${w} × ${h}; both sides must be at least 64 pixels.`);
+    const c = document.createElement('canvas'); c.width = w; c.height = h;
+    const ctx = c.getContext('2d', { willReadFrequently: true });
+    ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(bmp, 0, 0, w, h);
+    return { width: w, height: h, data: ctx.getImageData(0, 0, w, h).data, note };
+  }
+  const jcan = document.createElement('canvas');
+  const jctx = jcan.getContext('2d', { willReadFrequently: true });
+  async function jpegRGBA(img, q) {
+    jcan.width = img.width; jcan.height = img.height;
+    jctx.putImageData(new ImageData(new Uint8ClampedArray(img.data), img.width, img.height), 0, 0);
+    const blob = await new Promise((res, rej) => jcan.toBlob(b => (b ? res(b) : rej(new Error('Your browser could not encode a JPEG.'))), 'image/jpeg', q / 100));
+    const bmp = await createImageBitmap(blob);
+    jctx.clearRect(0, 0, img.width, img.height);
+    jctx.drawImage(bmp, 0, 0);
+    return { width: img.width, height: img.height, data: jctx.getImageData(0, 0, img.width, img.height).data };
+  }
+  function gaussKernel(n, sigma) {
+    const k = [], c = (n - 1) / 2; let s = 0;
+    for (let i = 0; i < n; i++) { const v = Math.exp(-((i - c) ** 2) / (2 * sigma * sigma)); k.push(v); s += v; }
+    return k.map(v => v / s);
+  }
+  // SSIM of two 8-bit RGB images: 11 x 11 Gaussian window (sigma 1.5), valid region, mean over channels
+  function ssimRGB(a, b) {
+    const W = a.width, H = a.height;
+    if (W < 11 || H < 11 || b.width !== W || b.height !== H) return NaN;
+    const k = gaussKernel(11, 1.5), Wo = W - 10, Ho = H - 10;
+    const C1 = (0.01 * 255) ** 2, C2 = (0.03 * 255) ** 2;
+    const blur = (src) => {
+      const tmp = new Float32Array(H * Wo), out = new Float32Array(Ho * Wo);
+      for (let y = 0; y < H; y++) for (let x = 0; x < Wo; x++) { let s = 0; const o = y * W + x; for (let j = 0; j < 11; j++) s += k[j] * src[o + j]; tmp[y * Wo + x] = s; }
+      for (let y = 0; y < Ho; y++) for (let x = 0; x < Wo; x++) { let s = 0; for (let j = 0; j < 11; j++) s += k[j] * tmp[(y + j) * Wo + x]; out[y * Wo + x] = s; }
+      return out;
+    };
+    let total = 0;
+    const n = W * H;
+    for (let c = 0; c < 3; c++) {
+      const x = new Float32Array(n), y = new Float32Array(n), xx = new Float32Array(n), yy = new Float32Array(n), xy = new Float32Array(n);
+      for (let i = 0; i < n; i++) { const p = a.data[4 * i + c], q = b.data[4 * i + c]; x[i] = p; y[i] = q; xx[i] = p * p; yy[i] = q * q; xy[i] = p * q; }
+      const mx = blur(x), my = blur(y), sxx = blur(xx), syy = blur(yy), sxy = blur(xy);
+      let s = 0;
+      for (let i = 0; i < mx.length; i++) {
+        const vx = sxx[i] - mx[i] * mx[i], vy = syy[i] - my[i] * my[i], cv = sxy[i] - mx[i] * my[i];
+        s += ((2 * mx[i] * my[i] + C1) * (2 * cv + C2)) / ((mx[i] * mx[i] + my[i] * my[i] + C1) * (vx + vy + C2));
+      }
+      total += s / mx.length;
+    }
+    return total / 3;
+  }
+  function diffImage(a, b, gain) {
+    const out = new Uint8ClampedArray(a.data.length);
+    for (let i = 0; i < out.length; i += 4) {
+      for (let c = 0; c < 3; c++) out[i + c] = 128 + (b.data[i + c] - a.data[i + c]) * gain;
+      out[i + 3] = 255;
+    }
+    return { width: a.width, height: a.height, data: out };
+  }
+
+  // -------------------------------------------------------------------------------------
+  // Attacks (the evaluation's 16, plus three beyond it). Inputs and outputs are [-1, 1] tensors.
+  // -------------------------------------------------------------------------------------
+  function gaussRng(seed) {
+    const r = mulberry32(seed); let spare = null;
+    return () => {
+      if (spare !== null) { const s = spare; spare = null; return s; }
+      let u = 0; while (u === 0) u = r();
+      const v = r(), m = Math.sqrt(-2 * Math.log(u));
+      spare = m * Math.sin(2 * Math.PI * v);
+      return m * Math.cos(2 * Math.PI * v);
+    };
+  }
+  async function atkJpeg(t, qs) { let img = A.tensorToImage(t); for (const q of qs) img = await jpegRGBA(img, q); return A.imageToTensor(img); }
+  function smallSize(t, scale) { return [Math.max(8, A.roundHalfEven(t.h * scale)), Math.max(8, A.roundHalfEven(t.w * scale))]; }
+  function atkResize(t, scale) {
+    const [nh, nw] = smallSize(t, scale);
+    if (nh === t.h && nw === t.w) return t;
+    return A.resizeBilinear(A.resizeBilinear(t, nh, nw), t.h, t.w);
+  }
+  function atkNoise(t, sigma, seed) {
+    const g = gaussRng(seed), out = A.tensor(t.c, t.h, t.w);
+    for (let i = 0; i < t.data.length; i++) {
+      let v = Math.min(1, Math.max(0, (t.data[i] + 1) * 0.5));
+      v = Math.min(1, Math.max(0, v + sigma * g()));
+      out.data[i] = v * 2 - 1;
+    }
+    return out;
+  }
+  async function atkPlatformOrder(t, scale, q) {
+    const [nh, nw] = smallSize(t, scale);
+    const small = await atkJpeg(A.resizeBilinear(t, nh, nw), [q]);
+    return A.resizeBilinear(small, t.h, t.w);
+  }
+  function atkCrop(t, frac) {
+    const ch = Math.round(t.h * frac), cw = Math.round(t.w * frac), y0 = Math.floor((t.h - ch) / 2), x0 = Math.floor((t.w - cw) / 2);
+    const out = A.tensor(3, ch, cw);
+    for (let c = 0; c < 3; c++) for (let y = 0; y < ch; y++) out.data.set(t.data.subarray(c * t.h * t.w + (y + y0) * t.w + x0, c * t.h * t.w + (y + y0) * t.w + x0 + cw), c * ch * cw + y * cw);
+    return out;
+  }
+  function atkBlackBox(t, frac) {
+    const out = A.tensor(3, t.h, t.w, Float32Array.from(t.data));
+    const bh = Math.round(t.h * frac), bw = Math.round(t.w * frac), y0 = Math.round(t.h * 0.58), x0 = Math.round(t.w * 0.31);
+    for (let c = 0; c < 3; c++) for (let y = y0; y < y0 + bh; y++) out.data.fill(-1, c * t.h * t.w + y * t.w + x0, c * t.h * t.w + y * t.w + x0 + bw);
+    return out;
+  }
+  const ATTACKS = [
+    { id: 'none', group: 'No attack', label: 'None (the saved 8-bit PNG)', fn: async t => t },
+    { id: 'jpeg_q90', group: 'JPEG', label: 'JPEG quality 90', fn: t => atkJpeg(t, [90]), eval: true },
+    { id: 'jpeg_q70', group: 'JPEG', label: 'JPEG quality 70', fn: t => atkJpeg(t, [70]), eval: true },
+    { id: 'jpeg_q50', group: 'JPEG', label: 'JPEG quality 50', fn: t => atkJpeg(t, [50]), eval: true },
+    { id: 'jpeg_q30', group: 'JPEG', label: 'JPEG quality 30', fn: t => atkJpeg(t, [30]), eval: true },
+    { id: 'jpeg_chain_85_60', group: 'JPEG', label: 'JPEG 85, then 60', fn: t => atkJpeg(t, [85, 60]), eval: true },
+    { id: 'jpeg_chain_70_70_70', group: 'JPEG', label: 'JPEG 70, three times', fn: t => atkJpeg(t, [70, 70, 70]), eval: true },
+    { id: 'noise_0.01', group: 'Gaussian noise', label: 'Noise σ = 0.01', fn: async t => atkNoise(t, 0.01, 1), eval: true },
+    { id: 'noise_0.05', group: 'Gaussian noise', label: 'Noise σ = 0.05', fn: async t => atkNoise(t, 0.05, 2), eval: true },
+    { id: 'noise_0.10', group: 'Gaussian noise', label: 'Noise σ = 0.10', fn: async t => atkNoise(t, 0.10, 3), eval: true },
+    { id: 'resize_0.9', group: 'Down-up resize', label: 'Resize to 0.9× and back', fn: async t => atkResize(t, 0.9), eval: true },
+    { id: 'resize_0.7', group: 'Down-up resize', label: 'Resize to 0.7× and back', fn: async t => atkResize(t, 0.7), eval: true },
+    { id: 'resize_0.5', group: 'Down-up resize', label: 'Resize to 0.5× and back', fn: async t => atkResize(t, 0.5), eval: true },
+    { id: 'chain_insta', group: 'Platform-like chains', label: 'Insta-like: 0.5×, JPEG 85', fn: t => atkJpeg(atkResize(t, 0.5), [85]), eval: true },
+    { id: 'chain_x', group: 'Platform-like chains', label: 'X-like: 0.4×, JPEG 75', fn: t => atkJpeg(atkResize(t, 0.4), [75]), eval: true },
+    { id: 'chain_whatsapp', group: 'Platform-like chains', label: 'WhatsApp-like: 0.5×, JPEG 70', fn: t => atkJpeg(atkResize(t, 0.5), [70]), eval: true },
+    { id: 'chain_wechat', group: 'Platform-like chains', label: 'WeChat-like: 0.3×, JPEG 50', fn: t => atkJpeg(atkResize(t, 0.3), [50]), eval: true },
+    { id: 'platform_wechat', group: 'Beyond the evaluation', label: 'WeChat-like, platform order (JPEG of the small image)', fn: t => atkPlatformOrder(t, 0.3, 50) },
+    { id: 'crop95', group: 'Beyond the evaluation', label: 'Crop to 95% of each side (geometry)', fn: async t => atkCrop(t, 0.95) },
+    { id: 'blackbox5', group: 'Beyond the evaluation', label: 'Black box over 5% of each side (edit)', fn: async t => atkBlackBox(t, 0.05) },
+  ];
+  function buildAttackSelect() {
+    const sel = $('attackIn');
+    let og = null, last = '';
+    ATTACKS.forEach(a => {
+      if (a.group !== last) { og = document.createElement('optgroup'); og.label = a.group; sel.appendChild(og); last = a.group; }
+      const o = document.createElement('option'); o.value = a.id; o.textContent = a.label; og.appendChild(o);
+    });
+    sel.value = 'chain_wechat';
+  }
+
+  // -------------------------------------------------------------------------------------
+  // State
+  // -------------------------------------------------------------------------------------
+  const state = {
+    model: null, ready: false, gpu: false, busy: false,
+    cover: null, sampleIdx: 0, mode: 'text', view: 'marked',
+    emb: null, attacked: null, signer: null, ed25519: false, hex100: null, hero: null, saveUrl: null, saveLoaded: null,
+  };
+
+  function setEngine(kind, msg) {
+    const chip = $('engineChip');
+    chip.className = 'chip ' + kind;
+    $('engineText').textContent = msg;
+  }
+  function setProgress(f) { $('progress').style.width = (f > 0 && f < 1 ? 100 * f : 0) + '%'; }
+  function setBusy(b) {
+    state.busy = b;
+    $('embedBtn').disabled = b || !state.ready;
+    $('decodeBtn').disabled = b || !state.ready || !state.emb;
+    $('allBtn').disabled = b || !state.ready || !state.emb || !state.gpu;
+  }
+  function lamValue() { return $('lamIn').value.split(',').map(Number); }
+  function randomHex(n) { const b = new Uint8Array(Math.ceil(n / 2)); crypto.getRandomValues(b); return Array.from(b, v => v.toString(16).padStart(2, '0')).join('').slice(0, n); }
+  function hexToBits(hex, n) {
+    const out = new Uint8Array(n);
+    for (let i = 0; i < n; i++) { const v = parseInt(hex[i >> 2], 16); out[i] = (v >> (3 - (i & 3))) & 1; }
+    return out;
+  }
+  function bitsToHex(bits) {
+    let s = '';
+    for (let i = 0; i < bits.length; i += 4) { let v = 0; for (let k = 0; k < 4; k++) v = (v << 1) | (bits[i + k] || 0); s += v.toString(16); }
+    return s;
+  }
+  function escapeHtml(s) { return s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+
+  // -------------------------------------------------------------------------------------
+  // Stage
+  // -------------------------------------------------------------------------------------
+  const stage = $('stage'), sctx = stage.getContext('2d');
+  function putImage(canvas, ctx, img) {
+    if (canvas.width !== img.width) canvas.width = img.width;
+    if (canvas.height !== img.height) canvas.height = img.height;
+    ctx.putImageData(new ImageData(img.data instanceof Uint8ClampedArray ? img.data : new Uint8ClampedArray(img.data), img.width, img.height), 0, 0);
+  }
+  function drawStage() {
+    if (!state.cover) return;
+    const e = state.emb && state.emb.cover === state.cover ? state.emb : null;
+    let img = state.cover;
+    if (state.view === 'marked' && e) img = e.rgba;
+    else if (state.view === 'diff' && e) img = diffImage(state.cover, e.rgba, 30);
+    else if (state.view === 'attacked' && e) img = state.attacked ? state.attacked.rgba : e.rgba;
+    putImage(stage, sctx, img);
+    // the PNG copy (for right-click save) replaces the canvas only once it has loaded
+    const showSave = state.view === 'marked' && e && state.saveUrl && state.saveLoaded === state.saveUrl;
+    $('saveImg').hidden = !showSave; stage.hidden = !!showSave;
+  }
+  function setView(v) {
+    state.view = v;
+    document.querySelectorAll('#viewSeg button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.view === v)));
+    drawStage();
+  }
+  function updateSaveImage(rgba) {
+    const c = document.createElement('canvas');
+    putImage(c, c.getContext('2d'), rgba);
+    c.toBlob(b => {
+      if (!b) return;
+      if (state.saveUrl) URL.revokeObjectURL(state.saveUrl);
+      const url = URL.createObjectURL(b), si = $('saveImg');
+      state.saveUrl = url; state.saveLoaded = null;
+      si.onload = () => { if (state.saveUrl === url) { state.saveLoaded = url; drawStage(); } };
+      si.onerror = () => { if (state.saveUrl === url) drawStage(); };
+      si.src = url;
+      drawStage();
+    }, 'image/png');
+  }
+
+  // -------------------------------------------------------------------------------------
+  // Hero comparison
+  // -------------------------------------------------------------------------------------
+  const rc = $('revealCanvas'), rctx = rc.getContext('2d');
+  function drawReveal() {
+    const h = state.hero;
+    const frac = Number($('revealRange').value) / 1000;
+    if (!h) { if (state.cover && !state.heroDrawn) { putImage(rc, rctx, state.cover); state.heroDrawn = true; } return; }
+    const W = rc.width, H = rc.height, x = Math.round(W * frac);
+    rctx.drawImage(h.marked, 0, 0);
+    rctx.save(); rctx.beginPath(); rctx.rect(x, 0, W - x, H); rctx.clip(); rctx.drawImage(h.diff, 0, 0); rctx.restore();
+    rctx.fillStyle = '#ffffff'; rctx.fillRect(x - 1, 0, 2, H);
+    rctx.beginPath(); rctx.arc(x, H / 2, 16, 0, 2 * Math.PI); rctx.fill();
+    rctx.fillStyle = '#1d1d1f'; rctx.font = '600 14px -apple-system, system-ui, sans-serif'; rctx.textAlign = 'center'; rctx.textBaseline = 'middle';
+    rctx.fillText('‹ ›', x, H / 2 + 1);
+  }
+  function setHero(cover, rgba, psnr) {
+    const mk = (img) => { const c = document.createElement('canvas'); putImage(c, c.getContext('2d'), img); return c; };
+    rc.width = cover.width; rc.height = cover.height;
+    state.hero = { marked: mk(rgba), diff: mk(diffImage(cover, rgba, 30)) };
+    $('revealStatus').hidden = true;
+    $('revealPsnr').textContent = nf(psnr, 2) + ' dB';
+    drawReveal();
+  }
+
+  // -------------------------------------------------------------------------------------
+  // Results
+  // -------------------------------------------------------------------------------------
+  function drawBitmap(canvas, wrong) {
+    const ctx = canvas.getContext('2d');
+    const ok = cssVar('--grid-ok') || '#e3e3e8', bad = cssVar('--bad') || '#d03b3b';
+    const img = ctx.createImageData(32, 32);
+    const parse = (c) => { const m = c.match(/^#([0-9a-f]{6})$/i); const v = m ? parseInt(m[1], 16) : 0xcccccc; return [(v >> 16) & 255, (v >> 8) & 255, v & 255]; };
+    const po = parse(ok), pb = parse(bad);
+    for (let i = 0; i < 1024; i++) { const p = wrong[i] ? pb : po; img.data.set([p[0], p[1], p[2], 255], 4 * i); }
+    ctx.putImageData(img, 0, 0);
+  }
+  async function evaluate(emb, logits, rgba) {
+    const hard = A.hardBits(logits);
+    const wrong = new Uint8Array(1024);
+    let nWrong = 0;
+    for (let i = 0; i < 1024; i++) if (hard[i] !== emb.bits[i]) { wrong[i] = 1; nWrong++; }
+    const res = { hard, wrong, slotsWrong: nWrong, n: 1024, nWrong };
+    if (emb.mode === 'b100') {
+      const il = A.repetitionLogits(logits, 100), ib = A.hardBits(il);
+      let w = 0; for (let i = 0; i < 100; i++) if (ib[i] !== emb.info[i]) w++;
+      res.n = 100; res.nWrong = w; res.msgHex = bitsToHex(ib);
+    }
+    res.ba = 1 - res.nWrong / res.n;
+    if (emb.mode === 'text') { res.text = A.bitsToText(hard); res.textOk = res.text === emb.text; }
+    if (emb.mode === 'signed' && state.signer) res.verify = await S.verifyImage(hard, rgba, state.signer.publicKey, emb.bits);
+    return res;
+  }
+  function renderResult(host, res, meta) {
+    host.innerHTML = '';
+    const top = document.createElement('div'); top.className = 'row';
+    let badge = '';
+    if (res.verify) {
+      const o = res.verify.outcome;
+      badge = o === 'verified' ? '<span class="badge ok">✓ Verified with your public key</span>'
+        : o === 'decode_fail' ? '<span class="badge bad">✕ decode_fail: too many byte errors</span>'
+          : '<span class="badge bad">✕ sig_mismatch: hash or signature does not check out</span>';
+    } else if (res.text !== undefined) {
+      badge = res.textOk ? '<span class="badge ok">✓ Message intact</span>' : `<span class="badge warn">! Message damaged by ${res.nWrong} bit error${res.nWrong === 1 ? '' : 's'}</span>`;
+    } else if (res.msgHex !== undefined) {
+      badge = res.nWrong === 0 ? '<span class="badge ok">✓ All 100 bits correct</span>' : `<span class="badge warn">! ${res.nWrong} of 100 bits wrong</span>`;
+    }
+    top.innerHTML = badge;
+    host.appendChild(top);
+    const row = document.createElement('div'); row.className = 'bitmap-row';
+    const cv = document.createElement('canvas'); cv.width = 32; cv.height = 32;
+    cv.setAttribute('aria-label', `${res.slotsWrong} of 1,024 slots decoded wrong, shown in red`);
+    drawBitmap(cv, res.wrong);
+    row.appendChild(cv);
+    const kv = document.createElement('div'); kv.className = 'kv';
+    let h = `Bit accuracy <b>${pct(res.ba, res.n === 100 ? 0 : 2)}</b> (${res.nWrong} of ${res.n} wrong)`;
+    if (res.n === 100) h += `<br>Slots: ${res.slotsWrong} of 1,024 wrong before the vote`;
+    h += `<br>${escapeHtml(meta.label)}`;
+    if (meta.ms !== undefined) h += ` · decoded in <b>${meta.ms < 1000 ? Math.round(meta.ms) + ' ms' : nf(meta.ms / 1000, 1) + ' s'}</b>`;
+    if (meta.canvas) h += ` · canvas ${meta.canvas[1]} × ${meta.canvas[0]}`;
+    if (res.verify) {
+      const i = res.verify.info;
+      h += `<br>Codeword: ${i.rs_bad_bytes} of 128 bytes wrong (up to 14 fixable)`;
+      if (i.rs_ok) h += `<br>Hash drift: ${i.bch_ok ? i.bch_errors + ' bit' + (i.bch_errors === 1 ? '' : 's') : 'more than 4 bits'} (up to 4 recoverable) · signature ${i.sig_ok ? 'valid' : 'invalid'}`;
+    }
+    h += '<br><span style="color:var(--fg-3)">Red cells: payload slots decoded wrong.</span>';
+    kv.innerHTML = h;
+    row.appendChild(kv);
+    host.appendChild(row);
+    if (res.text !== undefined) {
+      const d = document.createElement('div'); d.className = 'decoded'; d.textContent = res.text || '(empty)'; host.appendChild(d);
+    } else if (res.msgHex !== undefined) {
+      const d = document.createElement('div'); d.className = 'decoded'; d.textContent = res.msgHex; host.appendChild(d);
+    }
+  }
+  function renderError(host, err) {
+    host.innerHTML = '';
+    const p = document.createElement('p'); p.className = 'badge bad'; p.style.whiteSpace = 'normal';
+    p.textContent = err && err.message ? err.message : String(err);
+    host.appendChild(p);
+  }
+
+  // -------------------------------------------------------------------------------------
+  // Actions
+  // -------------------------------------------------------------------------------------
+  async function setCover(img, name) {
+    state.cover = img;
+    state.attacked = null;
+    $('imgInfo').textContent = `${name || img.name || 'Your photo'} · ${img.width} × ${img.height}${img.note || ''}`;
+    if (state.view === 'attacked') setView('marked'); else drawStage();
+    if (state.ready) await doEmbed(true);
+  }
+  async function doEmbed(auto) {
+    if (!state.ready || state.busy || !state.cover) return;
+    setBusy(true);
+    const host = $('result');
+    try {
+      const lam = lamValue(), s = Number($('sIn').value), mode = state.mode;
+      let bits, info = null, text = null, signed = null;
+      if (mode === 'text') { text = $('textIn').value; bits = A.bitsFromText(text); }
+      else if (mode === 'b100') {
+        const hx = $('hexIn').value.trim().toLowerCase().replace(/^0x/, '');
+        if (!/^[0-9a-f]{25}$/.test(hx)) throw new Error('Enter exactly 25 hex digits (0–9, a–f) for the 100-bit message.');
+        info = hexToBits(hx, 100); bits = A.expandRepetition(info);
+      } else {
+        if (!state.signer) throw new Error('Your browser does not support Ed25519 signatures. Use a current Chrome, Edge, Firefox or Safari.');
+        signed = await S.signImage(state.cover, state.signer); bits = signed.codeword;
+      }
+      const t0 = performance.now();
+      const cover = state.cover;
+      const out = await state.model.embed(A.imageToTensor(cover), bits, { lambda: lam, s, progress: setProgress });
+      const rgba = A.tensorToImage(out.image);
+      const ms = performance.now() - t0;
+      state.emb = { mode, bits, info, text, signed, lam, s, rgba, canvas: out.canvas, cover };
+      state.attacked = null;
+      const psnr = A.psnr8(cover, rgba);
+      $('mPsnr').textContent = nf(psnr, 2) + ' dB';
+      $('mSsim').textContent = '…';
+      $('mCanvas').textContent = `${out.canvas[1]} × ${out.canvas[0]}`;
+      $('mTime').textContent = ms < 1000 ? Math.round(ms) + ' ms' : nf(ms / 1000, 1) + ' s';
+      updateSaveImage(rgba);
+      if (state.view === 'original' || state.view === 'attacked') setView('marked'); else drawStage();
+      if (!state.hero && cover.name && cover.name.startsWith('Generated')) setHero(cover, rgba, psnr);
+      updateCarrier();
+      setTimeout(() => { const v = ssimRGB(cover, rgba); if (state.emb && state.emb.rgba === rgba) $('mSsim').textContent = nf(v, 4); }, 30);
+      host.innerHTML = `<p class="hint">Embedded ${mode === 'signed' ? 'a signed codeword (hash ' + signed.info.H.slice(0, 12) + '…)' : mode === 'b100' ? 'a 100-bit message' : 'your message'} at s = ${nf(s, 2)}, λ = (${nf(lam[0], 2)}, ${nf(lam[1], 2)}). Choose an attack and decode.</p>`;
+      setBusy(false);
+      if (auto && state.gpu) await doDecode();
+    } catch (e) { renderError(host, e); }
+    finally { setBusy(false); setProgress(0); }
+  }
+  async function attackAndDecode(emb, atk) {
+    const base = A.imageToTensor(emb.rgba);
+    const t = await atk.fn(base);
+    const rgba = A.tensorToImage(t);
+    const t0 = performance.now();
+    const r = await state.model.extract(t, { lambda: emb.lam, progress: setProgress });
+    const ms = performance.now() - t0;
+    const res = await evaluate(emb, r.logits, rgba);
+    return { res, rgba, ms, canvas: r.canvas };
+  }
+  async function doDecode() {
+    if (!state.ready || state.busy || !state.emb) return;
+    const atk = ATTACKS.find(a => a.id === $('attackIn').value);
+    setBusy(true);
+    const host = $('result');
+    if (!state.gpu) host.innerHTML = '<p class="hint">Decoding on the CPU. This takes one to two minutes for a 512 × 512 canvas…</p>';
+    try {
+      const emb = state.emb;
+      const { res, rgba, ms, canvas } = await attackAndDecode(emb, atk);
+      state.attacked = { id: atk.id, rgba };
+      renderResult(host, res, { label: atk.label, ms, canvas });
+      if (atk.id !== 'none') setView('attacked');
+    } catch (e) { renderError(host, e); }
+    finally { setBusy(false); setProgress(0); }
+  }
+  async function doRunAll() {
+    if (!state.ready || state.busy || !state.emb || !state.gpu) return;
+    setBusy(true);
+    const emb = state.emb, fig = $('allFig'), body = $('allBody');
+    fig.hidden = false;
+    $('allExtraHead').textContent = emb.mode === 'signed' ? 'verification' : emb.mode === 'b100' ? 'message bits wrong' : 'bit errors';
+    const list = ATTACKS.filter(a => a.eval);
+    body.innerHTML = list.map(a => `<tr id="all-${a.id}"><td>${a.label}</td><td class="num">…</td><td class="ba"><div class="bar-track"><div class="bar" style="width:0"></div></div></td><td>…</td></tr>`).join('');
+    let sum = 0, verified = 0;
+    try {
+      for (const a of list) {
+        const { res } = await attackAndDecode(emb, a);
+        sum += res.ba;
+        const tr = $('all-' + a.id);
+        tr.children[1].textContent = pct(res.ba, 2);
+        tr.children[2].firstChild.firstChild.style.width = (100 * res.ba) + '%';
+        if (res.verify) {
+          const ok = res.verify.outcome === 'verified'; if (ok) verified++;
+          tr.children[3].innerHTML = ok ? '<span style="color:var(--good-ink)">✓ verified</span>' : `<span style="color:var(--bad-ink)">✕ ${res.verify.outcome}</span>`;
+        } else tr.children[3].textContent = `${res.nWrong} of ${res.n}`;
+      }
+      $('allNote').textContent = `mean bit accuracy ${pct(sum / list.length, 2)}` + (emb.mode === 'signed' ? ` · ${verified} of 16 verified` : '');
+    } catch (e) { $('allNote').textContent = 'Stopped: ' + (e.message || e); }
+    finally { setBusy(false); setProgress(0); }
+  }
+  async function doDecodeFile(file) {
+    const host = $('fileResult');
+    if (!state.ready) { host.innerHTML = '<p class="hint">The model is still loading.</p>'; return; }
+    if (state.busy) return;
+    setBusy(true);
+    host.innerHTML = '<p class="hint">Decoding…</p>';
+    try {
+      const img = await fileToRGBA(file);
+      const lam = state.emb ? state.emb.lam : lamValue();
+      const t0 = performance.now();
+      const r = await state.model.extract(A.imageToTensor(img), { lambda: lam, progress: setProgress });
+      const ms = performance.now() - t0;
+      if (state.emb) {
+        const res = await evaluate(state.emb, r.logits, img);
+        renderResult(host, res, { label: `${file.name} · ${img.width} × ${img.height}${img.note}`, ms, canvas: r.canvas });
+      } else {
+        host.innerHTML = '';
+        const d = document.createElement('div'); d.className = 'decoded'; d.textContent = bitsToHex(A.hardBits(r.logits)); host.appendChild(d);
+      }
+    } catch (e) { renderError(host, e); }
+    finally { setBusy(false); setProgress(0); }
+  }
+  function setMode(m) {
+    if (m === 'signed' && !state.ed25519) return;
+    state.mode = m;
+    document.querySelectorAll('#modeSeg button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.mode === m)));
+    $('modeText').hidden = m !== 'text'; $('modeSigned').hidden = m !== 'signed'; $('mode100').hidden = m !== 'b100';
+  }
+  async function newSigner() {
+    try {
+      state.signer = await S.generateKey();
+      $('pkBox').textContent = 'Public key: ' + S.hex(state.signer.publicKey);
+    } catch (e) { state.signer = null; $('pkBox').textContent = 'Could not create a key: ' + (e.message || e); }
+  }
+
+  // -------------------------------------------------------------------------------------
+  // Carrier explorer (the 128 x 128 grid of a 256 x 256 canvas)
+  // -------------------------------------------------------------------------------------
+  const car = { perm: null, inv: null, chan: 0, slot: -1, ready: false };
+  const slotC = $('slotCanvas'), slotX = slotC.getContext('2d');
+  const mC = $('mCanvas2'), mX = mC.getContext('2d');
+  const PH = ['(0, 0)', '(0, 1)', '(1, 0)', '(1, 1)'], RGB = ['R', 'G', 'B'];
+  function carrierBits() { return state.emb ? state.emb.bits : A.bitsFromText($('textIn').value || ''); }
+  function hexRGB(c, fb) { const m = /^#([0-9a-f]{6})$/i.exec(c || ''); const v = m ? parseInt(m[1], 16) : fb; return [(v >> 16) & 255, (v >> 8) & 255, v & 255]; }
+  function drawCarrier() {
+    if (!car.ready) return;
+    const bits = carrierBits(), sign = state.model.carrier.signMask;
+    const lo = hexRGB(cssVar('--grid-ok'), 0xe3e3e8), hi = hexRGB(cssVar('--fg-2'), 0x6e6e73), ac = hexRGB(cssVar('--accent'), 0x0071e3);
+    const sImg = slotX.createImageData(32, 32);
+    for (let k = 0; k < 1024; k++) { const p = k === car.slot ? ac : bits[k] ? hi : lo; sImg.data.set([p[0], p[1], p[2], 255], 4 * k); }
+    const tmp = document.createElement('canvas'); tmp.width = 32; tmp.height = 32; tmp.getContext('2d').putImageData(sImg, 0, 0);
+    slotX.imageSmoothingEnabled = false; slotX.clearRect(0, 0, 256, 256); slotX.drawImage(tmp, 0, 0, 256, 256);
+    const n = 16384, base = car.chan * n;
+    const mImg = mX.createImageData(128, 128);
+    for (let k = 0; k < 1024; k++) {
+      const v = (bits[k] * 2 - 1) * sign[k];
+      const p = v > 0 ? hi : lo;
+      for (let j = 0; j < 16; j++) mImg.data.set([p[0], p[1], p[2], 255], 4 * car.perm[base + k * 16 + j]);
+    }
+    const t2 = document.createElement('canvas'); t2.width = 128; t2.height = 128; t2.getContext('2d').putImageData(mImg, 0, 0);
+    mX.imageSmoothingEnabled = false; mX.clearRect(0, 0, 512, 512); mX.drawImage(t2, 0, 0, 512, 512);
+    if (car.slot >= 0) {
+      mX.fillStyle = `rgb(${ac[0]},${ac[1]},${ac[2]})`;
+      for (let j = 0; j < 16; j++) {
+        const pos = car.perm[base + car.slot * 16 + j], y = Math.floor(pos / 128), x = pos % 128;
+        mX.beginPath(); mX.arc(x * 4 + 2, y * 4 + 2, 6, 0, 2 * Math.PI); mX.fill();
+      }
+      const b = bits[car.slot];
+      $('carrierInfo').textContent = `Slot ${car.slot} (row ${Math.floor(car.slot / 32)}, column ${car.slot % 32}) carries bit ${b}; with the fixed sign ${sign[car.slot] > 0 ? '+1' : '−1'} it is written as ${(b * 2 - 1) * sign[car.slot] > 0 ? '+1' : '−1'} at the 16 marked positions of this channel, and at 16 others in each of the other 11 channels.`;
+    } else {
+      $('carrierInfo').textContent = 'Light and dark cells are the ±1 values of the current payload after the fixed sign scramble. The verifier averages each slot\'s positions back into one value.';
+    }
+  }
+  function updateCarrier() { drawCarrier(); }
+  function initCarrier() {
+    const sel = $('chanSel');
+    for (let c = 0; c < 12; c++) { const o = document.createElement('option'); o.value = c; o.textContent = `channel ${c + 1}: phase ${PH[c / 3 | 0]}, ${RGB[c % 3]}`; sel.appendChild(o); }
+    sel.addEventListener('change', () => { car.chan = Number(sel.value); $('mTitle').textContent = `Message tensor M, channel ${car.chan + 1} (128 × 128)`; drawCarrier(); });
+    car.perm = state.model.carrier.perm(128, 128);
+    car.inv = new Uint16Array(12 * 16384);
+    for (let c = 0; c < 12; c++) for (let k = 0; k < 1024; k++) for (let j = 0; j < 16; j++) car.inv[c * 16384 + car.perm[c * 16384 + k * 16 + j]] = k;
+    car.ready = true;
+    const fromEvent = (e, canvas, cells) => { const r = canvas.getBoundingClientRect(); const x = Math.floor((e.clientX - r.left) / r.width * cells), y = Math.floor((e.clientY - r.top) / r.height * cells); return [Math.min(cells - 1, Math.max(0, x)), Math.min(cells - 1, Math.max(0, y))]; };
+    const onSlot = (e) => { const [x, y] = fromEvent(e, slotC, 32); car.slot = y * 32 + x; drawCarrier(); };
+    const onM = (e) => { const [x, y] = fromEvent(e, mC, 128); car.slot = car.inv[car.chan * 16384 + y * 128 + x]; drawCarrier(); };
+    slotC.addEventListener('pointermove', onSlot); slotC.addEventListener('pointerdown', onSlot);
+    mC.addEventListener('pointermove', onM); mC.addEventListener('pointerdown', onM);
+    car.slot = 0;
+    drawCarrier();
+  }
+
+  // -------------------------------------------------------------------------------------
+  // Start
+  // -------------------------------------------------------------------------------------
+  async function start() {
+    buildStaticCharts();
+    buildAttackSelect();
+    const sample = makeSample(0);
+    state.cover = sample;
+    $('imgInfo').textContent = `${sample.name} · ${sample.width} × ${sample.height}`;
+    drawStage(); drawReveal();
+    $('hexIn').value = randomHex(25);
+    const tb = () => { const n = new TextEncoder().encode($('textIn').value).length; $('textBytes').textContent = n; $('textBytes').style.color = n > 128 ? 'var(--bad-ink)' : ''; };
+    $('textIn').addEventListener('input', () => { tb(); if (!state.emb) drawCarrier(); }); tb();
+    $('sIn').addEventListener('input', () => { $('sVal').textContent = 's = ' + nf($('sIn').value, 2); });
+    document.querySelectorAll('#viewSeg button').forEach(b => b.addEventListener('click', () => setView(b.dataset.view)));
+    document.querySelectorAll('#modeSeg button').forEach(b => b.addEventListener('click', () => setMode(b.dataset.mode)));
+    $('embedBtn').addEventListener('click', () => doEmbed(false));
+    $('decodeBtn').addEventListener('click', doDecode);
+    $('allBtn').addEventListener('click', doRunAll);
+    $('newHexBtn').addEventListener('click', () => { $('hexIn').value = randomHex(25); });
+    $('newKeyBtn').addEventListener('click', newSigner);
+    $('sampleBtn').addEventListener('click', () => { state.sampleIdx++; const s = makeSample(state.sampleIdx); setCover(s, s.name); });
+    $('fileIn').addEventListener('change', async (e) => { const f = e.target.files[0]; if (!f) return; try { const img = await fileToRGBA(f); await setCover(img, f.name); } catch (err) { renderError($('result'), err); } e.target.value = ''; });
+    $('decodeFileIn').addEventListener('change', (e) => { const f = e.target.files[0]; if (f) doDecodeFile(f); e.target.value = ''; });
+    const sw = $('stageWrap');
+    sw.addEventListener('dragover', (e) => { e.preventDefault(); sw.classList.add('drag'); });
+    sw.addEventListener('dragleave', () => sw.classList.remove('drag'));
+    sw.addEventListener('drop', async (e) => { e.preventDefault(); sw.classList.remove('drag'); const f = e.dataTransfer.files[0]; if (!f) return; try { const img = await fileToRGBA(f); await setCover(img, f.name); } catch (err) { renderError($('result'), err); } });
+    $('revealRange').addEventListener('input', drawReveal);
+    $('copyBib').addEventListener('click', () => {
+      const t = $('bib').textContent;
+      const done = (m) => { $('copyNote').textContent = m; };
+      try {
+        navigator.clipboard.writeText(t).then(() => done('Copied.'), () => { selectBib(); done('Selected; press Ctrl+C or ⌘C.'); });
+      } catch (e) { selectBib(); done('Selected; press Ctrl+C or ⌘C.'); }
+    });
+    function selectBib() { const r = document.createRange(); r.selectNodeContents($('bib')); const s = getSelection(); s.removeAllRanges(); s.addRange(r); }
+
+    // the model
+    try {
+      setEngine('busy', 'Loading the model (3.5 MB of weights)…');
+      const get = (u) => fetch(u).then(r => { if (!r.ok) throw new Error(`could not load ${u} (${r.status})`); return r; });
+      // the weights are hosted as base64 text (weights.b64.txt), decoded here to the float32 buffer
+      const fetchModelFile = (u) => u !== 'weights.bin' ? get(u) : get('weights.b64.txt').then(r => r.text()).then(t => {
+        const bin = atob(t.trim()), buf = new Uint8Array(bin.length);
+        for (let i = 0; i < bin.length; i++) buf[i] = bin.charCodeAt(i);
+        return { arrayBuffer: async () => buf.buffer };
+      });
+      const model = await A.loadModel(fetchModelFile, '', new A.CpuBackend());
+      state.model = model;
+      let label = 'CPU · no WebGL2';
+      try {
+        const gl = new GLB.GLBackend();
+        const err = gl.selfTest(new A.CpuBackend());
+        if (err < 1e-4) { model.setBackend(gl); state.gpu = true; label = 'GPU · WebGL2'; }
+        else label = 'CPU · GPU check failed';
+        console.info('AsymSeal WebGL2 self-test, largest relative error:', err, gl.renderer);
+      } catch (e) { console.info('AsymSeal: WebGL2 backend unavailable:', e.message); }
+      setEngine(state.gpu ? 'ok' : 'busy', label);
+      if (!state.gpu) $('allBtn').title = 'Needs a GPU (WebGL2): 16 decodes take about half an hour on the CPU.';
+      state.ed25519 = await S.ed25519Supported();
+      if (state.ed25519) await newSigner();
+      else { const b = document.querySelector('#modeSeg button[data-mode="signed"]'); b.disabled = true; b.title = 'Your browser does not support Ed25519 in WebCrypto.'; }
+      initCarrier();
+      state.ready = true;
+      setBusy(false);
+      $('revealStatus').textContent = 'Embedding…';
+      await doEmbed(true);
+    } catch (e) {
+      setEngine('err', 'The model could not load');
+      $('revealStatus').textContent = 'The model could not load: ' + (e.message || e);
+      renderError($('result'), e);
+    }
+  }
+  start();
+})();
+</script>

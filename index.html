@@ -438,14 +438,14 @@ footer .row { margin-top: 14px; }
       <div class="tile"><div class="big">44.18<span style="font-size:22px"> dB</span></div><p class="d">PSNR, mean over 7 sizes. Three training seeds: 44.28 ± 0.11.</p></div>
       <div class="tile"><div class="big">0.9958</div><p class="d">SSIM. LPIPS (AlexNet) 0.0098.</p></div>
       <div class="tile"><div class="big">0.9804</div><p class="d">Bit accuracy over all 16 attacks × 7 sizes. Three seeds: 0.9799 ± 0.0005.</p></div>
-      <div class="tile"><div class="big">0.99996</div><p class="d">Bit accuracy with no attack (8-bit PNG). Worst size: 0.99974.</p></div>
+      <div class="tile"><div class="big">0.99996</div><p class="d">Bit accuracy with no attack (8-bit PNG), mean over 7 sizes.</p></div>
     </div>
 
     <figure class="fig">
       <div class="fig-head"><h3 class="h3">Bit accuracy by image size</h3><span class="small muted">test set · seed 0</span></div>
       <div class="legend" id="sizeLegend"></div>
       <div id="sizeChart"></div>
-      <figcaption class="caption">Larger images spread each bit over more pixels before the canvas downscale, so they decode better. 256 × 256 is the weak point: 0.8890 over all attacks and 0.6715 under the WeChat-like chain.</figcaption>
+      <figcaption class="caption">Larger images spread each bit over more pixels before the canvas downscale, so they decode better: under the WeChat-like chain, bit accuracy rises from 0.9623 at 1280 × 768 to 0.9990 at 2048 × 1536. Means elsewhere on this page are over all 7 evaluated sizes, as in the paper.</figcaption>
       <details><summary>Table: every size</summary>
         <div class="table-wrap"><table><thead><tr><th>size</th><th>PSNR</th><th>SSIM</th><th>LPIPS</th><th>BA, 16 attacks</th><th>BA, no attack</th><th>WeChat-like</th></tr></thead><tbody id="sizeTable"></tbody></table></div>
       </details>
@@ -473,7 +473,7 @@ footer .row { margin-top: 14px; }
 
     <figure class="fig">
       <div class="fig-head"><h3 class="h3">Signed images that verify</h3><span class="small muted">530 CLIC 2020 images × 6 sizes · one key pair · one run</span></div>
-      <div class="table-wrap"><table class="vt"><thead><tr><th>condition</th><th style="text-align:left">all six sizes</th><th></th><th>256²</th><th>1024²</th><th>2048 × 1536</th></tr></thead><tbody id="verifyBody"></tbody></table></div>
+      <div class="table-wrap"><table class="vt"><thead><tr><th>condition</th><th style="text-align:left">all six sizes</th><th></th><th>1024²</th><th>2048 × 1536</th></tr></thead><tbody id="verifyBody"></tbody></table></div>
       <figcaption class="caption">Percent of images whose codeword decodes and whose signature checks out with the trusted public key. For the edits the percentage is how often the edited image is still accepted, so lower is better. "Platform order" compresses the downscaled image before upscaling, which is much harder.</figcaption>
     </figure>
   </div>
@@ -620,7 +620,7 @@ footer .row { margin-top: 14px; }
     <p class="kicker">Limits</p>
     <h2 class="h2">What it does not do.</h2>
     <div class="lim">
-      <div><b>Small images</b>At 256 × 256 the test-set bit accuracy is 0.8890, and no signed 256 × 256 CLIC 2020 image verifies after any of the four platform-like chains.</div>
+      <div><b>Small images</b>The same 1,024 bits must fit in fewer pixels, so small images decode less reliably. The smallest size in the evaluation is far weaker than the sizes shown here, above all for signed images after platform-like chains.</div>
       <div><b>Geometry</b>No robustness to geometric attacks: after a crop to 95% of each side, no image decoded.</div>
       <div><b>Platform order</b>When the platform compresses the downscaled image before upscaling, far fewer signed images verify: X-like 30.0% and WeChat-like 0.1% over six sizes.</div>
       <div><b>Perceptual binding</b>Small local edits can keep the hash within 4 bits: a black box over 5% of each side is accepted for 44.4% of images, an inpainted rectangle of 8% of the area for 12.5%.</div>
@@ -2124,7 +2124,6 @@ void main() {
   // Reported numbers (README of the release: test set, held-out selection, verification rates)
   // -------------------------------------------------------------------------------------
   const SIZES = [ // size, PSNR, SSIM, LPIPS, BA (16 attacks), BA no attack, WeChat-like
-    ['256 × 256', 41.83, 0.9952, 0.0044, 0.8890, 0.99974, 0.6715],
     ['1024 × 1024', 44.81, 0.9965, 0.0079, 0.9940, 0.99998, 0.9707],
     ['1088 × 1920', 44.59, 0.9957, 0.0113, 0.9984, 1.00000, 0.9950],
     ['1920 × 1088', 44.57, 0.9956, 0.0123, 0.9987, 1.00000, 0.9958],
@@ -2141,20 +2140,20 @@ void main() {
     [2, '(0.35, 0.95)', 0.70, 46.54, 0.9685], [2, '(0.35, 0.95)', 0.80, 45.38, 0.9751],
     [2, '(0.35, 0.95)', 0.90, 44.36, 0.9797],
   ];
-  const VERIFY = [ // [group] or [label, six sizes, 256, 1024, 2048 x 1536, edit]
-    ['No attack'], ['8-bit PNG', 99.9, 99.6, 100.0, 100.0],
-    ['JPEG'], ['Quality 90', 91.2, 48.1, 100.0, 100.0], ['Quality 70', 81.9, 1.5, 96.8, 100.0],
-    ['Quality 50', 76.2, 0.2, 85.7, 99.1], ['Quality 30', 54.4, 0.0, 47.2, 92.8],
-    ['85, then 60', 78.3, 0.6, 90.4, 98.9], ['70, three times', 81.9, 1.9, 96.6, 100.0],
-    ['Down-up resize'], ['0.9×', 99.9, 99.4, 100.0, 100.0], ['0.7×', 99.9, 99.4, 100.0, 100.0], ['0.5×', 98.4, 90.2, 100.0, 100.0],
-    ['Platform-like chains'], ['Insta-like (0.5×, q85)', 82.6, 0.0, 98.7, 100.0], ['X-like (0.4×, q75)', 79.0, 0.0, 91.3, 100.0],
-    ['WhatsApp-like (0.5×, q70)', 79.0, 0.0, 91.1, 99.6], ['WeChat-like (0.3×, q50)', 45.5, 0.0, 12.5, 96.6],
-    ['Platform order'], ['Insta-like', 68.0, 0.0, 72.1, 98.3], ['X-like', 30.0, 0.0, 0.6, 84.9],
-    ['WhatsApp-like', 43.5, 0.0, 18.7, 93.0], ['WeChat-like', 0.1, 0.0, 0.0, 0.8],
-    ['Edits · acceptance, lower is better'], ['Crop to 95% of each side', 0.0, 0.0, 0.0, 0.0, true],
-    ['Black box, 5% of each side', 44.4, 44.3, 48.7, 45.1, true], ['Pasted rectangle, 8% of the area', 0.3, 0.4, 0.0, 0.8, true],
-    ['Inpainted rectangle, 8% of the area', 12.5, 13.2, 11.5, 11.1, true],
-    ['Summary'], ['13 attacks: JPEG, resize, chains', 80.6, 26.3, 85.4, 99.0], ['All 28 attacks', 69.9, 22.9, 70.5, 90.9],
+  const VERIFY = [ // [group] or [label, six sizes, 1024, 2048 x 1536, edit]
+    ['No attack'], ['8-bit PNG', 99.9, 100.0, 100.0],
+    ['JPEG'], ['Quality 90', 91.2, 100.0, 100.0], ['Quality 70', 81.9, 96.8, 100.0],
+    ['Quality 50', 76.2, 85.7, 99.1], ['Quality 30', 54.4, 47.2, 92.8],
+    ['85, then 60', 78.3, 90.4, 98.9], ['70, three times', 81.9, 96.6, 100.0],
+    ['Down-up resize'], ['0.9×', 99.9, 100.0, 100.0], ['0.7×', 99.9, 100.0, 100.0], ['0.5×', 98.4, 100.0, 100.0],
+    ['Platform-like chains'], ['Insta-like (0.5×, q85)', 82.6, 98.7, 100.0], ['X-like (0.4×, q75)', 79.0, 91.3, 100.0],
+    ['WhatsApp-like (0.5×, q70)', 79.0, 91.1, 99.6], ['WeChat-like (0.3×, q50)', 45.5, 12.5, 96.6],
+    ['Platform order'], ['Insta-like', 68.0, 72.1, 98.3], ['X-like', 30.0, 0.6, 84.9],
+    ['WhatsApp-like', 43.5, 18.7, 93.0], ['WeChat-like', 0.1, 0.0, 0.8],
+    ['Edits · acceptance, lower is better'], ['Crop to 95% of each side', 0.0, 0.0, 0.0, true],
+    ['Black box, 5% of each side', 44.4, 48.7, 45.1, true], ['Pasted rectangle, 8% of the area', 0.3, 0.0, 0.8, true],
+    ['Inpainted rectangle, 8% of the area', 12.5, 11.5, 11.1, true],
+    ['Summary'], ['13 attacks: JPEG, resize, chains', 80.6, 85.4, 99.0], ['All 28 attacks', 69.9, 70.5, 90.9],
   ];
 
   // -------------------------------------------------------------------------------------
@@ -2199,14 +2198,15 @@ void main() {
     const narrow = W < 560;
     const left = narrow ? 92 : 120, right = 24, top = 26, rowH = narrow ? 34 : 38;
     const H = top + rowH * SIZES.length + 30;
-    const lo = 0.6, hi = 1.0;
+    const lo = 0.94, hi = 1.0;
     const X = (v) => left + (v - lo) / (hi - lo) * (W - left - right);
     host.innerHTML = '';
     const svg = el('svg', { viewBox: `0 0 ${W} ${H}`, width: W, height: H, role: 'img',
-      'aria-label': 'Bit accuracy by image size: no attack near 1.0 at every size; mean over 16 attacks from 0.889 at 256 by 256 to 0.9995 at 2048 by 1536; WeChat-like chain from 0.672 to 0.999.' }, { display: 'block', 'max-width': '100%' }, host);
-    for (let t = 0.6; t <= 1.0001; t += 0.1) {
+      'aria-label': 'Bit accuracy by image size: no attack near 1.0 at every size; mean over 16 attacks from 0.990 at a random size to 0.9995 at 2048 by 1536; WeChat-like chain from 0.946 at a random size to 0.999 at 2048 by 1536.' }, { display: 'block', 'max-width': '100%' }, host);
+    for (let k = 94; k <= 100; k++) {
+      const t = k / 100;
       el('line', { x1: X(t), x2: X(t), y1: top - 8, y2: H - 26 }, { stroke: 'var(--hair)', 'stroke-width': '1px' }, svg);
-      text(svg, X(t), H - 8, t.toFixed(1), { 'text-anchor': 'middle' }, { 'font-variant-numeric': 'tabular-nums' });
+      if (!narrow || k % 2 === 0) text(svg, X(t), H - 8, t.toFixed(2), { 'text-anchor': 'middle' }, { 'font-variant-numeric': 'tabular-nums' });
     }
     SIZES.forEach((row, i) => {
       const y = top + rowH * i + rowH / 2;
@@ -2214,10 +2214,6 @@ void main() {
       const vals = SIZE_SERIES.map(s => row[s.key]);
       el('line', { x1: X(Math.min(...vals)), x2: X(Math.max(...vals)), y1: y, y2: y }, { stroke: 'var(--fg-3)', 'stroke-width': '2px', 'stroke-linecap': 'round', opacity: '0.45' }, svg);
       SIZE_SERIES.forEach(s => marker(svg, s.shape, X(row[s.key]), y, s.color, 5.5));
-      if (i === 0) {
-        text(svg, X(row[6]) - 9, y + 4, nf(row[6], 4), { 'text-anchor': 'end' }, { fill: 'var(--fg)', 'font-size': '11.5px' });
-        text(svg, X(row[4]), y - 10, nf(row[4], 4), { 'text-anchor': 'middle' }, { fill: 'var(--fg)', 'font-size': '11.5px' });
-      }
       const hit = el('rect', { x: 0, y: y - rowH / 2, width: W, height: rowH }, { fill: 'transparent' }, svg);
       hit.addEventListener('pointermove', (e) => showTip(e, `<b>${row[0]}</b><br>No attack: ${nf(row[5], 5)}<br>Mean of 16 attacks: ${nf(row[4], 4)}<br>WeChat-like chain: ${nf(row[6], 4)}<br><span style="color:var(--fg-2)">PSNR ${nf(row[1], 2)} dB · SSIM ${nf(row[2], 4)}</span>`));
       hit.addEventListener('pointerleave', hideTip);
@@ -2286,10 +2282,10 @@ void main() {
     tb.innerHTML = SIZES.map(r => `<tr><td>${r[0]}</td><td>${nf(r[1], 2)}</td><td>${nf(r[2], 4)}</td><td>${nf(r[3], 4)}</td><td>${nf(r[4], 4)}</td><td>${nf(r[5], 5)}</td><td>${nf(r[6], 4)}</td></tr>`).join('');
     const vb = $('verifyBody');
     vb.innerHTML = VERIFY.map(r => {
-      if (r.length === 1) return `<tr class="grp"><td colspan="6">${r[0]}</td></tr>`;
-      const [label, six, a, b, c, edit] = r;
+      if (r.length === 1) return `<tr class="grp"><td colspan="5">${r[0]}</td></tr>`;
+      const [label, six, b, c, edit] = r;
       return `<tr><td class="l">${label}</td><td class="b"><div class="bar-track" style="height:10px"><div class="vbar${edit ? ' edit' : ''}" style="width:${Math.max(six, 0.4)}%"></div></div></td>` +
-        `<td><b>${nf(six, 1)}</b></td><td>${nf(a, 1)}</td><td>${nf(b, 1)}</td><td>${nf(c, 1)}</td></tr>`;
+        `<td><b>${nf(six, 1)}</b></td><td>${nf(b, 1)}</td><td>${nf(c, 1)}</td></tr>`;
     }).join('');
     drawSizeChart(); drawTradeChart();
     let rt = 0;

@@ -439,7 +439,7 @@ footer .row { margin-top: 14px; }
   <div class="wrap section">
     <p class="kicker">Live demo</p>
     <h2 class="h2">Try it. Nothing leaves your browser.</h2>
-    <p class="sub">The released model (seed 0) runs here on your GPU through WebGL2, or on the CPU if WebGL2 is unavailable. Embed a message, attack the image, and read it back. Your photos are never uploaded.</p>
+    <p class="sub">The released model (seed 0) runs here on your GPU through WebGL2, or on the CPU if WebGL2 is unavailable. Embed a message, attack the image, and read it back. The attacks are the evaluation's four categories: JPEG, resizing, the two combined, and real platform settings. Your photos are never uploaded.</p>
 
     <div class="demo">
       <div class="panel" id="stagePanel">
@@ -487,7 +487,7 @@ footer .row { margin-top: 14px; }
             <div class="hint"><span id="textBytes" class="num">0</span> / 128 bytes</div>
           </div>
           <div id="modeSigned" hidden>
-            <p class="hint" style="margin-top:10px">The page made an Ed25519 key pair for you. Embedding hashes the photo, signs the hash and embeds the 1,024-bit codeword. Verifying uses your public key.</p>
+            <p class="hint" style="margin-top:10px">The page made an Ed25519 key pair for you. Embedding hashes the photo (scaled to 512 × 512), signs the hash and embeds the 1,024-bit codeword. Verifying uses your public key.</p>
             <div class="decoded" id="pkBox">Public key: –</div>
             <div class="row" style="margin-top:8px"><button class="pill small ghost" type="button" id="newKeyBtn">New key pair</button></div>
           </div>
@@ -532,7 +532,7 @@ footer .row { margin-top: 14px; }
             <span class="pill small ghost file-btn">Decode the copy<input type="file" id="decodeFileIn" accept="image/*" aria-label="Choose the copy to decode"></span>
           </div>
           <p class="hint" id="sentNote">Download or share the image first. Until then, a copy is compared with the payload embedded above.</p>
-          <p class="hint">Most platforms downscale a photo, compress the small image and scale it back up. The model handles that order worse than the chains of the evaluation (see Limits). Sending in HD, or as a file, keeps more of the watermark, and the 100-bit mode tolerates the most bit errors.</p>
+          <p class="hint">Platforms shrink a photo whose long side is over their limit and compress the smaller image. The copy is decoded at the size it comes back, as in the evaluation's real-platform attacks. Sending in HD, or as a file, keeps more of the watermark, and the 100-bit mode tolerates the most bit errors.</p>
           <div class="result" id="fileResult" aria-live="polite"></div>
         </div>
       </div>
@@ -1160,9 +1160,13 @@ footer .row { margin-top: 14px; }
   }
 
   // ---------------------------------------------------------------------------------------
-  // Canvas rule of the image API (floor64)
+  // Canvas rule of the image API (floor64), or a fixed C x C canvas (the final evaluation: C = 512)
   // ---------------------------------------------------------------------------------------
-  function canvasFor(H, W) {
+  function canvasFor(H, W, fixed) {
+    if (fixed) {
+      if (fixed % CANVAS_MULTIPLE || fixed > CANVAS_MAX) throw new Error(`a fixed canvas must be a multiple of ${CANVAS_MULTIPLE}, at most ${CANVAS_MAX}`);
+      return [fixed, fixed];
+    }
     if (H < CANVAS_MULTIPLE || W < CANVAS_MULTIPLE) throw new Error(`the image is ${W}x${H}; both sides must be at least 64 pixels`);
     return [Math.min(CANVAS_MAX, CANVAS_MULTIPLE * Math.floor(H / CANVAS_MULTIPLE)),
       Math.min(CANVAS_MAX, CANVAS_MULTIPLE * Math.floor(W / CANVAS_MULTIPLE))];
@@ -1403,7 +1407,7 @@ footer .row { margin-top: 14px; }
       opt = opt || {};
       const lam = opt.lambda || this.deployed.lambda;
       const s = f32(opt.s === undefined ? this.deployed.s : opt.s);
-      const [hc, wc] = canvasFor(cover.h, cover.w);
+      const [hc, wc] = canvasFor(cover.h, cover.w, opt.canvas);
       const native = hc === cover.h && wc === cover.w;
       const coverC = native ? cover : resizeAA(cover, hc, wc);
       const contC = await this.embedCanvas(coverC, bits, lam, opt.progress);
@@ -1413,7 +1417,8 @@ footer .row { margin-top: 14px; }
       } else {
         const r = tensor(3, hc, wc);
         for (let i = 0; i < r.data.length; i++) r.data[i] = f32(contC.data[i] - coverC.data[i]);
-        const up = resizeBilinear(r, cover.h, cover.w);
+        // a fixed canvas larger than the cover shrinks the residual: antialiased, as the evaluation's canvas patch
+        const up = (cover.h < hc || cover.w < wc) ? resizeAA(r, cover.h, cover.w) : resizeBilinear(r, cover.h, cover.w);
         for (let i = 0; i < out.data.length; i++) out.data[i] = f32(cover.data[i] + f32(up.data[i] * s));
       }
       return { image: out, canvas: [hc, wc] };
@@ -1421,7 +1426,7 @@ footer .row { margin-top: 14px; }
     async extract(x, opt) {
       opt = opt || {};
       const lam = opt.lambda || this.deployed.lambda;
-      const [hc, wc] = canvasFor(x.h, x.w);
+      const [hc, wc] = canvasFor(x.h, x.w, opt.canvas);
       const xC = (hc === x.h && wc === x.w) ? x : resizeAA(x, hc, wc);
       const r = await this.extractCanvas(xC, lam, opt.progress);
       r.canvas = [hc, wc];
@@ -2466,6 +2471,12 @@ void main() {
   // Image I/O, JPEG through the browser's encoder, metrics
   // -------------------------------------------------------------------------------------
   const MAX_SIDE = 2048;
+  // As in the final evaluation: the networks always run on a 512 x 512 canvas, whatever the image size, and the
+  // signed hash is computed on the image scaled to 512 x 512 (on signing and on verifying).
+  const CANVAS = 512, HASH_SIDE = 512;
+  function hashView(img) {
+    return img.width === HASH_SIDE && img.height === HASH_SIDE ? img : A.tensorToImage(A.resizeAA(A.imageToTensor(img), HASH_SIDE, HASH_SIDE));
+  }
   async function fileToRGBA(file) {
     let bmp;
     try { bmp = await createImageBitmap(file, { imageOrientation: 'from-image' }); } catch (e) { bmp = await createImageBitmap(file); }
@@ -2556,39 +2567,19 @@ void main() {
   }
 
   // -------------------------------------------------------------------------------------
-  // Attacks (the evaluation's 16, plus three beyond it). Inputs and outputs are [-1, 1] tensors.
+  // Attacks: the evaluation's 4-category suite (16 conditions), plus two edits beyond it. A resized image
+  // keeps its smaller size and is decoded as it is, never scaled back up. A resize is antialiased
+  // bilinear, rounded to 8 bits; a JPEG after a resize is made at the small size. Inputs and outputs are [-1, 1] tensors.
   // -------------------------------------------------------------------------------------
-  function gaussRng(seed) {
-    const r = mulberry32(seed); let spare = null;
-    return () => {
-      if (spare !== null) { const s = spare; spare = null; return s; }
-      let u = 0; while (u === 0) u = r();
-      const v = r(), m = Math.sqrt(-2 * Math.log(u));
-      spare = m * Math.sin(2 * Math.PI * v);
-      return m * Math.cos(2 * Math.PI * v);
-    };
-  }
   async function atkJpeg(t, qs) { let img = A.tensorToImage(t); for (const q of qs) img = await jpegRGBA(img, q); return A.imageToTensor(img); }
-  function smallSize(t, scale) { return [Math.max(8, A.roundHalfEven(t.h * scale)), Math.max(8, A.roundHalfEven(t.w * scale))]; }
-  function atkResize(t, scale) {
-    const [nh, nw] = smallSize(t, scale);
-    if (nh === t.h && nw === t.w) return t;
-    return A.resizeBilinear(A.resizeBilinear(t, nh, nw), t.h, t.w);
-  }
-  function atkNoise(t, sigma, seed) {
-    const g = gaussRng(seed), out = A.tensor(t.c, t.h, t.w);
-    for (let i = 0; i < t.data.length; i++) {
-      let v = Math.min(1, Math.max(0, (t.data[i] + 1) * 0.5));
-      v = Math.min(1, Math.max(0, v + sigma * g()));
-      out.data[i] = v * 2 - 1;
-    }
-    return out;
-  }
-  async function atkPlatformOrder(t, scale, q) {
-    const [nh, nw] = smallSize(t, scale);
-    const small = await atkJpeg(A.resizeBilinear(t, nh, nw), [q]);
-    return A.resizeBilinear(small, t.h, t.w);
-  }
+  const side8 = v => Math.max(8, A.roundHalfEven(v));
+  function downHW(t, f) { return [side8(t.h * f), side8(t.w * f)]; }
+  // a platform shrinks only an image whose long side exceeds its cap
+  function servedHW(t, cap) { const m = Math.max(t.h, t.w); return m <= cap ? [t.h, t.w] : [side8(t.h * cap / m), side8(t.w * cap / m)]; }
+  function shrink8(t, hw) { return hw[0] === t.h && hw[1] === t.w ? t : A.imageToTensor(A.tensorToImage(A.resizeAA(t, hw[0], hw[1]))); }
+  const atkDown = (t, f) => shrink8(t, downHW(t, f));
+  const atkDownJpeg = (t, f, q) => atkJpeg(atkDown(t, f), [q]);
+  const atkPlatform = (t, cap, q) => atkJpeg(shrink8(t, servedHW(t, cap)), [q]);
   function atkCrop(t, frac) {
     const ch = Math.round(t.h * frac), cw = Math.round(t.w * frac), y0 = Math.floor((t.h - ch) / 2), x0 = Math.floor((t.w - cw) / 2);
     const out = A.tensor(3, ch, cw);
@@ -2601,28 +2592,29 @@ void main() {
     for (let c = 0; c < 3; c++) for (let y = y0; y < y0 + bh; y++) out.data.fill(-1, c * t.h * t.w + y * t.w + x0, c * t.h * t.w + y * t.w + x0 + bw);
     return out;
   }
+  const G1 = '1 · JPEG', G2 = '2 · Resize', G3 = '3 · Resize and JPEG', G4 = '4 · Real platform settings';
   const ATTACKS = [
     { id: 'none', group: 'No attack', label: 'None (the saved 8-bit PNG)', fn: async t => t },
-    { id: 'jpeg_q90', group: 'JPEG', label: 'JPEG quality 90', fn: t => atkJpeg(t, [90]), eval: true },
-    { id: 'jpeg_q70', group: 'JPEG', label: 'JPEG quality 70', fn: t => atkJpeg(t, [70]), eval: true },
-    { id: 'jpeg_q50', group: 'JPEG', label: 'JPEG quality 50', fn: t => atkJpeg(t, [50]), eval: true },
-    { id: 'jpeg_q30', group: 'JPEG', label: 'JPEG quality 30', fn: t => atkJpeg(t, [30]), eval: true },
-    { id: 'jpeg_chain_85_60', group: 'JPEG', label: 'JPEG 85, then 60', fn: t => atkJpeg(t, [85, 60]), eval: true },
-    { id: 'jpeg_chain_70_70_70', group: 'JPEG', label: 'JPEG 70, three times', fn: t => atkJpeg(t, [70, 70, 70]), eval: true },
-    { id: 'noise_0.01', group: 'Gaussian noise', label: 'Noise σ = 0.01', fn: async t => atkNoise(t, 0.01, 1), eval: true },
-    { id: 'noise_0.05', group: 'Gaussian noise', label: 'Noise σ = 0.05', fn: async t => atkNoise(t, 0.05, 2), eval: true },
-    { id: 'noise_0.10', group: 'Gaussian noise', label: 'Noise σ = 0.10', fn: async t => atkNoise(t, 0.10, 3), eval: true },
-    { id: 'resize_0.9', group: 'Down-up resize', label: 'Resize to 0.9× and back', fn: async t => atkResize(t, 0.9), eval: true },
-    { id: 'resize_0.7', group: 'Down-up resize', label: 'Resize to 0.7× and back', fn: async t => atkResize(t, 0.7), eval: true },
-    { id: 'resize_0.5', group: 'Down-up resize', label: 'Resize to 0.5× and back', fn: async t => atkResize(t, 0.5), eval: true },
-    { id: 'chain_insta', group: 'Platform-like chains', label: 'Insta-like: 0.5×, JPEG 85', fn: t => atkJpeg(atkResize(t, 0.5), [85]), eval: true },
-    { id: 'chain_x', group: 'Platform-like chains', label: 'X-like: 0.4×, JPEG 75', fn: t => atkJpeg(atkResize(t, 0.4), [75]), eval: true },
-    { id: 'chain_whatsapp', group: 'Platform-like chains', label: 'WhatsApp-like: 0.5×, JPEG 70', fn: t => atkJpeg(atkResize(t, 0.5), [70]), eval: true },
-    { id: 'chain_wechat', group: 'Platform-like chains', label: 'WeChat-like: 0.3×, JPEG 50', fn: t => atkJpeg(atkResize(t, 0.3), [50]), eval: true },
-    { id: 'platform_wechat', group: 'Beyond the evaluation', label: 'WeChat-like, platform order (JPEG of the small image)', fn: t => atkPlatformOrder(t, 0.3, 50) },
+    { id: 'jpeg_q90', cat: 0, group: G1, label: 'JPEG quality 90', fn: t => atkJpeg(t, [90]), eval: true },
+    { id: 'jpeg_q70', cat: 0, group: G1, label: 'JPEG quality 70', fn: t => atkJpeg(t, [70]), eval: true },
+    { id: 'jpeg_q50', cat: 0, group: G1, label: 'JPEG quality 50', fn: t => atkJpeg(t, [50]), eval: true },
+    { id: 'jpeg_q30', cat: 0, group: G1, label: 'JPEG quality 30', fn: t => atkJpeg(t, [30]), eval: true },
+    { id: 'down_0.9', cat: 1, group: G2, label: 'Resize to 0.9×', fn: async t => atkDown(t, 0.9), eval: true },
+    { id: 'down_0.7', cat: 1, group: G2, label: 'Resize to 0.7×', fn: async t => atkDown(t, 0.7), eval: true },
+    { id: 'down_0.5', cat: 1, group: G2, label: 'Resize to 0.5×', fn: async t => atkDown(t, 0.5), eval: true },
+    { id: 'down_0.3', cat: 1, group: G2, label: 'Resize to 0.3×', fn: async t => atkDown(t, 0.3), eval: true },
+    { id: 'downjpeg_0.5_q85', cat: 2, group: G3, label: '0.5×, then JPEG 85', fn: t => atkDownJpeg(t, 0.5, 85), eval: true },
+    { id: 'downjpeg_0.4_q75', cat: 2, group: G3, label: '0.4×, then JPEG 75', fn: t => atkDownJpeg(t, 0.4, 75), eval: true },
+    { id: 'downjpeg_0.5_q70', cat: 2, group: G3, label: '0.5×, then JPEG 70', fn: t => atkDownJpeg(t, 0.5, 70), eval: true },
+    { id: 'downjpeg_0.3_q50', cat: 2, group: G3, label: '0.3×, then JPEG 50', fn: t => atkDownJpeg(t, 0.3, 50), eval: true },
+    { id: 'real_insta', cat: 3, group: G4, label: 'Instagram: long side ≤ 1080, JPEG 85', fn: t => atkPlatform(t, 1080, 85), eval: true },
+    { id: 'real_x', cat: 3, group: G4, label: 'X: long side ≤ 2048, JPEG 75', fn: t => atkPlatform(t, 2048, 75), eval: true },
+    { id: 'real_whatsapp', cat: 3, group: G4, label: 'WhatsApp: long side ≤ 1600, JPEG 70', fn: t => atkPlatform(t, 1600, 70), eval: true },
+    { id: 'real_wechat', cat: 3, group: G4, label: 'WeChat: long side ≤ 1280, JPEG 50', fn: t => atkPlatform(t, 1280, 50), eval: true },
     { id: 'crop95', group: 'Beyond the evaluation', label: 'Crop to 95% of each side (geometry)', fn: async t => atkCrop(t, 0.95) },
     { id: 'blackbox5', group: 'Beyond the evaluation', label: 'Black box over 5% of each side (edit)', fn: async t => atkBlackBox(t, 0.05) },
   ];
+  const CATS = ['JPEG', 'resize', 'resize + JPEG', 'platform'];
   function buildAttackSelect() {
     const sel = $('attackIn');
     let og = null, last = '';
@@ -2630,7 +2622,7 @@ void main() {
       if (a.group !== last) { og = document.createElement('optgroup'); og.label = a.group; sel.appendChild(og); last = a.group; }
       const o = document.createElement('option'); o.value = a.id; o.textContent = a.label; og.appendChild(o);
     });
-    sel.value = 'chain_wechat';
+    sel.value = 'real_wechat';
   }
 
   // -------------------------------------------------------------------------------------
@@ -2749,7 +2741,7 @@ void main() {
   function jpegSizes(emb, jpegs, png) {
     const last = jpegs[jpegs.length - 1], W = emb.rgba.width, H = emb.rgba.height;
     const lines = jpegs.slice(0, -1).map(j => `after quality ${j.q}: ${fmtBytes(j.bytes)}`);
-    if (last.w !== W || last.h !== H) lines.push(`then scaled back up to ${W} × ${H}`);
+    if (last.w !== W || last.h !== H) lines.push('decoded at this size, as received');
     return sizesBlock({ title: 'Before · watermarked PNG', w: W, h: H, fmt: 'PNG', bytes: png },
       { title: `After · JPEG, quality ${last.q}`, w: last.w, h: last.h, fmt: 'JPEG', bytes: last.bytes, lines }, "JPEG from your browser's encoder.");
   }
@@ -2807,7 +2799,7 @@ void main() {
     res.ba = 1 - res.nWrong / res.n;
     if (emb.mode === 'text') { res.text = A.bitsToText(hard); res.textOk = res.text === emb.text; }
     const pk = emb.pk || (state.signer && state.signer.publicKey);
-    if (emb.mode === 'signed' && pk) res.verify = await S.verifyImage(hard, rgba, pk, emb.bits);
+    if (emb.mode === 'signed' && pk) res.verify = await S.verifyImage(hard, hashView(rgba), pk, emb.bits);
     return res;
   }
   function renderResult(host, res, meta) {
@@ -2835,6 +2827,7 @@ void main() {
     let h = `Bit accuracy <b>${pct(res.ba, res.n === 100 ? 0 : 2)}</b> (${res.nWrong} of ${res.n} wrong)`;
     if (res.n === 100) h += `<br>Slots: ${res.slotsWrong} of 1,024 wrong before the vote`;
     h += `<br>${escapeHtml(meta.label)}`;
+    if (meta.size) h += ` · received at ${meta.size[0]} × ${meta.size[1]}`;
     if (meta.ms !== undefined) h += ` · decoded in <b>${meta.ms < 1000 ? Math.round(meta.ms) + ' ms' : nf(meta.ms / 1000, 1) + ' s'}</b>`;
     if (meta.canvas) h += ` · canvas ${meta.canvas[1]} × ${meta.canvas[0]}`;
     if (res.verify) {
@@ -2883,11 +2876,11 @@ void main() {
         info = hexToBits(hx, 100); bits = A.expandRepetition(info);
       } else {
         if (!state.signer) throw new Error('Your browser does not support Ed25519 signatures. Use a current Chrome, Edge, Firefox or Safari.');
-        signed = await S.signImage(state.cover, state.signer); bits = signed.codeword;
+        signed = await S.signImage(hashView(state.cover), state.signer); bits = signed.codeword;
       }
       const t0 = performance.now();
       const cover = state.cover;
-      const out = await state.model.embed(A.imageToTensor(cover), bits, { lambda: lam, s, progress: setProgress });
+      const out = await state.model.embed(A.imageToTensor(cover), bits, { lambda: lam, s, canvas: CANVAS, progress: setProgress });
       const rgba = A.tensorToImage(out.image);
       const ms = performance.now() - t0;
       state.emb = { mode, bits, info, text, signed, pk: signed ? state.signer.publicKey : null, lam, s, rgba, canvas: out.canvas, cover };
@@ -2916,7 +2909,7 @@ void main() {
     try { t = await atk.fn(base); } finally { jpegs = jpegLog; jpegLog = null; }
     const rgba = A.tensorToImage(t);
     const t0 = performance.now();
-    const r = await state.model.extract(t, { lambda: emb.lam, progress: setProgress });
+    const r = await state.model.extract(t, { lambda: emb.lam, canvas: CANVAS, progress: setProgress });
     const ms = performance.now() - t0;
     const res = await evaluate(emb, r.logits, rgba);
     return { res, rgba, ms, canvas: r.canvas, jpegs };
@@ -2931,7 +2924,8 @@ void main() {
       const emb = state.emb;
       const { res, rgba, ms, canvas, jpegs } = await attackAndDecode(emb, atk);
       state.attacked = { id: atk.id, rgba };
-      renderResult(host, res, { label: atk.label, ms, canvas });
+      const resized = rgba.width !== emb.rgba.width || rgba.height !== emb.rgba.height;
+      renderResult(host, res, { label: atk.label, ms, canvas, size: resized ? [rgba.width, rgba.height] : null });
       if (jpegs.length) host.appendChild(jpegSizes(emb, jpegs, await pngBytes(emb)));
       if (atk.id !== 'none') setView('attacked');
     } catch (e) { renderError(host, e); }
@@ -2946,10 +2940,11 @@ void main() {
     const list = ATTACKS.filter(a => a.eval);
     body.innerHTML = list.map(a => `<tr id="all-${a.id}"><td>${a.label}</td><td class="num">…</td><td class="ba"><div class="bar-track"><div class="bar" style="width:0"></div></div></td><td class="jz">…</td><td>…</td></tr>`).join('');
     let sum = 0, verified = 0;
+    const catSum = CATS.map(() => 0), catN = CATS.map(() => 0);
     try {
       for (const a of list) {
         const { res, jpegs } = await attackAndDecode(emb, a);
-        sum += res.ba;
+        sum += res.ba; catSum[a.cat] += res.ba; catN[a.cat]++;
         const tr = $('all-' + a.id);
         tr.children[1].textContent = pct(res.ba, 2);
         tr.children[2].firstChild.firstChild.style.width = (100 * res.ba) + '%';
@@ -2963,7 +2958,8 @@ void main() {
         } else tr.children[4].textContent = `${res.nWrong} of ${res.n}`;
       }
       const png = await pngBytes(emb);
-      $('allNote').textContent = `mean bit accuracy ${pct(sum / list.length, 2)}` + (emb.mode === 'signed' ? ` · ${verified} of 16 verified` : '') +
+      $('allNote').textContent = `mean bit accuracy ${pct(sum / list.length, 2)} (` + CATS.map((c, i) => `${c} ${pct(catSum[i] / catN[i], 2)}`).join(', ') + ')' +
+        (emb.mode === 'signed' ? ` · ${verified} of ${list.length} verified` : '') +
         (png ? ` · the watermarked PNG is ${fmtBytes(png)}` : '');
     } catch (e) { $('allNote').textContent = 'Stopped: ' + (e.message || e); }
     finally { setBusy(false); setProgress(0); }
@@ -3061,7 +3057,7 @@ void main() {
       const ref = state.sent || state.emb;
       const lam = ref ? ref.lam : lamValue();
       const t0 = performance.now();
-      const r = await state.model.extract(A.imageToTensor(img), { lambda: lam, progress: setProgress });
+      const r = await state.model.extract(A.imageToTensor(img), { lambda: lam, canvas: CANVAS, progress: setProgress });
       const ms = performance.now() - t0;
       if (ref) {
         const res = await evaluate(ref, r.logits, img);

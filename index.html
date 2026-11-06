@@ -354,14 +354,14 @@ footer .row { margin-top: 14px; }
       <canvas id="revealCanvas" width="1024" height="640" aria-label="Watermarked image; drag to compare with the watermark residual amplified 30 times"></canvas>
       <input type="range" id="revealRange" min="0" max="1000" value="560" aria-label="Divider between the watermarked image and the amplified watermark">
       <span class="tag l">Watermarked</span><span class="tag r">Watermark ×30</span>
-      <span class="status" id="revealStatus">Loading the model (3.5 MB)…</span>
+      <span class="status" id="revealStatus">Loading the model (3.6 MB)…</span>
     </figure>
     <p class="caption">A public-domain photo (Patio de los Arrayanes, Alhambra; 2048 × 1393) after embedding 1,024 bits at the released operating point. Drag across it, or tap, to see the change, amplified 30 times. PSNR <span id="revealPsnr" class="num">–</span>.</p>
     <div class="stats">
       <div class="stat"><div class="v">10,412</div><div class="k">parameters in the signer's write network</div></div>
-      <div class="stat"><div class="v">44.18 dB</div><div class="k">PSNR on the test set</div></div>
-      <div class="stat"><div class="v">98.04%</div><div class="k">bit accuracy over 16 attacks × 7 sizes</div></div>
-      <div class="stat"><div class="v">99.9%</div><div class="k">of signed images verify with no attack</div></div>
+      <div class="stat"><div class="v">45.29 dB</div><div class="k">PSNR on the test set</div></div>
+      <div class="stat"><div class="v">≥ 99.8%</div><div class="k">of signed images verify after the Instagram, X and WhatsApp settings</div></div>
+      <div class="stat"><div class="v">100%</div><div class="k">of signed images verify with no attack</div></div>
     </div>
   </div>
 </header>
@@ -386,11 +386,11 @@ footer .row { margin-top: 14px; }
           <rect x="372" y="30" width="238" height="100" rx="16" fill="var(--fixed)" stroke="var(--hair)"/>
           <text x="491" y="62" text-anchor="middle" font-weight="600" font-size="15">Platform</text>
           <text x="491" y="84" text-anchor="middle" fill="var(--fg-2)">downscale, JPEG, re-share</text>
-          <text x="491" y="102" text-anchor="middle" fill="var(--fg-2)">e.g. WeChat-like: 0.3×, quality 50</text>
+          <text x="491" y="102" text-anchor="middle" fill="var(--fg-2)">e.g. WhatsApp: long side 1600, JPEG 70</text>
           <rect x="720" y="30" width="240" height="100" rx="16" fill="var(--learned)" stroke="var(--learned-line)"/>
           <text x="840" y="62" text-anchor="middle" font-weight="600" font-size="15">Verify anywhere</text>
           <text x="840" y="84" text-anchor="middle" fill="var(--fg-2)">decode the bits, correct errors,</text>
-          <text x="840" y="102" text-anchor="middle" fill="var(--fg-2)">check the signature · 47.6 GMACs</text>
+          <text x="840" y="102" text-anchor="middle" fill="var(--fg-2)">check the signature · 43.6 GMACs</text>
           <text x="316" y="70" text-anchor="middle" font-size="12" fill="var(--fg-2)">posts</text>
           <text x="665" y="70" text-anchor="middle" font-size="12" fill="var(--fg-2)">downloads</text>
           <text x="140" y="160" text-anchor="middle" font-size="12" fill="var(--fg-3)">tiny, fixed once images are signed</text>
@@ -413,12 +413,12 @@ footer .row { margin-top: 14px; }
           <rect x="10" y="156" width="320" height="100" rx="16" fill="var(--fixed)" stroke="var(--hair)"/>
           <text x="170" y="184" font-weight="600" font-size="15">Platform</text>
           <text x="170" y="205" fill="var(--fg-2)">downscale, JPEG, re-share</text>
-          <text x="170" y="223" fill="var(--fg-2)">e.g. WeChat-like: 0.3×, quality 50</text>
+          <text x="170" y="223" fill="var(--fg-2)">e.g. WhatsApp: long side 1600, JPEG 70</text>
           <text x="170" y="244" font-size="12" fill="var(--fg-3)">not under anyone's control</text>
           <rect x="10" y="304" width="320" height="92" rx="16" fill="var(--learned)" stroke="var(--learned-line)"/>
           <text x="170" y="332" font-weight="600" font-size="15">Verify anywhere</text>
           <text x="170" y="353" fill="var(--fg-2)">decode the bits, correct errors,</text>
-          <text x="170" y="371" fill="var(--fg-2)">check the signature · 47.6 GMACs</text>
+          <text x="170" y="371" fill="var(--fg-2)">check the signature · 43.6 GMACs</text>
           <text x="170" y="388" font-size="12" fill="var(--fg-3)">heavier, can be upgraded later</text>
           <text x="182" y="132" font-size="12" fill="var(--fg-2)" text-anchor="start">posts</text>
           <text x="182" y="280" font-size="12" fill="var(--fg-2)" text-anchor="start">downloads</text>
@@ -428,9 +428,9 @@ footer .row { margin-top: 14px; }
     </figure>
     <div class="tiles c4">
       <div class="tile"><div class="t">A kilobit</div><p class="d">An Ed25519 signature is 512 bits. With the public key (256), a hash syndrome (28) and Reed–Solomon error correction, the payload is 1,024 bits.</p></div>
-      <div class="tile"><div class="t">Invisible</div><p class="d">44.18 dB PSNR, 0.9958 SSIM and 0.0098 LPIPS on the test set at the released operating point.</p></div>
-      <div class="tile"><div class="t">Robust</div><p class="d">Real JPEG down to quality 30, JPEG chains, noise, down-up resizing and four platform-like chains, at 7 image sizes up to 2048 × 1536.</p></div>
-      <div class="tile"><div class="t">Cheap to sign</div><p class="d">The network runs on a canvas of at most 512 × 512, so signing costs the same 0.68 GMACs for a 12-megapixel photo as for a thumbnail.</p></div>
+      <div class="tile"><div class="t">Invisible</div><p class="d">45.29 dB PSNR and 0.9959 SSIM on the test set at the released operating point.</p></div>
+      <div class="tile"><div class="t">Robust</div><p class="d">Real JPEG down to quality 30, downscaling to 0.3×, the two combined, and the Instagram, X, WhatsApp and WeChat settings, at sizes up to 2048 × 1536 and on phone and camera photos of 5 to 13 megapixels.</p></div>
+      <div class="tile"><div class="t">Cheap to sign</div><p class="d">The network always runs on one 512 × 512 canvas, so signing costs the same 0.68 GMACs for a 12-megapixel photo as for a thumbnail.</p></div>
     </div>
   </div>
 </section>
@@ -496,19 +496,10 @@ footer .row { margin-top: 14px; }
             <input type="text" id="hexIn" spellcheck="false" autocomplete="off">
             <div class="row" style="margin-top:8px"><button class="pill small ghost" type="button" id="newHexBtn">Random message</button></div>
           </div>
-          <label class="f" for="sIn">Embedding strength <span class="mono" id="sVal">s = 0.90</span></label>
-          <input type="range" id="sIn" min="0.35" max="1" step="0.05" value="0.9">
-          <div class="range-labels"><span>0.35<span class="opt"> · fainter</span></span><span>0.55<span class="opt"> robust floor</span></span><span>0.90 released</span><span>1.0</span></div>
-          <details>
-            <summary>Trade-off λ</summary>
-            <label class="f" for="lamIn">λ = (λ_pareto, λ_struct). Extraction uses the same λ.</label>
-            <select id="lamIn">
-              <option value="0.35,0.95">(0.35, 0.95), released</option>
-              <option value="0.30,0.95">(0.30, 0.95)</option>
-              <option value="0.30,0.85">(0.30, 0.85)</option>
-              <option value="0.35,0.85">(0.35, 0.85)</option>
-            </select>
-          </details>
+          <label class="f" for="sIn">Embedding strength <span class="mono" id="sVal">s = 1.00</span></label>
+          <input type="range" id="sIn" min="0.35" max="1" step="0.05" value="1">
+          <div class="range-labels"><span>0.35<span class="opt"> · fainter</span></span><span>1.00 · released</span></div>
+          <p class="hint">The one quality setting: a lower s is fainter and less robust. From the robust floor s = 0.45 up, unattacked held-out images decode with bit accuracy of at least 0.998 at every size. Decoding needs no setting.</p>
           <div class="row" style="margin-top:14px"><button class="pill" type="button" id="embedBtn" disabled>Embed watermark</button></div>
         </div>
 
@@ -550,48 +541,49 @@ footer .row { margin-top: 14px; }
   <div class="wrap section">
     <p class="kicker">Performance</p>
     <h2 class="h2">Measured, not cherry-picked.</h2>
-    <p class="sub">The released checkpoint (seed 0) at its deployed point on the 100 DIV2K validation images, each at 7 sizes, under 16 attacks. The operating point was fixed on 24 separate held-out images; neither the test set nor CLIC 2020 entered any decision.</p>
+    <p class="sub">The released checkpoint (seed 0) at its deployed strength on the 100 DIV2K validation images, each at five fixed sizes and one random size, under the 16 conditions of four attack categories. Means are over the five fixed sizes. The strength was fixed on 24 separate held-out images; neither the test set nor CLIC 2020 entered any decision.</p>
     <div class="tiles c4">
-      <div class="tile"><div class="big">44.18<span style="font-size:22px"> dB</span></div><p class="d">PSNR, mean over 7 sizes. Three training seeds: 44.28 ± 0.11.</p></div>
-      <div class="tile"><div class="big">0.9958</div><p class="d">SSIM. LPIPS (AlexNet) 0.0098.</p></div>
-      <div class="tile"><div class="big">0.9804</div><p class="d">Bit accuracy over all 16 attacks × 7 sizes. Three seeds: 0.9799 ± 0.0005.</p></div>
-      <div class="tile"><div class="big">0.99996</div><p class="d">Bit accuracy with no attack (8-bit PNG), mean over 7 sizes.</p></div>
+      <div class="tile"><div class="big">45.29<span style="font-size:22px"> dB</span></div><p class="d">PSNR; SSIM 0.9959. The previous release under the same settings: 44.62 dB.</p></div>
+      <div class="tile"><div class="big">0.9964</div><p class="d">Bit accuracy under JPEG at quality 90 to 30. Under resizing alone, down to 0.3×: 1.0000.</p></div>
+      <div class="tile"><div class="big">0.9388</div><p class="d">Bit accuracy under resizing followed by JPEG at the small size, the hardest category. The previous release: 0.9149.</p></div>
+      <div class="tile"><div class="big">0.9980</div><p class="d">Bit accuracy under the Instagram, X, WhatsApp and WeChat settings. With no attack: 1.0000 at every size.</p></div>
     </div>
 
     <figure class="fig">
       <div class="fig-head"><h3 class="h3">Bit accuracy by image size</h3><span class="small muted">test set · seed 0</span></div>
       <div class="legend" id="sizeLegend"></div>
       <div id="sizeChart"></div>
-      <figcaption class="caption">Larger images spread each bit over more pixels before the canvas downscale, so they decode better: under the WeChat-like chain, bit accuracy rises from 0.9623 at 1280 × 768 to 0.9990 at 2048 × 1536. Means elsewhere on this page are over all 7 evaluated sizes, as in the paper.</figcaption>
+      <figcaption class="caption">Larger images keep more of the watermark through resizing followed by JPEG: after 0.3× and quality 50, bit accuracy rises from 0.6940 at 1280 × 768 to 0.9337 at 2048 × 1536 (table). The platform settings cap only the long side, so a 1024 × 1024 image is only compressed. In the random row each image gets its own size, from 256 to 2048 pixels per side.</figcaption>
       <details><summary>Table: every size</summary>
-        <div class="table-wrap"><table><thead><tr><th>size</th><th>PSNR</th><th>SSIM</th><th>LPIPS</th><th>BA, 16 attacks</th><th>BA, no attack</th><th>WeChat-like</th></tr></thead><tbody id="sizeTable"></tbody></table></div>
+        <div class="table-wrap"><table><thead><tr><th>size</th><th>PSNR</th><th>SSIM</th><th>BA, no attack</th><th>JPEG 30</th><th>0.5×, JPEG 70</th><th>0.3×, JPEG 50</th><th>WeChat</th></tr></thead><tbody id="sizeTable"></tbody></table></div>
       </details>
     </figure>
 
     <figure class="fig">
-      <div class="fig-head"><h3 class="h3">Quality against robustness</h3><span class="small muted">24 held-out images · the 13 candidates of the selection</span></div>
+      <div class="fig-head"><h3 class="h3">Quality against robustness</h3><span class="small muted">24 held-out images · the 10 candidate strengths of the selection</span></div>
       <div class="legend" id="tradeLegend"></div>
       <div id="tradeChart"></div>
-      <figcaption class="caption">Each point is one candidate operating point, averaged over 7 sizes (PSNR) and 16 attacks × 7 sizes (bit accuracy). The line sweeps the strength s at λ = (0.35, 0.95). The deployed point has the highest PSNR among the candidates with bit accuracy ≥ 0.976. This describes the deployed point; it is not the procedure that chose it.</figcaption>
+      <figcaption class="caption">Each point is one candidate strength s, averaged over 6 sizes (PSNR) and 16 conditions × 6 sizes (bit accuracy). The deployed strength s = 1.0 has the highest PSNR among the candidates with bit accuracy ≥ 0.975, and is the only one that reaches it. This describes the deployed strength; it is not the procedure that chose it. The robust floor, s = 0.45, is the smallest strength whose unattacked bit accuracy is at least 0.998 at every held-out size.</figcaption>
     </figure>
 
-    <div class="tiles c3">
-      <div class="tile"><div class="t">CLIC 2020</div><div class="big" style="margin-top:8px">45.94<span style="font-size:22px"> dB</span></div><p class="d">PSNR on 530 independent images, same protocol; bit accuracy 0.9775 over 16 attacks × 7 sizes, 0.99997 with no attack.</p></div>
-      <div class="tile"><div class="t">100-bit mode</div><div class="big" style="margin-top:8px">0.99887</div><p class="d">Bit accuracy of a 100-bit message on the same model, each bit repeated about 10 times (held-out images). 0.11 wrong bits per message, against 20.83 of 1,024.</p></div>
+    <div class="tiles c2">
+      <div class="tile"><div class="t">CLIC 2020</div><div class="big" style="margin-top:8px">46.65<span style="font-size:22px"> dB</span></div><p class="d">PSNR on 530 independent images, same protocol; bit accuracy 0.9963 under JPEG, 0.9395 under resizing followed by JPEG and 0.9980 under the platform settings, 1.0000 with no attack.</p></div>
+      <div class="tile"><div class="t">Phone and camera photos</div><div class="big" style="margin-top:8px">100%</div><p class="d">of signed images verify after the Instagram, X and WhatsApp settings at phone sizes: 12-megapixel held-out images and real camera photos of 5 to 13 megapixels. WeChat: 94.7% to 100%.</p></div>
+      <div class="tile"><div class="t">100-bit mode</div><div class="big" style="margin-top:8px">0.968</div><p class="d">Bit accuracy of a 100-bit message on the same model, each bit repeated about 10 times, after 0.3× and JPEG 50 (the 1,024 bits: 0.723). 1.000 under every JPEG, resize and platform setting (530 CLIC images at 1024 × 1024).</p></div>
       <div class="tile"><div class="t">Asymmetric cost</div>
-        <div style="margin-top:14px" aria-label="Signer 0.68 GMACs versus verifier 47.59 GMACs per image">
+        <div style="margin-top:14px" aria-label="Signer 0.68 GMACs versus verifier 43.64 GMACs per image">
           <div class="small"><span>Signer</span> <b class="num">0.68 GMACs</b></div>
-          <div class="bar-track" style="margin:4px 0 10px"><div class="bar" style="width:1.43%;min-width:3px"></div></div>
-          <div class="small"><span>Verifier</span> <b class="num">47.59 GMACs</b></div>
+          <div class="bar-track" style="margin:4px 0 10px"><div class="bar" style="width:1.56%;min-width:3px"></div></div>
+          <div class="small"><span>Verifier</span> <b class="num">43.64 GMACs</b></div>
           <div class="bar-track" style="margin-top:4px"><div class="bar" style="width:100%"></div></div>
         </div>
-        <p class="d">Per image at a 512 × 512 canvas, the same for every larger image.</p></div>
+        <p class="d">Per image: the networks always run on the 512 × 512 canvas, whatever the photo size.</p></div>
     </div>
 
     <figure class="fig">
-      <div class="fig-head"><h3 class="h3">Signed images that verify</h3><span class="small muted">530 CLIC 2020 images × 6 sizes · one key pair · one run</span></div>
-      <div class="table-wrap"><table class="vt"><thead><tr><th>condition</th><th class="b" style="text-align:left">all six sizes</th><th><span class="nb">all six</span></th><th>1024²</th><th>2048 × 1536</th></tr></thead><tbody id="verifyBody"></tbody></table></div>
-      <figcaption class="caption">Percent of images whose codeword decodes and whose signature checks out with the trusted public key. For the edits the percentage is how often the edited image is still accepted, so lower is better. "Platform order" compresses the downscaled image before upscaling, which is much harder.</figcaption>
+      <div class="fig-head"><h3 class="h3">Signed images that verify</h3><span class="small muted">530 CLIC 2020 images × 5 sizes · one key pair · one run</span></div>
+      <div class="table-wrap"><table class="vt"><thead><tr><th>condition</th><th class="b" style="text-align:left">all five sizes</th><th><span class="nb">all five</span></th><th>1024²</th><th>2048 × 1536</th></tr></thead><tbody id="verifyBody"></tbody></table></div>
+      <figcaption class="caption">Percent of images whose codeword decodes and whose signature checks out with the trusted public key, pooled over the five fixed sizes (1024 × 1024 to 2048 × 1536). For the edits the percentage is how often the edited image is still accepted, so lower is better. The platform settings cap the long side, so at 1024 × 1024 they only compress.</figcaption>
     </figure>
   </div>
 </section>
@@ -603,7 +595,7 @@ footer .row { margin-top: 14px; }
     <p class="sub">The embedder writes once, on the device, and can never be updated. The verifier runs only when provenance is checked. AsymSeal gives each side the capacity its job needs.</p>
 
     <figure class="fig">
-      <div class="scroll-x"><svg class="diagram" viewBox="0 0 980 450" role="img" aria-label="Architecture. Signer: the cover is downscaled to a canvas, split into 2 by 2 polyphase components X; the payload is scattered by a fixed carrier into M; a two-convolution write network adds w to X; the residual is upsampled and added to the full image with strength s. Verifier: the received image is downscaled and split into Z, sharpened with a learned cover prediction, decoded by 32 residual units, and read out by fixed slot means weighted by a router.">
+      <div class="scroll-x"><svg class="diagram" viewBox="0 0 980 450" role="img" aria-label="Architecture. Signer: the cover is resampled to the fixed 512 by 512 canvas and split into 2 by 2 polyphase components X; the payload is scattered by a fixed carrier into M; a two-convolution write network adds w to X; the residual is resized to the image and added to the full image with strength s. Verifier: the received image is resampled to the same canvas and split into Z; 32 residual units decode from 1.5 Z, and fixed slot means weighted by a router give the 1,024 logits.">
         <defs><marker id="ah2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
         <g font-size="12.5" fill="var(--fg)">
           <text x="20" y="26" font-weight="600" font-size="14">Signer · on the device</text>
@@ -624,16 +616,14 @@ footer .row { margin-top: 14px; }
           <line x1="466" y1="298" x2="494" y2="298" marker-end="url(#ah2)"/>
           <line x1="654" y1="298" x2="682" y2="298" marker-end="url(#ah2)"/>
           <line x1="808" y1="298" x2="836" y2="298" marker-end="url(#ah2)"/>
-          <path d="M228 322 V376 H326" marker-end="url(#ah2)"/>
-          <path d="M466 376 H574 V322" marker-end="url(#ah2)"/>
-          <path d="M228 376 V420 H682" marker-end="url(#ah2)"/>
+          <path d="M228 322 V420 H682" marker-end="url(#ah2)"/>
           <path d="M808 420 H895 V322" marker-end="url(#ah2)"/>
         </g>
         <g font-size="12.5" text-anchor="middle">
           <rect x="20" y="48" width="110" height="48" rx="10" fill="var(--fixed)" stroke="var(--hair)"/>
           <text x="75" y="70" fill="var(--fg)" font-weight="600">Cover</text><text x="75" y="86" fill="var(--fg-2)" font-size="11">any size H × W</text>
           <rect x="160" y="48" width="138" height="48" rx="10" fill="var(--fixed)" stroke="var(--hair)"/>
-          <text x="229" y="70" fill="var(--fg)" font-weight="600">Downscale</text><text x="229" y="86" fill="var(--fg-2)" font-size="11">canvas ≤ 512 × 512</text>
+          <text x="229" y="70" fill="var(--fg)" font-weight="600">Resample</text><text x="229" y="86" fill="var(--fg-2)" font-size="11">canvas 512 × 512</text>
           <rect x="328" y="48" width="138" height="48" rx="10" fill="var(--fixed)" stroke="var(--hair)"/>
           <text x="397" y="70" fill="var(--fg)" font-weight="600">2×2 polyphase</text><text x="397" y="86" fill="var(--fg-2)" font-size="11">X: 12 channels</text>
           <rect x="496" y="48" width="158" height="48" rx="10" fill="var(--learned)" stroke="var(--learned-line)"/>
@@ -641,50 +631,48 @@ footer .row { margin-top: 14px; }
           <rect x="684" y="48" width="124" height="48" rx="10" fill="var(--fixed)" stroke="var(--hair)"/>
           <text x="746" y="70" fill="var(--fg)" font-weight="600">X + f([M; X])</text><text x="746" y="86" fill="var(--fg-2)" font-size="11">merge → residual</text>
           <rect x="838" y="48" width="122" height="48" rx="10" fill="var(--fixed)" stroke="var(--hair)"/>
-          <text x="899" y="70" fill="var(--fg)" font-weight="600">Upsample × s</text><text x="899" y="86" fill="var(--fg-2)" font-size="11">add to the cover</text>
+          <text x="899" y="70" fill="var(--fg)" font-weight="600">Resize × s</text><text x="899" y="86" fill="var(--fg-2)" font-size="11">add to the cover</text>
           <rect x="160" y="126" width="138" height="48" rx="10" fill="var(--fixed)" stroke="var(--hair)"/>
           <text x="229" y="148" fill="var(--fg)" font-weight="600">Payload</text><text x="229" y="164" fill="var(--fg-2)" font-size="11">1,024 bits</text>
           <rect x="328" y="126" width="138" height="48" rx="10" fill="var(--fixed)" stroke="var(--hair)"/>
           <text x="397" y="148" fill="var(--fg)" font-weight="600">Scatter carrier</text><text x="397" y="164" fill="var(--fg-2)" font-size="11">M: fixed, no parameters</text>
-          <text x="610" y="22" fill="var(--fg-2)" font-size="11" text-anchor="start">λ via FiLM</text>
+          <text x="586" y="22" fill="var(--fg-2)" font-size="11" text-anchor="start">FiLM, fixed trade-off</text>
           <text x="485" y="214" fill="var(--fg-3)" font-size="11">full-resolution cover</text>
 
           <rect x="20" y="274" width="110" height="48" rx="10" fill="var(--fixed)" stroke="var(--hair)"/>
           <text x="75" y="296" fill="var(--fg)" font-weight="600">Received</text><text x="75" y="312" fill="var(--fg-2)" font-size="11">after the platform</text>
           <rect x="160" y="274" width="138" height="48" rx="10" fill="var(--fixed)" stroke="var(--hair)"/>
-          <text x="229" y="296" fill="var(--fg)" font-weight="600">Downscale</text><text x="229" y="312" fill="var(--fg-2)" font-size="11">same canvas</text>
+          <text x="229" y="296" fill="var(--fg)" font-weight="600">Resample</text><text x="229" y="312" fill="var(--fg-2)" font-size="11">same canvas</text>
           <rect x="328" y="274" width="138" height="48" rx="10" fill="var(--fixed)" stroke="var(--hair)"/>
           <text x="397" y="296" fill="var(--fg)" font-weight="600">2×2 polyphase</text><text x="397" y="312" fill="var(--fg-2)" font-size="11">Z: 12 channels</text>
           <rect x="496" y="274" width="158" height="48" rx="10" fill="var(--fixed)" stroke="var(--hair)"/>
-          <text x="575" y="296" fill="var(--fg)" font-weight="600">Z + ½ (Z − X̂)</text><text x="575" y="312" fill="var(--fg-2)" font-size="11">sharpened input</text>
+          <text x="575" y="296" fill="var(--fg)" font-weight="600">1.5 Z</text><text x="575" y="312" fill="var(--fg-2)" font-size="11">decoder input</text>
           <rect x="684" y="274" width="124" height="48" rx="10" fill="var(--learned)" stroke="var(--learned-line)"/>
-          <text x="746" y="296" fill="var(--fg)" font-weight="600">Decoder</text><text x="746" y="312" fill="var(--fg-2)" font-size="11">32 residual units</text>
+          <text x="746" y="296" fill="var(--fg)" font-weight="600">Decoder</text><text x="746" y="312" fill="var(--fg-2)" font-size="11">32 units, 12→96→12</text>
           <rect x="838" y="274" width="122" height="48" rx="10" fill="var(--fixed)" stroke="var(--hair)"/>
           <text x="899" y="296" fill="var(--fg)" font-weight="600">Slot means</text><text x="899" y="312" fill="var(--fg-2)" font-size="11">→ 1,024 logits</text>
-          <rect x="328" y="352" width="138" height="48" rx="10" fill="var(--learned)" stroke="var(--learned-line)"/>
-          <text x="397" y="374" fill="var(--fg)" font-weight="600">Cover predictor</text><text x="397" y="390" fill="var(--fg-2)" font-size="11">X̂ · 60,524 params</text>
           <rect x="684" y="396" width="124" height="48" rx="10" fill="var(--learned)" stroke="var(--learned-line)"/>
           <text x="746" y="418" fill="var(--fg)" font-weight="600">Router</text><text x="746" y="434" fill="var(--fg-2)" font-size="11">channel weights</text>
         </g>
       </svg></div>
       <p class="swipe-hint">Swipe sideways to see the whole diagram.</p>
-      <figcaption class="caption">Blue: learned (every block FiLM-modulated by the trade-off λ). Gray: fixed operators. The payload reaches the image only through the fixed carrier; the decoder is the part worth scaling. Only the canvas residual is upsampled, so the signer's cost does not grow with the photo.</figcaption>
+      <figcaption class="caption">Blue: learned. Every block is FiLM-modulated by a loss trade-off that is drawn per step in training and fixed at deployment, so it is not a setting. Gray: fixed operators. The payload reaches the image only through the fixed carrier; the decoder is the part worth scaling. Only the canvas residual is resized to the photo, so the signer's cost does not grow with the photo.</figcaption>
     </figure>
 
     <div class="tiles c2">
-      <div class="tile finding"><div class="t">The decoder sets the frontier</div><div class="big" style="margin-top:10px">+0.87 dB</div><p class="d">PSNR at matched bit accuracy from a 32-unit residual decoder, with 17% fewer bit errors at matched PSNR and LPIPS. Depth pays from 16 to 32 units and then stops: 64 and 128 units add +0.04 and +0.03 dB.</p><p class="src">Screening study: 51 configurations × 3 seeds, compared at matched PSNR, SSIM and LPIPS.</p></div>
-      <div class="tile finding"><div class="t">The signer can stay tiny</div><div class="big" style="margin-top:10px">10,412</div><p class="d">parameters. No embedder we tried improved on this two-convolution write on all quality axes at once, including coupling INNs and deep convolutional embedders at 33× its cost.</p><p class="src">Taking an 8-block INN apart: block 0 alone builds 86% of the recovered message.</p></div>
-      <div class="tile finding"><div class="t">A fixed carrier does the spreading</div><div class="big" style="margin-top:10px">3.7–6.8 dB</div><p class="d">PSNR lost at matched bit accuracy when the fixed scatter is replaced by a learned linear, block-local or learned-upsampling message code. A random scatter is as good as any rule we tried; a periodic one costs 1.06 dB.</p><p class="src">Every bit gets its own disjoint, exactly orthogonal set of positions.</p></div>
-      <div class="tile finding"><div class="t">Better than our previous system</div><div class="big" style="margin-top:10px">−34.5%</div><p class="d">structural error (1 − SSIM) at matched bit accuracy against our coupling-INN system, with +0.52 dB PSNR and 8.9% and 19.8% fewer bit errors at matched PSNR and LPIPS (all p &lt; 0.05).</p><p class="src">Three seeds per system, seed-paired where the construction allows.</p></div>
+      <div class="tile finding"><div class="t">The decoder sets the frontier</div><div class="big" style="margin-top:10px">+0.79 dB</div><p class="d">PSNR at matched bit accuracy from a 32-unit residual decoder, with 34% fewer bit errors at matched PSNR. 64 and 128 units add only +0.06 dB each, not significantly.</p><p class="src">Screening study: 51 configurations × 3 seeds, compared at matched PSNR, SSIM and LPIPS.</p></div>
+      <div class="tile finding"><div class="t">The signer can stay tiny</div><div class="big" style="margin-top:10px">10,412</div><p class="d">parameters. No larger embedder we tried improves on this two-convolution write on any readout, including coupling INNs and deep convolutional embedders at 33× its cost.</p><p class="src">Taking an 8-block INN apart: block 0 alone builds 86% of the recovered message.</p></div>
+      <div class="tile finding"><div class="t">A fixed carrier does the spreading</div><div class="big" style="margin-top:10px">12–47×</div><p class="d">as many bit errors at matched PSNR when the fixed scatter is replaced by a learned linear, block-local or learned-upsampling message code. A random scatter is as good as any rule we tried; a periodic one costs 1.45 dB.</p><p class="src">Every bit gets its own disjoint, exactly orthogonal set of positions.</p></div>
+      <div class="tile finding"><div class="t">Better than the previous release</div><div class="big" style="margin-top:10px">40–46%</div><p class="d">fewer bit errors at matched PSNR (44 and 46 dB) under JPEG, resizing followed by JPEG and the platform settings, on the 24 held-out images with three training seeds per recipe. On the test set, one run each: 45.29 against 44.62 dB PSNR, and 0.9388 against 0.9149 bit accuracy under resizing followed by JPEG.</p><p class="src">The same recipe trained on the new attacks alone gains as much; p &lt; 0.05 in five of the six category-and-level cells.</p></div>
     </div>
 
     <figure class="fig" id="carrierFig">
-      <div class="fig-head"><h3 class="h3">Inside the carrier</h3><span class="small muted">256 × 256 canvas · the released layout</span></div>
-      <p class="sub" style="font-size:17px;margin-top:10px">Each of the 1,024 bits owns 16 scattered positions in each of the 12 polyphase channels: 192 places in the image. Point at or tap a slot to see where its bit goes, or a position to find its slot.</p>
+      <div class="fig-head"><h3 class="h3">Inside the carrier</h3><span class="small muted">512 × 512 canvas · the released layout</span></div>
+      <p class="sub" style="font-size:17px;margin-top:10px">Each of the 1,024 bits owns 64 scattered positions in each of the 12 polyphase channels: 768 places in the image. Point at or tap a slot to see where its bit goes, or a position to find its slot.</p>
       <div class="carrier">
         <div><div class="cap-h">Payload slots (32 × 32)</div><canvas id="slotCanvas" width="256" height="256" aria-label="The 1,024 payload slots"></canvas></div>
         <div>
-          <div class="row spread"><div class="cap-h" id="mTitle">Message tensor M, channel 1 (128 × 128)</div>
+          <div class="row spread"><div class="cap-h" id="mTitle">Message tensor M, channel 1 (256 × 256)</div>
             <select id="chanSel" class="sel-sm" aria-label="Channel"></select></div>
           <canvas id="mCanvas2" width="512" height="512" aria-label="Message tensor of one channel"></canvas>
         </div>
@@ -693,9 +681,9 @@ footer .row { margin-top: 14px; }
     </figure>
 
     <div class="tiles c3">
-      <div class="tile"><div class="t">Training</div><p class="d">100,000 steps from scratch on COCO 2017 (256 × 256 crops, batch 16), AdamW at 4·10⁻⁴ with a warmup-stable-decay schedule, on one GTX 1080 Ti in 25.2 hours.</p></div>
-      <div class="tile"><div class="t">Attacks in the loop</div><p class="d">The 16 evaluation attacks, real JPEG included, run in the forward pass from step 5,000; gradients flow through a differentiable JPEG surrogate.</p></div>
-      <div class="tile"><div class="t">Six loss terms</div><p class="d">L1, NLPD, LPIPS and SSIM structure for quality, bit cross-entropy for the payload, and a low-band term; λ, drawn per step, conditions every block through FiLM.</p></div>
+      <div class="tile"><div class="t">Training</div><p class="d">100,000 steps from scratch on COCO 2017 (256 × 256 crops, batch 16), AdamW at 4·10⁻⁴ with a warmup-stable-decay schedule, on one GTX 1080 Ti in 32.1 hours (the training loop with its inline validation).</p></div>
+      <div class="tile"><div class="t">Attacks in the loop</div><p class="d">From step 5,000, each image gets JPEG at quality 30 to 95, a downscale to 0.3–1.0×, or both, drawn per image: the exact 8-bit operations in the forward pass, a differentiable surrogate in the backward pass.</p></div>
+      <div class="tile"><div class="t">Six loss terms</div><p class="d">L1, NLPD, LPIPS and SSIM structure for quality, bit cross-entropy for the payload, and a low-band term. A loss trade-off drawn per step conditions every block through FiLM; it is fixed at deployment.</p></div>
     </div>
   </div>
 </section>
@@ -704,7 +692,7 @@ footer .row { margin-top: 14px; }
   <div class="wrap section">
     <p class="kicker">Signed payload</p>
     <h2 class="h2">A signature in 1,024 bits.</h2>
-    <p class="sub">The signer hashes the photo with a 128-bit PDQ-style perceptual hash, signs the hash with Ed25519 and embeds one Reed–Solomon codeword. The hash itself is not sent; only its BCH syndrome is.</p>
+    <p class="sub">The signer hashes the photo's 512 × 512 view with a 128-bit PDQ-style perceptual hash, signs the hash with Ed25519 and embeds one Reed–Solomon codeword. The hash itself is not sent; only its BCH syndrome is.</p>
     <figure class="fig has-narrow">
       <div class="scroll-x"><svg class="diagram" viewBox="0 0 980 120" role="img" aria-label="The 1,024 bits: 28-bit hash syndrome, 512-bit signature, 256-bit public key, 4 zero bits, and 224 bits of Reed-Solomon parity.">
         <g font-size="12.5" text-anchor="middle">
@@ -754,10 +742,10 @@ footer .row { margin-top: 14px; }
     <p class="kicker">Limits</p>
     <h2 class="h2">What it does not do.</h2>
     <div class="lim">
-      <div><b>Small images</b>The same 1,024 bits must fit in fewer pixels, so small images decode less reliably. The smallest size in the evaluation is far weaker than the sizes shown here, above all for signed images after platform-like chains.</div>
-      <div><b>Geometry</b>No robustness to geometric attacks: after a crop to 95% of each side, no image decoded.</div>
-      <div><b>Platform order</b>When the platform compresses the downscaled image before upscaling, far fewer signed images verify: X-like 30.0% and WeChat-like 0.1% over six sizes.</div>
-      <div><b>Perceptual binding</b>Small local edits can keep the hash within 4 bits: a black box over 5% of each side is accepted for 44.4% of images, an inpainted rectangle of 8% of the area for 12.5%.</div>
+      <div><b>Small images</b>Every image is resampled to the 512 × 512 canvas, so a small image is enlarged and the watermark shrunk back to its size. Below about 256 pixels per side even unattacked images lose bits: on one test image, bit accuracy 0.878 at 128 × 192 and 0.995 at 256 × 256. Every evaluated size is at least 256 pixels per side.</div>
+      <div><b>Geometry</b>No robustness to geometric attacks: after a crop to 95% of each side, no signed image verified.</div>
+      <div><b>Strong downscaling with JPEG</b>After shrinking to 0.3× and compressing at quality 50, only 9.2% of signed images verify over the five sizes (42.5% at 2048 × 1536); after 0.4× and quality 75, 77.4%.</div>
+      <div><b>Perceptual binding</b>Small local edits can keep the hash within 4 bits: a black box over 5% of each side is accepted for 43.0% of images, an inpainted rectangle of 8% of the area for 12.4%.</div>
       <div><b>Adversaries</b>Not designed against adaptive or white-box attackers who know the model. Not legal evidence; a verified signature shows only possession of the signing key.</div>
       <div><b>One run</b>The verification rates come from one training seed and one key pair, so no spread is given.</div>
     </div>
@@ -767,7 +755,7 @@ footer .row { margin-top: 14px; }
 <footer class="band alt">
   <div class="wrap">
     <p><b>Tiny Signer, Strong Verifier: The Decoder Sets the Frontier of Kilobit Image Watermarks.</b> Anonymous authors, under review. "AsymSeal" is a working name.</p>
-    <p style="margin-top:6px">Code and weights are released for non-commercial use under CC BY-NC 4.0. The demo runs the released checkpoint (seed 0, sha256 dbc90699…9a8d0d) in fp32; the paper's tables use fp16 autocast on a GTX 1080 Ti, and the demo's JPEG is your browser's encoder. Sample photos: Jebulon (Alhambra, Zappeion, Esnandes) and David Marcu (mountains), CC0, via Wikimedia Commons, scaled to 2048 pixels.</p>
+    <p style="margin-top:6px">Code and weights are released for non-commercial use under CC BY-NC 4.0. The demo runs the released checkpoint (seed 0, sha256 95f0d376…d3b096) in fp32; the paper's tables use fp16 autocast on a GTX 1080 Ti, and the demo's JPEG is your browser's encoder. Sample photos: Jebulon (Alhambra, Zappeion, Esnandes) and David Marcu (mountains), CC0, via Wikimedia Commons, scaled to 2048 pixels.</p>
     <pre id="bib">@misc{asymseal2026,
   title  = {Tiny Signer, Strong Verifier: The Decoder Sets the Frontier of Kilobit Image Watermarks},
   author = {Anonymous Authors},
@@ -785,8 +773,9 @@ footer .row { margin-top: 14px; }
  *
  * Mirrors the Python package: the polyphase split, the scatter carrier (seeded permutations
  * rebuilt with PyTorch's CPU Mersenne Twister, the recorded tie order, and a sha256 check of
- * every grid), FiLM, the write network, the cover predictor, the 32-unit residual decoder, the
- * decode router and the canvas resampling. Tensors are channel-major Float32Arrays.
+ * every grid), FiLM at the stored (fixed) lambda, the write network, the residual decoder (units
+ * 12 -> 96 -> 12 on the state 1.5 Z), the decode router and the fixed 512 x 512 canvas.
+ * Tensors are channel-major Float32Arrays.
  * The convolutions run on a backend: CpuBackend here, a WebGL2 backend in asymseal-gl.js.
  * Works in browsers (window.AsymSeal) and in Node (module.exports).
  */
@@ -795,11 +784,10 @@ footer .row { margin-top: 14px; }
 
   const NUM_SLOTS = 1024;
   const CHANNELS = 12;
-  const CANVAS_MAX = 512;
-  const CANVAS_MULTIPLE = 64;
+  const CANVAS_SIDE = 512;    // every image is resampled to one fixed 512 x 512 canvas
+  const MIN_SIDE = 8;         // smallest image side, as asymseal.canvas.MIN_SIDE
   const PERM_SEED = 0xD1FF5E;
   const FILM_K = 8;
-  const COVPRED_GAMMA = 0.5;
   const f32 = Math.fround;
 
   // ---------------------------------------------------------------------------------------
@@ -1160,16 +1148,11 @@ footer .row { margin-top: 14px; }
   }
 
   // ---------------------------------------------------------------------------------------
-  // Canvas rule of the image API (floor64), or a fixed C x C canvas (the final evaluation: C = 512)
+  // Canvas rule (asymseal.canvas): the fixed 512 x 512 canvas for every image size
   // ---------------------------------------------------------------------------------------
-  function canvasFor(H, W, fixed) {
-    if (fixed) {
-      if (fixed % CANVAS_MULTIPLE || fixed > CANVAS_MAX) throw new Error(`a fixed canvas must be a multiple of ${CANVAS_MULTIPLE}, at most ${CANVAS_MAX}`);
-      return [fixed, fixed];
-    }
-    if (H < CANVAS_MULTIPLE || W < CANVAS_MULTIPLE) throw new Error(`the image is ${W}x${H}; both sides must be at least 64 pixels`);
-    return [Math.min(CANVAS_MAX, CANVAS_MULTIPLE * Math.floor(H / CANVAS_MULTIPLE)),
-      Math.min(CANVAS_MAX, CANVAS_MULTIPLE * Math.floor(W / CANVAS_MULTIPLE))];
+  function canvasFor(H, W) {
+    if (H < MIN_SIDE || W < MIN_SIDE) throw new Error(`the image is ${W}x${H}; both sides must be at least ${MIN_SIDE} pixels`);
+    return [CANVAS_SIDE, CANVAS_SIDE];
   }
 
   // ---------------------------------------------------------------------------------------
@@ -1194,7 +1177,8 @@ footer .row { margin-top: 14px; }
     }
   }
 
-  // FiLM (gamma, beta) of every block for lambda = (lp, ls): f, then dec.0 .. dec.31
+  // FiLM (gamma, beta) of every block for lambda = (lp, ls): f, then dec.0 .. dec.{n-1}.
+  // The model always uses the lambda stored in the checkpoint (fixed; not a setting).
   function filmFor(weights, lam) {
     const ks = [];
     for (let k = 1; k <= FILM_K; k++) ks.push(k);
@@ -1215,8 +1199,9 @@ footer .row { margin-top: 14px; }
       for (let i = 0; i < nIn; i++) s += W.data[o * nIn + i] * phi[i];
       out[o] = s;
     }
-    const widths = [32];
-    for (let i = 0; i < 32; i++) widths.push(48);
+    const cfg = weights.manifest.config;
+    const widths = [cfg.write_hidden];
+    for (let i = 0; i < cfg.decoder_units; i++) widths.push(cfg.decoder_hidden);
     const nGamma = nOut / 2;
     const pairs = [];
     let off = 0;
@@ -1236,22 +1221,6 @@ footer .row { margin-top: 14px; }
     upload(t) { return t; }
     download(t) { return t; }
     free() {}
-    zeros(c, h, w) { return tensor(c, h, w); }
-    concat(a, b) {
-      const out = tensor(a.c + b.c, a.h, a.w);
-      out.data.set(a.data, 0); out.data.set(b.data, a.data.length);
-      return out;
-    }
-    sliceChannels(a, c0, c1) {
-      const n = a.h * a.w;
-      return tensor(c1 - c0, a.h, a.w, a.data.slice(c0 * n, c1 * n));
-    }
-    // z + gamma * (z - xhat)
-    sharpen(z, xhat, gamma) {
-      const out = tensor(z.c, z.h, z.w);
-      for (let i = 0; i < z.data.length; i++) out.data[i] = z.data[i] + gamma * f32(z.data[i] - xhat.data[i]);
-      return out;
-    }
     conv(x, L, opt) {
       const stride = opt.stride || 1, pad = opt.pad === undefined ? 1 : opt.pad;
       const { c: cin, h, w, data } = x;
@@ -1309,28 +1278,27 @@ footer .row { margin-top: 14px; }
       this.w = weights;
       this.backend = backend || new CpuBackend();
       const m = weights.manifest;
+      this.cfg = m.config;
+      if (m.config.canvas_side !== CANVAS_SIDE) throw new Error(`the weights expect a ${m.config.canvas_side} canvas`);
+      // lambda is fixed at the value stored in the checkpoint; s is the only setting
       this.deployed = { lambda: m.deployed.lambda.slice(), s: m.deployed.s };
       this.carrier = new Carrier(weights.get('adapter.sign_mask').data,
         weights.get('adapter.expert_bank').data, tieTable);
+      this.units = m.config.decoder_units;
+      this.inputMix = f32(m.config.decoder_input_mix);
       this.layers = {};
       const L = (p) => (this.layers[p] = weights.conv(p));
       L('inn.f.conv1'); L('inn.f.conv2');
-      for (let i = 0; i < 32; i++) { L(`inn.dec.${i}.conv1`); L(`inn.dec.${i}.conv2`); }
-      L('cover_predictor.stem'); L('cover_predictor.head');
-      for (let b = 0; b < 3; b++) { L(`cover_predictor.blocks.${b}.c1`); L(`cover_predictor.blocks.${b}.c2`); }
+      for (let i = 0; i < this.units; i++) { L(`inn.dec.${i}.conv1`); L(`inn.dec.${i}.conv2`); }
       for (let i = 1; i <= 4; i++) L(`decode_router.conv${i}`);
-      this.filmCache = new Map();
+      this.films = filmFor(this.w, this.deployed.lambda);
     }
     setBackend(b) { this.backend = b; }
-    film(lam) {
-      const key = lam[0] + ',' + lam[1];
-      let f = this.filmCache.get(key);
-      if (!f) { f = filmFor(this.w, lam); this.filmCache.set(key, f); }
-      return f;
-    }
+    // FiLM pairs at the stored lambda: f, then dec.0 .. dec.{n-1}
+    film() { return this.films; }
     // canvas-sized cover (3, hc, wc) -> container (3, hc, wc)
-    async embedCanvas(coverC, bits, lam, progress) {
-      const B = this.backend, film = this.film(lam);
+    async embedCanvas(coverC, bits, progress) {
+      const B = this.backend, film = this.films;
       const X = puSplit(coverC);
       const M = this.carrier.encode(bits, X.h, X.w);
       const inp = B.upload(tensor(24, X.h, X.w, concatData(M.data, X.data)));
@@ -1343,34 +1311,23 @@ footer .row { margin-top: 14px; }
       return puMerge(C);
     }
     // canvas-sized image (3, hc, wc) -> { logits (1024), weights (12) }
-    async extractCanvas(xC, lam, progress) {
-      const B = this.backend, film = this.film(lam), Ls = this.layers;
+    async extractCanvas(xC, progress) {
+      const B = this.backend, film = this.films, Ls = this.layers, n = this.units;
       const z = puSplit(xC);
       const xg = B.upload(xC);
-      // cover predictor
-      let s = B.conv(xg, Ls['cover_predictor.stem'], { stride: 2, pad: 1, slope: 0.1 });
-      for (let b = 0; b < 3; b++) {
-        const r = B.conv(s, Ls[`cover_predictor.blocks.${b}.c1`], { slope: 0.1 });
-        const s2 = B.conv(r, Ls[`cover_predictor.blocks.${b}.c2`], { residual: s, slope: 0.1 });
-        B.free(r); B.free(s); s = s2;
-      }
-      const xhat = B.conv(s, Ls['cover_predictor.head'], {});
-      B.free(s);
-      const zg = B.upload(z);
-      const zaug = B.sharpen(zg, xhat, COVPRED_GAMMA);
-      B.free(zg); B.free(xhat);
-      let state = B.concat(zaug, B.zeros(12, z.h, z.w));
-      B.free(zaug);
-      // residual decoder, last unit first
-      for (let i = 31; i >= 0; i--) {
+      // initial state 1.5 Z, computed as the release does: Z + 0.5 * (Z - 0) (no cover estimate)
+      const h0 = tensor(z.c, z.h, z.w);
+      for (let i = 0; i < z.data.length; i++) h0.data[i] = f32(z.data[i] + f32(this.inputMix * f32(z.data[i] - 0)));
+      let state = B.upload(h0);
+      // residual decoder on the 12 channels, last unit first
+      for (let i = n - 1; i >= 0; i--) {
         const h = B.conv(state, Ls[`inn.dec.${i}.conv1`], { slope: 0.01, film: film[i + 1] });
         const ns = B.conv(h, Ls[`inn.dec.${i}.conv2`], { residual: state });
         B.free(h); B.free(state); state = ns;
-        if (progress && i % 4 === 0) { progress((32 - i) / 34); await tick(); }
+        if (progress && i % 4 === 0) { progress((n - i) / (n + 2)); await tick(); }
       }
-      const secretG = B.sliceChannels(state, 12, 24);
-      const secret = B.download(secretG);
-      B.free(secretG); B.free(state);
+      const secret = B.download(state);
+      B.free(state);
       // decode router
       let r = xg;
       for (let i = 1; i <= 4; i++) {
@@ -1405,19 +1362,18 @@ footer .row { margin-top: 14px; }
     // full-size cover tensor (3, H, W) -> watermarked tensor (3, H, W), float
     async embed(cover, bits, opt) {
       opt = opt || {};
-      const lam = opt.lambda || this.deployed.lambda;
       const s = f32(opt.s === undefined ? this.deployed.s : opt.s);
-      const [hc, wc] = canvasFor(cover.h, cover.w, opt.canvas);
+      const [hc, wc] = canvasFor(cover.h, cover.w);
       const native = hc === cover.h && wc === cover.w;
       const coverC = native ? cover : resizeAA(cover, hc, wc);
-      const contC = await this.embedCanvas(coverC, bits, lam, opt.progress);
+      const contC = await this.embedCanvas(coverC, bits, opt.progress);
       const out = tensor(3, cover.h, cover.w);
       if (native) {
         for (let i = 0; i < out.data.length; i++) out.data[i] = s === 1 ? contC.data[i] : f32(cover.data[i] + f32(f32(contC.data[i] - cover.data[i]) * s));
       } else {
         const r = tensor(3, hc, wc);
         for (let i = 0; i < r.data.length; i++) r.data[i] = f32(contC.data[i] - coverC.data[i]);
-        // a fixed canvas larger than the cover shrinks the residual: antialiased, as the evaluation's canvas patch
+        // canvas_up: bilinear when it enlarges, antialiased when the image is smaller than the canvas on a side
         const up = (cover.h < hc || cover.w < wc) ? resizeAA(r, cover.h, cover.w) : resizeBilinear(r, cover.h, cover.w);
         for (let i = 0; i < out.data.length; i++) out.data[i] = f32(cover.data[i] + f32(up.data[i] * s));
       }
@@ -1425,10 +1381,9 @@ footer .row { margin-top: 14px; }
     }
     async extract(x, opt) {
       opt = opt || {};
-      const lam = opt.lambda || this.deployed.lambda;
-      const [hc, wc] = canvasFor(x.h, x.w, opt.canvas);
+      const [hc, wc] = canvasFor(x.h, x.w);
       const xC = (hc === x.h && wc === x.w) ? x : resizeAA(x, hc, wc);
-      const r = await this.extractCanvas(xC, lam, opt.progress);
+      const r = await this.extractCanvas(xC, opt.progress);
       r.canvas = [hc, wc];
       return r;
     }
@@ -1507,7 +1462,7 @@ footer .row { margin-top: 14px; }
   }
 
   const api = {
-    NUM_SLOTS, CHANNELS, sha256Hex, MT19937, uniformKeys, permSeed, balancedPermutation, stackDigest,
+    NUM_SLOTS, CHANNELS, CANVAS_SIDE, MIN_SIDE, sha256Hex, MT19937, uniformKeys, permSeed, balancedPermutation, stackDigest,
     Carrier, tensor, puSplit, puMerge, resizeAA, resizeBilinear, imageToTensor, tensorToImage,
     roundHalfEven, canvasFor, Weights, filmFor, CpuBackend, Model, loadModel,
     bitsFromBytes, bytesFromBits, bitsFromText, bitsToText, hardBits, expandRepetition,
@@ -1586,27 +1541,6 @@ void main() {
   o = acc;
 }`;
 
-  // out = A + k * (A - B), same layout
-  const FS_SHARPEN = HEAD + `
-uniform sampler2D uA; uniform sampler2D uBt; uniform float uK;
-void main() {
-  if (!outIndex()) { o = vec4(0.0); return; }
-  ivec2 p = ivec2(gl_FragCoord.xy);
-  vec4 a = texelFetch(uA, p, 0);
-  o = a + uK * (a - texelFetch(uBt, p, 0));
-}`;
-
-  // regroup: output group g reads A's group g + uOffA when g < uGa, else B's group g - uGa (or 0)
-  const FS_REGROUP = HEAD + `
-uniform sampler2D uA; uniform int uATX; uniform int uGa; uniform int uOffA;
-uniform sampler2D uBt; uniform int uBTX; uniform int uHasB;
-void main() {
-  if (!outIndex()) { o = vec4(0.0); return; }
-  if (gOut < uGa) { o = texelFetch(uA, at(gOut + uOffA, uATX, uOutHW, oyx.x, oyx.y), 0); return; }
-  if (uHasB == 1) { o = texelFetch(uBt, at(gOut - uGa, uBTX, uOutHW, oyx.x, oyx.y), 0); return; }
-  o = vec4(0.0);
-}`;
-
   class GLBackend {
     constructor() {
       this.name = 'webgl2';
@@ -1623,7 +1557,7 @@ void main() {
         const dbg = gl.getExtension('WEBGL_debug_renderer_info');
         this.renderer = dbg ? gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER);
       } catch (e) { /* not exposed */ }
-      this.progs = { conv: this.program(FS_CONV), sharpen: this.program(FS_SHARPEN), regroup: this.program(FS_REGROUP) };
+      this.progs = { conv: this.program(FS_CONV) };
       this.fb = gl.createFramebuffer();
       this.vao = gl.createVertexArray();
       this.dummy = this.texture(1, 1, new Float32Array(4));
@@ -1704,7 +1638,6 @@ void main() {
       return out;
     }
     free(L) { if (L && L.tex) { this.gl.deleteTexture(L.tex); L.tex = null; } }
-    zeros(c, h, w) { return { zeros: true, c, h, w }; }
     run(prog, out, bind) {
       const gl = this.gl;
       gl.useProgram(prog.p);
@@ -1777,31 +1710,6 @@ void main() {
         gl.uniform1i(loc.uHasFilm, opt.film ? 1 : 0);
       });
     }
-    sharpen(z, xhat, k) {
-      const out = this.alloc(z.c, z.h, z.w);
-      const gl = this.gl;
-      return this.run(this.progs.sharpen, out, (tex, loc) => {
-        tex('uA', z.tex); tex('uBt', xhat.tex); gl.uniform1f(loc.uK, k);
-      });
-    }
-    concat(a, b) {
-      const out = this.alloc(a.c + b.c, a.h, a.w);
-      const gl = this.gl;
-      return this.run(this.progs.regroup, out, (tex, loc) => {
-        tex('uA', a.tex); tex('uBt', b.zeros ? null : b.tex);
-        gl.uniform1i(loc.uATX, a.TX); gl.uniform1i(loc.uGa, Math.ceil(a.c / 4)); gl.uniform1i(loc.uOffA, 0);
-        gl.uniform1i(loc.uBTX, b.zeros ? 1 : b.TX); gl.uniform1i(loc.uHasB, b.zeros ? 0 : 1);
-      });
-    }
-    sliceChannels(a, c0, c1) {
-      const out = this.alloc(c1 - c0, a.h, a.w);
-      const gl = this.gl;
-      return this.run(this.progs.regroup, out, (tex, loc) => {
-        tex('uA', a.tex); tex('uBt', null);
-        gl.uniform1i(loc.uATX, a.TX); gl.uniform1i(loc.uGa, out.G); gl.uniform1i(loc.uOffA, c0 >> 2);
-        gl.uniform1i(loc.uBTX, 1); gl.uniform1i(loc.uHasB, 0);
-      });
-    }
     // Every op on random tensors against the CPU backend; returns the largest relative error.
     selfTest(cpu) {
       let seed = 12345;
@@ -1816,22 +1724,17 @@ void main() {
       };
       const film = (n) => ({ gamma: Float32Array.from({ length: n }, rnd), beta: Float32Array.from({ length: n }, rnd) });
       const cases = [
-        [T(24, 9, 11), layer(48, 24, 3), { slope: 0.01, film: film(48) }],
-        [T(3, 16, 20), layer(32, 3, 4), { stride: 2, pad: 1, slope: 0.1 }],
+        [T(12, 9, 11), layer(96, 12, 3), { slope: 0.01, film: film(96) }],     // decoder conv1
+        [T(24, 9, 11), layer(32, 24, 3), { slope: 0.01, film: film(32) }],     // write conv1
+        [T(3, 16, 20), layer(16, 3, 3), { stride: 2, pad: 1, slope: 0.1 }],    // router conv1
         [T(16, 10, 14), layer(32, 16, 3), { stride: 2, pad: 1, slope: 0.1 }],
       ];
       for (const [x, L, opt] of cases) {
         const xg = this.upload(x);
         cmp(cpu.conv(x, L, opt), this.download(this.conv(xg, L, opt)));
       }
-      const x = T(48, 12, 8), r = T(24, 12, 8), L = layer(24, 48, 3);
+      const x = T(96, 12, 8), r = T(12, 12, 8), L = layer(12, 96, 3);         // decoder conv2 + residual
       cmp(cpu.conv(x, L, { residual: r }), this.download(this.conv(this.upload(x), L, { residual: this.upload(r) })));
-      const z = T(12, 7, 9), xh = T(12, 7, 9);
-      const zg = this.upload(z), xhg = this.upload(xh);
-      cmp(cpu.sharpen(z, xh, 0.5), this.download(this.sharpen(zg, xhg, 0.5)));
-      const cat = this.concat(zg, this.zeros(12, 7, 9));
-      cmp(cpu.concat(z, cpu.zeros(12, 7, 9)), this.download(cat));
-      cmp(cpu.sliceChannels(cpu.concat(xh, z), 12, 24), this.download(this.sliceChannels(this.concat(xhg, zg), 12, 24)));
       return worst;
     }
   }
@@ -1844,7 +1747,8 @@ void main() {
 /* AsymSeal signed payload in the browser: the PDQ-style hash, BCH(127, t=4) syndrome coding,
  * RS(128, 100) error correction, the 796-bit wire layout and Ed25519 (WebCrypto).
  * Mirrors asymseal/payload/*.py; float64 sums run in the same order, so the hash matches the
- * Python package bit for bit on the golden vectors.
+ * Python package bit for bit on the golden vectors. As in the package, the hash that is signed and
+ * compared is taken on the image's 512 x 512 view (hashView: Pillow's bilinear resize per channel).
  * Works in browsers (window.AsymSealSigned) and in Node (module.exports).
  */
 (function (root) {
@@ -1979,6 +1883,68 @@ void main() {
   }
   function pdq128(img) { return bytesFromBits(pdq128Bits(img)); }
   function canonicalize(h) { const b = Uint8Array.from(h); b[15] &= 0xfe; return b; }
+
+  // ---------------------------------------------------------------------------------------
+  // Fixed-size hash view (asymseal.payload.pdq.hash_view): each channel resized to 512 x 512 in
+  // float32 with Pillow's bilinear filter (antialiased when shrinking; horizontal pass first,
+  // float64 coefficients and sums, float32 intermediate), then rounded half to even and clipped.
+  // A 512 x 512 image is used as it is.
+  // ---------------------------------------------------------------------------------------
+  const HASH_SIDE = 512;
+  function pilCoeffs(inSize, outSize) {
+    const scale = inSize / outSize;
+    const filterscale = scale < 1 ? 1 : scale;
+    const support = filterscale, ss = 1 / filterscale;
+    const lo = new Int32Array(outSize), k = [];
+    for (let xx = 0; xx < outSize; xx++) {
+      const center = (xx + 0.5) * scale;
+      let a = Math.trunc(center - support + 0.5); if (a < 0) a = 0;
+      let b = Math.trunc(center + support + 0.5); if (b > inSize) b = inSize;
+      const n = b - a, w = new Float64Array(n);
+      let ww = 0;
+      for (let x = 0; x < n; x++) { const t = Math.abs((x + a - center + 0.5) * ss); const v = t < 1 ? 1 - t : 0; w[x] = v; ww += v; }
+      if (ww !== 0) for (let x = 0; x < n; x++) w[x] /= ww;
+      lo[xx] = a; k.push(w);
+    }
+    return { lo, k };
+  }
+  function roundHalfEven(v) {
+    const r = Math.round(v);
+    return (Math.abs(v % 1) === 0.5 && r % 2 !== 0) ? r - 1 : r;
+  }
+  // img: { width, height, data } with RGBA (or RGB) bytes -> the 512 x 512 RGBA view
+  function hashView(img) {
+    const { width: W, height: H, data } = img;
+    if (W === HASH_SIDE && H === HASH_SIDE) return img;
+    const step = data.length === W * H * 4 ? 4 : 3;
+    const S = HASH_SIDE, cx = pilCoeffs(W, S), cy = pilCoeffs(H, S);
+    const out = new Uint8ClampedArray(S * S * 4);
+    const tmp = new Float32Array(H * S), res = new Float32Array(S * S);
+    for (let c = 0; c < 3; c++) {
+      for (let y = 0; y < H; y++) {
+        const row = y * W;
+        for (let xx = 0; xx < S; xx++) {
+          const a = cx.lo[xx], w = cx.k[xx];
+          let acc = 0;
+          for (let x = 0; x < w.length; x++) acc += data[(row + a + x) * step + c] * w[x];
+          tmp[y * S + xx] = acc;
+        }
+      }
+      for (let yy = 0; yy < S; yy++) {
+        const a = cy.lo[yy], w = cy.k[yy];
+        for (let xx = 0; xx < S; xx++) {
+          let acc = 0;
+          for (let y = 0; y < w.length; y++) acc += tmp[(a + y) * S + xx] * w[y];
+          res[yy * S + xx] = acc;
+        }
+      }
+      for (let i = 0; i < S * S; i++) out[i * 4 + c] = Math.min(255, Math.max(0, roundHalfEven(res[i])));
+    }
+    for (let i = 0; i < S * S; i++) out[i * 4 + 3] = 255;
+    return { width: S, height: S, data: out };
+  }
+  // the 16-byte hash of the image's 512 x 512 view (asymseal.payload.pdq.image_hash)
+  function imageHash(img) { return pdq128(hashView(img)); }
 
   // ---------------------------------------------------------------------------------------
   // BCH(127, t=4) over GF(2^7), primitive polynomial 0x89
@@ -2201,11 +2167,11 @@ void main() {
     const code = eccEncode(packWire(syn, sig, signer.publicKey));
     return { codeword: code, info: { H: hex(H), syndrome: Array.from(syn).join(''), sig: hex(sig), pk: hex(signer.publicKey) } };
   }
-  async function signImage(coverRGBA, signer) { return signHash(pdq128(coverRGBA), signer); }
+  async function signImage(coverRGBA, signer) { return signHash(imageHash(coverRGBA), signer); }
 
   // bits: 1024 decoded bits; received: the image they came from; trustedPk: 32 bytes or null
   async function verifyImage(bits, received, trustedPk, sentBits) {
-    const Hp = canonicalize(pdq128(received));
+    const Hp = canonicalize(imageHash(received));
     const info = { H_prime: hex(Hp) };
     const [wire, nFix, rsOk] = eccDecode(bits);
     info.rs_ok = rsOk; info.rs_corrected = nFix;
@@ -2227,7 +2193,7 @@ void main() {
   }
 
   const api = {
-    bitsFromBytes, bytesFromBits, hex, fromHex, hamming, pdq128Bits, pdq128, canonicalize,
+    bitsFromBytes, bytesFromBits, hex, fromHex, hamming, pdq128Bits, pdq128, canonicalize, HASH_SIDE, hashView, imageHash,
     bchSyndrome, bchDecode, rsEncode, rsDecode, GEN, packWire, unpackWire, eccEncode, eccDecode,
     ed25519Supported, keyFromSeed, generateKey, sign, verifySig, signHash, signImage, verifyImage,
   };
@@ -2267,39 +2233,34 @@ void main() {
   }
 
   // -------------------------------------------------------------------------------------
-  // Reported numbers (README of the release: test set, held-out selection, verification rates)
+  // Reported numbers: the final evaluation of the released checkpoint (seed 0) at s = 1.0
   // -------------------------------------------------------------------------------------
-  const SIZES = [ // size, PSNR, SSIM, LPIPS, BA (16 attacks), BA no attack, WeChat-like
-    ['1024 × 1024', 44.81, 0.9965, 0.0079, 0.9940, 0.99998, 0.9707],
-    ['1088 × 1920', 44.59, 0.9957, 0.0113, 0.9984, 1.00000, 0.9950],
-    ['1920 × 1088', 44.57, 0.9956, 0.0123, 0.9987, 1.00000, 0.9958],
-    ['1280 × 768', 44.69, 0.9961, 0.0084, 0.9930, 1.00000, 0.9623],
-    ['2048 × 1536', 44.46, 0.9959, 0.0143, 0.9995, 1.00000, 0.9990],
-    ['random size', 44.29, 0.9956, 0.0100, 0.9899, 0.99999, 0.9456],
+  const SIZES = [ // test set: size, PSNR, SSIM, BA no attack, JPEG 30, 0.5x + JPEG 70, 0.3x + JPEG 50, WeChat setting
+    ['1024 × 1024', 45.46, 0.9962, 1.0000, 0.9811, 0.9692, 0.7194, 0.9947],
+    ['1088 × 1920', 45.25, 0.9958, 1.0000, 0.9927, 0.9920, 0.8584, 0.9918],
+    ['1920 × 1088', 45.24, 0.9957, 1.0000, 0.9949, 0.9939, 0.8554, 0.9944],
+    ['1280 × 768', 45.32, 0.9958, 1.0000, 0.9806, 0.9570, 0.6940, 0.9951],
+    ['2048 × 1536', 45.17, 0.9961, 1.0000, 0.9972, 0.9977, 0.9337, 0.9967],
+    ['random size', 45.41, 0.9959, 1.0000, 0.9585, 0.9131, 0.7393, 0.9714],
   ];
-  const CANDS = [ // stage, lambda, s, PSNR, BA (held-out, 13 candidates)
-    [1, '(0.30, 0.85)', 1.00, 43.61, 0.9822], [1, '(0.30, 0.95)', 1.00, 43.85, 0.9811],
-    [1, '(0.35, 0.85)', 1.00, 43.22, 0.9839], [1, '(0.35, 0.95)', 1.00, 43.44, 0.9831],
-    [2, '(0.35, 0.95)', 0.35, 52.55, 0.8872], [2, '(0.35, 0.95)', 0.40, 51.39, 0.9105],
-    [2, '(0.35, 0.95)', 0.45, 50.37, 0.9280], [2, '(0.35, 0.95)', 0.50, 49.46, 0.9411],
-    [2, '(0.35, 0.95)', 0.55, 48.63, 0.9510], [2, '(0.35, 0.95)', 0.60, 47.87, 0.9584],
-    [2, '(0.35, 0.95)', 0.70, 46.54, 0.9685], [2, '(0.35, 0.95)', 0.80, 45.38, 0.9751],
-    [2, '(0.35, 0.95)', 0.90, 44.36, 0.9797],
+  const CANDS = [ // held-out selection, 10 candidate strengths: s, PSNR, BA
+    [0.35, 54.55, 0.8711], [0.40, 53.39, 0.8976], [0.45, 52.37, 0.9162], [0.50, 51.45, 0.9298],
+    [0.55, 50.62, 0.9402], [0.60, 49.87, 0.9482], [0.70, 48.53, 0.9601], [0.80, 47.37, 0.9683],
+    [0.90, 46.35, 0.9744], [1.00, 45.43, 0.9785],
   ];
-  const VERIFY = [ // [group] or [label, six sizes, 1024, 2048 x 1536, edit]
-    ['No attack'], ['8-bit PNG', 99.9, 100.0, 100.0],
-    ['JPEG'], ['Quality 90', 91.2, 100.0, 100.0], ['Quality 70', 81.9, 96.8, 100.0],
-    ['Quality 50', 76.2, 85.7, 99.1], ['Quality 30', 54.4, 47.2, 92.8],
-    ['85, then 60', 78.3, 90.4, 98.9], ['70, three times', 81.9, 96.6, 100.0],
-    ['Down-up resize'], ['0.9×', 99.9, 100.0, 100.0], ['0.7×', 99.9, 100.0, 100.0], ['0.5×', 98.4, 100.0, 100.0],
-    ['Platform-like chains'], ['Insta-like (0.5×, q85)', 82.6, 98.7, 100.0], ['X-like (0.4×, q75)', 79.0, 91.3, 100.0],
-    ['WhatsApp-like (0.5×, q70)', 79.0, 91.1, 99.6], ['WeChat-like (0.3×, q50)', 45.5, 12.5, 96.6],
-    ['Platform order'], ['Insta-like', 68.0, 72.1, 98.3], ['X-like', 30.0, 0.6, 84.9],
-    ['WhatsApp-like', 43.5, 18.7, 93.0], ['WeChat-like', 0.1, 0.0, 0.8],
+  const DEPLOYED_S = 1.0, FLOOR_S = 0.45, THRESHOLD = 0.975;
+  const VERIFY = [ // CLIC 2020, signed: [group] or [label, five fixed sizes pooled, 1024 x 1024, 2048 x 1536, edit]
+    ['No attack'], ['8-bit PNG', 100.0, 100.0, 100.0],
+    ['JPEG'], ['Quality 90', 100.0, 100.0, 100.0], ['Quality 70', 99.8, 99.6, 100.0],
+    ['Quality 50', 99.2, 98.3, 100.0], ['Quality 30', 95.7, 92.8, 99.8],
+    ['Resize'], ['0.9×', 100.0, 100.0, 100.0], ['0.7×', 100.0, 100.0, 100.0], ['0.5×', 100.0, 100.0, 100.0], ['0.3×', 100.0, 100.0, 100.0],
+    ['Resize, then JPEG'], ['0.5×, JPEG 85', 98.4, 97.4, 100.0], ['0.4×, JPEG 75', 77.4, 61.5, 99.1],
+    ['0.5×, JPEG 70', 90.9, 87.2, 99.4], ['0.3×, JPEG 50', 9.2, 0.0, 42.5],
+    ['Platform settings'], ['Instagram (1080, JPEG 85)', 100.0, 100.0, 100.0], ['X (2048, JPEG 75)', 99.9, 100.0, 100.0],
+    ['WhatsApp (1600, JPEG 70)', 99.8, 99.6, 100.0], ['WeChat (1280, JPEG 50)', 98.3, 98.3, 99.4],
     ['Edits · acceptance, lower is better'], ['Crop to 95% of each side', 0.0, 0.0, 0.0, true],
-    ['Black box, 5% of each side', 44.4, 48.7, 45.1, true], ['Pasted rectangle, 8% of the area', 0.3, 0.0, 0.8, true],
-    ['Inpainted rectangle, 8% of the area', 12.5, 11.5, 11.1, true],
-    ['Summary'], ['13 attacks: JPEG, resize, chains', 80.6, 85.4, 99.0], ['All 28 attacks', 69.9, 70.5, 90.9],
+    ['Black box, 5% of each side', 43.0, 47.0, 41.7, true], ['Pasted rectangle, 8% of the area', 0.5, 0.8, 0.4, true],
+    ['Inpainted rectangle, 8% of the area', 12.4, 11.5, 10.9, true],
   ];
 
   // -------------------------------------------------------------------------------------
@@ -2334,9 +2295,9 @@ void main() {
   }
 
   const SIZE_SERIES = [
-    { key: 5, label: 'No attack', shape: 'circle', color: 'var(--s1)' },
-    { key: 4, label: 'Mean of 16 attacks', shape: 'square', color: 'var(--s2)' },
-    { key: 6, label: 'WeChat-like chain', shape: 'diamond', color: 'var(--s3)' },
+    { key: 3, label: 'No attack', shape: 'circle', color: 'var(--s1)' },
+    { key: 4, label: 'JPEG quality 30', shape: 'square', color: 'var(--s2)' },
+    { key: 7, label: 'WeChat setting', shape: 'diamond', color: 'var(--s3)' },
   ];
   function drawSizeChart() {
     const host = $('sizeChart');
@@ -2348,7 +2309,7 @@ void main() {
     const X = (v) => left + (v - lo) / (hi - lo) * (W - left - right);
     host.innerHTML = '';
     const svg = el('svg', { viewBox: `0 0 ${W} ${H}`, width: W, height: H, role: 'img',
-      'aria-label': 'Bit accuracy by image size: no attack near 1.0 at every size; mean over 16 attacks from 0.990 at a random size to 0.9995 at 2048 by 1536; WeChat-like chain from 0.946 at a random size to 0.999 at 2048 by 1536.' }, { display: 'block', 'max-width': '100%' }, host);
+      'aria-label': 'Bit accuracy by image size: 1.0 with no attack at every size; JPEG quality 30 from 0.959 at a random size to 0.997 at 2048 by 1536; WeChat setting from 0.971 at a random size to 0.997 at 2048 by 1536.' }, { display: 'block', 'max-width': '100%' }, host);
     for (let k = 94; k <= 100; k++) {
       const t = k / 100;
       el('line', { x1: X(t), x2: X(t), y1: top - 8, y2: H - 26 }, { stroke: 'var(--hair)', 'stroke-width': '1px' }, svg);
@@ -2361,7 +2322,7 @@ void main() {
       el('line', { x1: X(Math.min(...vals)), x2: X(Math.max(...vals)), y1: y, y2: y }, { stroke: 'var(--fg-3)', 'stroke-width': '2px', 'stroke-linecap': 'round', opacity: '0.45' }, svg);
       SIZE_SERIES.forEach(s => marker(svg, s.shape, X(row[s.key]), y, s.color, 5.5));
       const hit = el('rect', { x: 0, y: y - rowH / 2, width: W, height: rowH }, { fill: 'transparent' }, svg);
-      tipTarget(hit, `<b>${row[0]}</b><br>No attack: ${nf(row[5], 5)}<br>Mean of 16 attacks: ${nf(row[4], 4)}<br>WeChat-like chain: ${nf(row[6], 4)}<br><span style="color:var(--fg-2)">PSNR ${nf(row[1], 2)} dB · SSIM ${nf(row[2], 4)}</span>`);
+      tipTarget(hit, `<b>${row[0]}</b><br>No attack: ${nf(row[3], 4)}<br>JPEG quality 30: ${nf(row[4], 4)}<br>WeChat setting: ${nf(row[7], 4)}<br>0.3×, then JPEG 50: ${nf(row[6], 4)}<br><span style="color:var(--fg-2)">PSNR ${nf(row[1], 2)} dB · SSIM ${nf(row[2], 4)}</span>`);
     });
     text(svg, left, 12, 'bit accuracy', {}, { 'font-size': '11px' });
   }
@@ -2372,51 +2333,49 @@ void main() {
     const narrow = W < 560;
     const left = 48, right = narrow ? 16 : 150, top = 20, bottom = 40;
     const H = narrow ? 320 : 380;
-    const xlo = 0.88, xhi = 0.99, ylo = 42.5, yhi = 53.5;
+    const xlo = 0.86, xhi = 0.99, ylo = 44.5, yhi = 55.5;
     const X = (v) => left + (v - xlo) / (xhi - xlo) * (W - left - right);
     const Y = (v) => top + (yhi - v) / (yhi - ylo) * (H - top - bottom);
     host.innerHTML = '';
     const svg = el('svg', { viewBox: `0 0 ${W} ${H}`, width: W, height: H, role: 'img',
-      'aria-label': 'Held-out PSNR against bit accuracy for 13 candidate operating points. Raising the strength s trades PSNR for bit accuracy; the deployed point s = 0.9 has PSNR 44.36 dB and bit accuracy 0.9797.' }, { display: 'block', 'max-width': '100%' }, host);
-    for (let v = 44; v <= 52; v += 2) {
+      'aria-label': 'Held-out PSNR against bit accuracy for the 10 candidate strengths s from 0.35 to 1.0. Raising s trades PSNR for bit accuracy; the deployed strength s = 1.0 has PSNR 45.43 dB and bit accuracy 0.9785; the robust floor is s = 0.45.' }, { display: 'block', 'max-width': '100%' }, host);
+    for (let v = 46; v <= 54; v += 2) {
       el('line', { x1: left, x2: W - right, y1: Y(v), y2: Y(v) }, { stroke: 'var(--hair)', 'stroke-width': '1px' }, svg);
       text(svg, left - 8, Y(v) + 4, String(v), { 'text-anchor': 'end' });
     }
-    for (let v = 0.89; v <= 0.9901; v += 0.02) {
+    for (let v = 0.87; v <= 0.9901; v += 0.02) {
       text(svg, X(v), H - 18, v.toFixed(2), { 'text-anchor': 'middle' });
     }
-    text(svg, left, H - 2, 'bit accuracy (16 attacks × 7 sizes)', {}, { 'font-size': '11px' });
+    text(svg, left, H - 2, 'bit accuracy (16 conditions × 6 sizes)', {}, { 'font-size': '11px' });
     text(svg, 4, top - 6, 'PSNR (dB)', {}, { 'font-size': '11px' });
-    // threshold
-    el('line', { x1: X(0.976), x2: X(0.976), y1: top, y2: H - bottom }, { stroke: 'var(--fg-2)', 'stroke-width': '1.2px', 'stroke-dasharray': '4 4' }, svg);
-    text(svg, X(0.976) - 6, top + 12, 'BA ≥ 0.976', { 'text-anchor': 'end' }, { 'font-size': '11px' });
-    // sweep at lambda* (stage 2 plus s = 1 from stage 1)
-    const sweep = CANDS.filter(c => c[1] === '(0.35, 0.95)').sort((a, b) => a[2] - b[2]);
-    el('polyline', { points: sweep.map(c => `${X(c[4])},${Y(c[3])}`).join(' ') }, { fill: 'none', stroke: 'var(--s1)', 'stroke-width': '2px', 'stroke-linejoin': 'round' }, svg);
+    // threshold of the rule
+    el('line', { x1: X(THRESHOLD), x2: X(THRESHOLD), y1: top, y2: H - bottom }, { stroke: 'var(--fg-2)', 'stroke-width': '1.2px', 'stroke-dasharray': '4 4' }, svg);
+    text(svg, X(THRESHOLD) - 6, top + 12, 'BA ≥ 0.975', { 'text-anchor': 'end' }, { 'font-size': '11px' });
+    el('polyline', { points: CANDS.map(c => `${X(c[2])},${Y(c[1])}`).join(' ') }, { fill: 'none', stroke: 'var(--s1)', 'stroke-width': '2px', 'stroke-linejoin': 'round' }, svg);
     const pts = [];
     CANDS.forEach(c => {
-      const onSweep = c[1] === '(0.35, 0.95)';
-      const deployed = c[2] === 0.9 && onSweep;
-      const x = X(c[4]), y = Y(c[3]);
-      if (deployed) el('circle', { cx: x, cy: y, r: 11 }, { fill: 'none', stroke: 'var(--accent)', 'stroke-width': '2px' }, svg);
-      const m = onSweep ? marker(svg, 'circle', x, y, 'var(--s1)', 4.5) : marker(svg, 'square', x, y, 'var(--s2)', 4.5, true);
-      pts.push([x, y, c, m]);
-      // a label that would run past the right edge (narrow screens) goes on the left of its point
-      if (onSweep && (narrow ? [0.35, 0.55] : [0.35, 0.55, 0.8, 1.0]).includes(c[2])) {
-        const right = x + 56 > W;
-        text(svg, right ? x - 8 : x + 8, y - 6, 's = ' + c[2].toFixed(2), right ? { 'text-anchor': 'end' } : {}, { 'font-size': '11px' });
-      }
+      const x = X(c[2]), y = Y(c[1]);
+      if (c[0] === DEPLOYED_S) el('circle', { cx: x, cy: y, r: 11 }, { fill: 'none', stroke: 'var(--accent)', 'stroke-width': '2px' }, svg);
+      if (c[0] === FLOOR_S) el('circle', { cx: x, cy: y, r: 10 }, { fill: 'none', stroke: 'var(--s2)', 'stroke-width': '2px', 'stroke-dasharray': '3 3' }, svg);
+      marker(svg, 'circle', x, y, 'var(--s1)', 4.5);
+      pts.push([x, y, c]);
+      // labels clear of the curve, the axis and the threshold line: the first above its point, the others below-left
+      if (c[0] === 0.35) text(svg, x + 6, y - 10, 's = 0.35', {}, { 'font-size': '11px' });
+      else if ((narrow ? [0.6] : [0.6, 0.8]).includes(c[0])) text(svg, x - 8, y + 16, 's = ' + c[0].toFixed(2), { 'text-anchor': 'end' }, { 'font-size': '11px' });
     });
-    const dep = CANDS[12];
+    const fl = CANDS.find(c => c[0] === FLOOR_S);
+    text(svg, X(fl[2]) + 6, Y(fl[1]) - 14, narrow ? 'floor' : 'robust floor: s = 0.45', {}, { fill: 'var(--fg)', 'font-size': '11px', 'font-weight': '600' });
+    const dep = CANDS.find(c => c[0] === DEPLOYED_S);
     if (!narrow) {
-      text(svg, X(dep[4]) + 16, Y(dep[3]) - 14, 'Deployed: s = 0.90', {}, { fill: 'var(--fg)', 'font-size': '12px', 'font-weight': '600' });
-      text(svg, X(dep[4]) + 16, Y(dep[3]) + 2, '44.36 dB · BA 0.9797', {}, { 'font-size': '11.5px' });
+      text(svg, X(dep[2]) + 16, Y(dep[1]) - 14, 'Deployed: s = 1.00', {}, { fill: 'var(--fg)', 'font-size': '12px', 'font-weight': '600' });
+      text(svg, X(dep[2]) + 16, Y(dep[1]) + 2, '45.43 dB · BA 0.9785', {}, { 'font-size': '11.5px' });
     } else {
-      text(svg, X(dep[4]) - 14, Y(dep[3]) - 12, 'deployed', { 'text-anchor': 'end' }, { fill: 'var(--fg)', 'font-size': '11px', 'font-weight': '600' });
+      text(svg, X(dep[2]) - 14, Y(dep[1]) - 12, 'deployed', { 'text-anchor': 'end' }, { fill: 'var(--fg)', 'font-size': '11px', 'font-weight': '600' });
     }
     pts.forEach(([x, y, c]) => {
       const hit = el('circle', { cx: x, cy: y, r: 13 }, { fill: 'transparent', cursor: 'default' }, svg);
-      tipTarget(hit, `<b>λ = ${c[1]}, s = ${c[2].toFixed(2)}</b>${c[2] === 0.9 && c[1] === '(0.35, 0.95)' ? ' · deployed' : ''}<br>PSNR ${nf(c[3], 2)} dB<br>Bit accuracy ${nf(c[4], 4)}<br><span style="color:var(--fg-2)">Stage ${c[0]} candidate</span>`);
+      const tag = c[0] === DEPLOYED_S ? ' · deployed' : c[0] === FLOOR_S ? ' · robust floor' : '';
+      tipTarget(hit, `<b>s = ${c[0].toFixed(2)}</b>${tag}<br>PSNR ${nf(c[1], 2)} dB<br>Bit accuracy ${nf(c[2], 4)}`);
     });
   }
 
@@ -2424,10 +2383,9 @@ void main() {
     const lg = $('sizeLegend');
     SIZE_SERIES.forEach(s => lg.appendChild(legendSwatch(s.shape, s.color, s.label)));
     const tl = $('tradeLegend');
-    tl.appendChild(legendSwatch('circle', 'var(--s1)', 'strength sweep at λ = (0.35, 0.95)'));
-    tl.appendChild(legendSwatch('square', 'var(--s2)', 'other λ at s = 1', true));
+    tl.appendChild(legendSwatch('circle', 'var(--s1)', 'candidate strengths s, 0.35 to 1.0'));
     const tb = $('sizeTable');
-    tb.innerHTML = SIZES.map(r => `<tr><td>${r[0]}</td><td>${nf(r[1], 2)}</td><td>${nf(r[2], 4)}</td><td>${nf(r[3], 4)}</td><td>${nf(r[4], 4)}</td><td>${nf(r[5], 5)}</td><td>${nf(r[6], 4)}</td></tr>`).join('');
+    tb.innerHTML = SIZES.map(r => `<tr><td>${r[0]}</td><td>${nf(r[1], 2)}</td><td>${nf(r[2], 4)}</td>` + r.slice(3).map(v => `<td>${nf(v, 4)}</td>`).join('') + '</tr>').join('');
     const vb = $('verifyBody');
     vb.innerHTML = VERIFY.map(r => {
       if (r.length === 1) return `<tr class="grp"><td colspan="5">${r[0]}</td></tr>`;
@@ -2471,12 +2429,8 @@ void main() {
   // Image I/O, JPEG through the browser's encoder, metrics
   // -------------------------------------------------------------------------------------
   const MAX_SIDE = 2048;
-  // As in the final evaluation: the networks always run on a 512 x 512 canvas, whatever the image size, and the
-  // signed hash is computed on the image scaled to 512 x 512 (on signing and on verifying).
-  const CANVAS = 512, HASH_SIDE = 512;
-  function hashView(img) {
-    return img.width === HASH_SIDE && img.height === HASH_SIDE ? img : A.tensorToImage(A.resizeAA(A.imageToTensor(img), HASH_SIDE, HASH_SIDE));
-  }
+  // As in the release: the networks always run on the fixed 512 x 512 canvas, whatever the image size, and the
+  // signed hash is taken on the image's 512 x 512 view (asymseal-signed.js, on signing and on verifying).
   async function fileToRGBA(file) {
     let bmp;
     try { bmp = await createImageBitmap(file, { imageOrientation: 'from-image' }); } catch (e) { bmp = await createImageBitmap(file); }
@@ -2646,7 +2600,6 @@ void main() {
     $('decodeBtn').disabled = b || !state.ready || !state.emb;
     $('allBtn').disabled = b || !state.ready || !state.emb || !state.gpu;
   }
-  function lamValue() { return $('lamIn').value.split(',').map(Number); }
   function randomHex(n) { const b = new Uint8Array(Math.ceil(n / 2)); crypto.getRandomValues(b); return Array.from(b, v => v.toString(16).padStart(2, '0')).join('').slice(0, n); }
   function hexToBits(hex, n) {
     const out = new Uint8Array(n);
@@ -2799,7 +2752,7 @@ void main() {
     res.ba = 1 - res.nWrong / res.n;
     if (emb.mode === 'text') { res.text = A.bitsToText(hard); res.textOk = res.text === emb.text; }
     const pk = emb.pk || (state.signer && state.signer.publicKey);
-    if (emb.mode === 'signed' && pk) res.verify = await S.verifyImage(hard, hashView(rgba), pk, emb.bits);
+    if (emb.mode === 'signed' && pk) res.verify = await S.verifyImage(hard, rgba, pk, emb.bits);
     return res;
   }
   function renderResult(host, res, meta) {
@@ -2867,7 +2820,7 @@ void main() {
     setBusy(true);
     const host = $('result');
     try {
-      const lam = lamValue(), s = Number($('sIn').value), mode = state.mode;
+      const s = Number($('sIn').value), mode = state.mode;
       let bits, info = null, text = null, signed = null;
       if (mode === 'text') { text = $('textIn').value; bits = A.bitsFromText(text); }
       else if (mode === 'b100') {
@@ -2876,14 +2829,14 @@ void main() {
         info = hexToBits(hx, 100); bits = A.expandRepetition(info);
       } else {
         if (!state.signer) throw new Error('Your browser does not support Ed25519 signatures. Use a current Chrome, Edge, Firefox or Safari.');
-        signed = await S.signImage(hashView(state.cover), state.signer); bits = signed.codeword;
+        signed = await S.signImage(state.cover, state.signer); bits = signed.codeword;
       }
       const t0 = performance.now();
       const cover = state.cover;
-      const out = await state.model.embed(A.imageToTensor(cover), bits, { lambda: lam, s, canvas: CANVAS, progress: setProgress });
+      const out = await state.model.embed(A.imageToTensor(cover), bits, { s, progress: setProgress });
       const rgba = A.tensorToImage(out.image);
       const ms = performance.now() - t0;
-      state.emb = { mode, bits, info, text, signed, pk: signed ? state.signer.publicKey : null, lam, s, rgba, canvas: out.canvas, cover };
+      state.emb = { mode, bits, info, text, signed, pk: signed ? state.signer.publicKey : null, s, rgba, canvas: out.canvas, cover };
       state.attacked = null;
       updateSendButtons();
       const psnr = A.psnr8(cover, rgba);
@@ -2896,7 +2849,7 @@ void main() {
       if (!state.hero && cover.sample) setHero(cover, rgba, psnr);
       updateCarrier();
       setTimeout(() => { const v = ssimRGB(cover, rgba); if (state.emb && state.emb.rgba === rgba) $('mSsim').textContent = nf(v, 4); }, 30);
-      host.innerHTML = `<p class="hint">Embedded ${mode === 'signed' ? 'a signed codeword (hash ' + signed.info.H.slice(0, 12) + '…)' : mode === 'b100' ? 'a 100-bit message' : 'your message'} at s = ${nf(s, 2)}, λ = (${nf(lam[0], 2)}, ${nf(lam[1], 2)}). Choose an attack and decode.</p>`;
+      host.innerHTML = `<p class="hint">Embedded ${mode === 'signed' ? 'a signed codeword (hash ' + signed.info.H.slice(0, 12) + '…)' : mode === 'b100' ? 'a 100-bit message' : 'your message'} at s = ${nf(s, 2)}. Choose an attack and decode.</p>`;
       setBusy(false);
       if (auto && state.gpu) await doDecode();
     } catch (e) { renderError(host, e); }
@@ -2909,7 +2862,7 @@ void main() {
     try { t = await atk.fn(base); } finally { jpegs = jpegLog; jpegLog = null; }
     const rgba = A.tensorToImage(t);
     const t0 = performance.now();
-    const r = await state.model.extract(t, { lambda: emb.lam, canvas: CANVAS, progress: setProgress });
+    const r = await state.model.extract(t, { progress: setProgress });
     const ms = performance.now() - t0;
     const res = await evaluate(emb, r.logits, rgba);
     return { res, rgba, ms, canvas: r.canvas, jpegs };
@@ -2969,7 +2922,7 @@ void main() {
   // copy is compared with. It is also kept in this browser's localStorage, because a phone may reload the tab
   // while the person is in a messenger; a signed payload keeps the public key it was signed with.
   // -------------------------------------------------------------------------------------
-  const SENT_KEY = 'asymseal.sent.v1';
+  const SENT_KEY = 'asymseal.sent.v2';   // v1 records were embedded with an earlier model
   // Inside the claude.ai viewer a framed page may not download by itself: the viewer's downloads capability asks
   // the person and saves the file. Anywhere else (GitHub Pages, a saved copy) a plain download link works.
   const framed = (() => { try { return window.top !== window; } catch (e) { return true; } })();
@@ -2986,7 +2939,7 @@ void main() {
   function pngName(emb) { return `asymseal-watermarked-${emb.mode === 'b100' ? '100bit' : emb.mode}.png`; }
   function rememberSent(how) {
     const e = state.emb;
-    state.sent = { mode: e.mode, bits: e.bits, info: e.info, text: e.text, pk: e.pk, lam: e.lam, s: e.s, w: e.rgba.width, h: e.rgba.height,
+    state.sent = { mode: e.mode, bits: e.bits, info: e.info, text: e.text, pk: e.pk, s: e.s, w: e.rgba.width, h: e.rgba.height,
       bytes: state.saveBlob.size, at: Date.now(), how };
     try {
       localStorage.setItem(SENT_KEY, JSON.stringify(Object.assign({}, state.sent, {
@@ -3055,9 +3008,8 @@ void main() {
     try {
       const img = await fileToRGBA(file), fmt = await sniffFormat(file);
       const ref = state.sent || state.emb;
-      const lam = ref ? ref.lam : lamValue();
       const t0 = performance.now();
-      const r = await state.model.extract(A.imageToTensor(img), { lambda: lam, canvas: CANVAS, progress: setProgress });
+      const r = await state.model.extract(A.imageToTensor(img), { progress: setProgress });
       const ms = performance.now() - t0;
       if (ref) {
         const res = await evaluate(ref, r.logits, img);
@@ -3093,8 +3045,9 @@ void main() {
   }
 
   // -------------------------------------------------------------------------------------
-  // Carrier explorer (the 128 x 128 grid of a 256 x 256 canvas)
+  // Carrier explorer (the 256 x 256 grid of the fixed 512 x 512 canvas: 64 positions per bit and channel)
   // -------------------------------------------------------------------------------------
+  const CG = 256, CP = 64;   // grid side and positions per bit and channel
   const car = { perm: null, inv: null, chan: 0, slot: -1, ready: false };
   const slotC = $('slotCanvas'), slotX = slotC.getContext('2d');
   const mC = $('mCanvas2'), mX = mC.getContext('2d');
@@ -3109,23 +3062,24 @@ void main() {
     for (let k = 0; k < 1024; k++) { const p = k === car.slot ? ac : bits[k] ? hi : lo; sImg.data.set([p[0], p[1], p[2], 255], 4 * k); }
     const tmp = document.createElement('canvas'); tmp.width = 32; tmp.height = 32; tmp.getContext('2d').putImageData(sImg, 0, 0);
     slotX.imageSmoothingEnabled = false; slotX.clearRect(0, 0, 256, 256); slotX.drawImage(tmp, 0, 0, 256, 256);
-    const n = 16384, base = car.chan * n;
-    const mImg = mX.createImageData(128, 128);
+    const n = CG * CG, base = car.chan * n;
+    const mImg = mX.createImageData(CG, CG);
     for (let k = 0; k < 1024; k++) {
       const v = (bits[k] * 2 - 1) * sign[k];
       const p = v > 0 ? hi : lo;
-      for (let j = 0; j < 16; j++) mImg.data.set([p[0], p[1], p[2], 255], 4 * car.perm[base + k * 16 + j]);
+      for (let j = 0; j < CP; j++) mImg.data.set([p[0], p[1], p[2], 255], 4 * car.perm[base + k * CP + j]);
     }
-    const t2 = document.createElement('canvas'); t2.width = 128; t2.height = 128; t2.getContext('2d').putImageData(mImg, 0, 0);
+    const t2 = document.createElement('canvas'); t2.width = CG; t2.height = CG; t2.getContext('2d').putImageData(mImg, 0, 0);
     mX.imageSmoothingEnabled = false; mX.clearRect(0, 0, 512, 512); mX.drawImage(t2, 0, 0, 512, 512);
     if (car.slot >= 0) {
       mX.fillStyle = `rgb(${ac[0]},${ac[1]},${ac[2]})`;
-      for (let j = 0; j < 16; j++) {
-        const pos = car.perm[base + car.slot * 16 + j], y = Math.floor(pos / 128), x = pos % 128;
-        mX.beginPath(); mX.arc(x * 4 + 2, y * 4 + 2, 6, 0, 2 * Math.PI); mX.fill();
+      const sc = 512 / CG;
+      for (let j = 0; j < CP; j++) {
+        const pos = car.perm[base + car.slot * CP + j], y = Math.floor(pos / CG), x = pos % CG;
+        mX.beginPath(); mX.arc(x * sc + sc / 2, y * sc + sc / 2, 4, 0, 2 * Math.PI); mX.fill();
       }
       const b = bits[car.slot];
-      $('carrierInfo').textContent = `Slot ${car.slot} (row ${Math.floor(car.slot / 32)}, column ${car.slot % 32}) carries bit ${b}; with the fixed sign ${sign[car.slot] > 0 ? '+1' : '−1'} it is written as ${(b * 2 - 1) * sign[car.slot] > 0 ? '+1' : '−1'} at the 16 marked positions of this channel, and at 16 others in each of the other 11 channels.`;
+      $('carrierInfo').textContent = `Slot ${car.slot} (row ${Math.floor(car.slot / 32)}, column ${car.slot % 32}) carries bit ${b}; with the fixed sign ${sign[car.slot] > 0 ? '+1' : '−1'} it is written as ${(b * 2 - 1) * sign[car.slot] > 0 ? '+1' : '−1'} at the ${CP} marked positions of this channel, and at ${CP} others in each of the other 11 channels.`;
     } else {
       $('carrierInfo').textContent = 'Light and dark cells are the ±1 values of the current payload after the fixed sign scramble. The verifier averages each slot\'s positions back into one value.';
     }
@@ -3134,14 +3088,15 @@ void main() {
   function initCarrier() {
     const sel = $('chanSel');
     for (let c = 0; c < 12; c++) { const o = document.createElement('option'); o.value = c; o.textContent = `channel ${c + 1}: phase ${PH[c / 3 | 0]}, ${RGB[c % 3]}`; sel.appendChild(o); }
-    sel.addEventListener('change', () => { car.chan = Number(sel.value); $('mTitle').textContent = `Message tensor M, channel ${car.chan + 1} (128 × 128)`; drawCarrier(); });
-    car.perm = state.model.carrier.perm(128, 128);
-    car.inv = new Uint16Array(12 * 16384);
-    for (let c = 0; c < 12; c++) for (let k = 0; k < 1024; k++) for (let j = 0; j < 16; j++) car.inv[c * 16384 + car.perm[c * 16384 + k * 16 + j]] = k;
+    sel.addEventListener('change', () => { car.chan = Number(sel.value); $('mTitle').textContent = `Message tensor M, channel ${car.chan + 1} (${CG} × ${CG})`; drawCarrier(); });
+    car.perm = state.model.carrier.perm(CG, CG);
+    const n = CG * CG;
+    car.inv = new Uint16Array(12 * n);
+    for (let c = 0; c < 12; c++) for (let k = 0; k < 1024; k++) for (let j = 0; j < CP; j++) car.inv[c * n + car.perm[c * n + k * CP + j]] = k;
     car.ready = true;
     const fromEvent = (e, canvas, cells) => { const r = canvas.getBoundingClientRect(); const x = Math.floor((e.clientX - r.left) / r.width * cells), y = Math.floor((e.clientY - r.top) / r.height * cells); return [Math.min(cells - 1, Math.max(0, x)), Math.min(cells - 1, Math.max(0, y))]; };
     const onSlot = (e) => { const [x, y] = fromEvent(e, slotC, 32); car.slot = y * 32 + x; drawCarrier(); };
-    const onM = (e) => { const [x, y] = fromEvent(e, mC, 128); car.slot = car.inv[car.chan * 16384 + y * 128 + x]; drawCarrier(); };
+    const onM = (e) => { const [x, y] = fromEvent(e, mC, CG); car.slot = car.inv[car.chan * CG * CG + y * CG + x]; drawCarrier(); };
     slotC.addEventListener('pointermove', onSlot); slotC.addEventListener('pointerdown', onSlot);
     mC.addEventListener('pointermove', onM); mC.addEventListener('pointerdown', onM);
     car.slot = 0;
@@ -3225,7 +3180,7 @@ void main() {
 
     // the model
     try {
-      setEngine('busy', 'Loading the model (3.5 MB of weights)…');
+      setEngine('busy', 'Loading the model (3.6 MB of weights)…');
       const get = (u) => fetch(u).then(r => { if (!r.ok) throw new Error(`could not load ${u} (${r.status})`); return r; });
       // the weights are hosted as base64 text (weights.b64.txt), decoded here to the float32 buffer
       const fetchModelFile = (u) => u !== 'weights.bin' ? get(u) : get('weights.b64.txt').then(r => r.text()).then(t => {

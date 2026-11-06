@@ -363,6 +363,7 @@ footer .row { margin-top: 14px; }
       <div class="stat"><div class="v">≥ 99.8%</div><div class="k">of signed images verify after the Instagram, X and WhatsApp settings</div></div>
       <div class="stat"><div class="v">100%</div><div class="k">of signed images verify with no attack</div></div>
     </div>
+    <p class="caption" style="margin-top:14px">Verification rates on this page assume a verifier that already holds the signer's public key, so the key is not among the 1,024 bits. This demo puts the key in the payload, which leaves less room for error correction; rates for that layout are being measured and will replace these.</p>
   </div>
 </header>
 
@@ -734,6 +735,7 @@ footer .row { margin-top: 14px; }
       <div><p class="n">Step 3</p><p class="h3" style="font-size:19px;margin-top:4px">Check the signature</p><p class="d small muted" style="margin-top:8px">Verify with the trusted public key: <b>verified</b>, otherwise <b>sig_mismatch</b>.</p></div>
     </div>
     <p class="caption" style="margin-top:22px">Without a trusted key the key carried in the payload is used, which shows only that the payload is self-consistent: anyone can sign an image with their own key. The signature binds the perceptual hash, not the pixels.</p>
+    <p class="caption" style="margin-top:10px">The verification rates elsewhere on this page were measured with a second layout, for a verifier that already holds the signer's key: the key is left out and its bits go to a stronger code (binary BCH(1023, 543), up to 53 wrong bits). With the key in the payload, as here, fewer errors are corrected; measured rates for this layout will replace them.</p>
   </div>
 </section>
 

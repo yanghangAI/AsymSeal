@@ -275,6 +275,7 @@ input[type=range] { width: 100%; accent-color: var(--accent); }
   .stage-wrap { border-radius: 10px; }
   #viewSeg { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); width: 100%; }
   #modeSeg { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); width: 100%; }
+  #strengthSeg { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); width: 100%; }
   .metric .v { font-size: 18px; }
   .bitmap-row canvas { width: 96px; height: 96px; }
   .range-labels .opt { display: none; }
@@ -356,14 +357,14 @@ footer .row { margin-top: 14px; }
       <span class="tag l">Watermarked</span><span class="tag r">Watermark ×30</span>
       <span class="status" id="revealStatus">Loading the model (3.6 MB)…</span>
     </figure>
-    <p class="caption">A public-domain photo (Patio de los Arrayanes, Alhambra; 2048 × 1393) after embedding 1,024 bits at the released operating point. Drag across it, or tap, to see the change, amplified 30 times. PSNR <span id="revealPsnr" class="num">–</span>.</p>
+    <p class="caption">A public-domain photo (Patio de los Arrayanes, Alhambra; 2048 × 1393) after embedding 1,024 bits in the default mode (Balance, s = 1.10). Drag across it, or tap, to see the change, amplified 30 times. PSNR <span id="revealPsnr" class="num">–</span>.</p>
     <div class="stats">
       <div class="stat"><div class="v">10,412</div><div class="k">parameters in the signer's write network</div></div>
-      <div class="stat"><div class="v">45.29 dB</div><div class="k">PSNR on the test set</div></div>
-      <div class="stat"><div class="v">≥ 99.8%</div><div class="k">of signed images verify after the Instagram, X and WhatsApp settings</div></div>
-      <div class="stat"><div class="v">100%</div><div class="k">of signed images verify with no attack</div></div>
+      <div class="stat"><div class="v">44.46 dB</div><div class="k">PSNR on the test set</div></div>
+      <div class="stat"><div class="v">≥ 99.6%</div><div class="k">of signed CLIC 2020 images verify after the Instagram, X and WhatsApp settings</div></div>
+      <div class="stat"><div class="v">100%</div><div class="k">of signed images verify with no attack (test set and CLIC 2020)</div></div>
     </div>
-    <p class="caption" style="margin-top:14px">Verification rates on this page assume a verifier that already holds the signer's public key, so the key is not among the 1,024 bits. This demo puts the key in the payload, which leaves less room for error correction; rates for that layout are being measured and will replace these.</p>
+    <p class="caption" style="margin-top:14px">In the default mode, Balance (s = 1.10), with the signer's public key carried in the payload.</p>
   </div>
 </header>
 
@@ -428,8 +429,8 @@ footer .row { margin-top: 14px; }
       <figcaption class="caption">The two halves are deployed very differently, so they get different budgets: a tiny signer on the capture device and a heavier verifier wherever provenance is checked.</figcaption>
     </figure>
     <div class="tiles c4">
-      <div class="tile"><div class="t">A kilobit</div><p class="d">An Ed25519 signature is 512 bits. With the public key (256), a hash syndrome (28) and Reed–Solomon error correction, the payload is 1,024 bits.</p></div>
-      <div class="tile"><div class="t">Invisible</div><p class="d">45.29 dB PSNR and 0.9959 SSIM on the test set at the released operating point.</p></div>
+      <div class="tile"><div class="t">A kilobit</div><p class="d">An Ed25519 signature is 512 bits. With the public key (256), a hash syndrome (28) and BCH error correction that fixes any 23 wrong bits, the payload is 1,024 bits.</p></div>
+      <div class="tile"><div class="t">Invisible</div><p class="d">44.46 dB PSNR and 0.9951 SSIM on the test set in the default mode, Balance.</p></div>
       <div class="tile"><div class="t">Robust</div><p class="d">Real JPEG down to quality 30, downscaling to 0.3×, the two combined, and the Instagram, X, WhatsApp and WeChat settings, at sizes up to 2048 × 1536 and on phone and camera photos of 5 to 13 megapixels.</p></div>
       <div class="tile"><div class="t">Cheap to sign</div><p class="d">The network always runs on one 512 × 512 canvas, so signing costs the same 0.68 GMACs for a 12-megapixel photo as for a thumbnail.</p></div>
     </div>
@@ -497,10 +498,20 @@ footer .row { margin-top: 14px; }
             <input type="text" id="hexIn" spellcheck="false" autocomplete="off">
             <div class="row" style="margin-top:8px"><button class="pill small ghost" type="button" id="newHexBtn">Random message</button></div>
           </div>
-          <label class="f" for="sIn">Embedding strength <span class="mono" id="sVal">s = 1.00</span></label>
-          <input type="range" id="sIn" min="0.35" max="1" step="0.05" value="1">
-          <div class="range-labels"><span>0.35<span class="opt"> · fainter</span></span><span>1.00 · released</span></div>
-          <p class="hint">The one quality setting: a lower s is fainter and less robust. From the robust floor s = 0.45 up, unattacked held-out images decode with bit accuracy of at least 0.998 at every size. Decoding needs no setting.</p>
+          <div class="f" id="strengthLabel">Mode <span class="mono" id="sVal">s = 1.10</span></div>
+          <div class="seg" role="group" aria-labelledby="strengthLabel" id="strengthSeg">
+            <button type="button" data-s="0.80" aria-pressed="false">Fidelity</button>
+            <button type="button" data-s="1.10" aria-pressed="true">Balance</button>
+            <button type="button" data-s="1.50" aria-pressed="false">Resilient</button>
+            <button type="button" data-s="custom" aria-pressed="false">Custom</button>
+          </div>
+          <p class="hint" id="strengthHint">Balance, the default: 44.46 dB on the test set; after the Instagram, X and WhatsApp settings at least 99.0% of test images verify at every size.</p>
+          <div id="customStrength" hidden>
+            <label class="f" for="sIn">Embedding strength</label>
+            <input type="range" id="sIn" min="0.35" max="2" step="0.05" value="1.1">
+            <div class="range-labels"><span>0.35<span class="opt"> · fainter</span></span><span>2.00<span class="opt"> · stronger</span></span></div>
+          </div>
+          <p class="hint">Each mode is one value of the embedding strength s, the only quality setting: a lower s is fainter and less robust. From the robust floor s = 0.45 up, unattacked held-out images decode with bit accuracy of at least 0.998 at every size. Decoding needs no setting.</p>
           <div class="row" style="margin-top:14px"><button class="pill" type="button" id="embedBtn" disabled>Embed watermark</button></div>
         </div>
 
@@ -542,35 +553,48 @@ footer .row { margin-top: 14px; }
   <div class="wrap section">
     <p class="kicker">Performance</p>
     <h2 class="h2">Measured, not cherry-picked.</h2>
-    <p class="sub">The released checkpoint (seed 0) at its deployed strength on the 100 DIV2K validation images, each at five fixed sizes and one random size, under the 16 conditions of four attack categories. Means are over the five fixed sizes. The strength was fixed on 24 separate held-out images; neither the test set nor CLIC 2020 entered any decision.</p>
+    <p class="sub">The released checkpoint (seed 0) in its default mode, Balance (s = 1.10), with the public key in the payload, on the 100 DIV2K validation images, each at five fixed sizes and one random size, under the 16 conditions of four attack categories. Means are over the five fixed sizes. The three modes were chosen on 24 separate held-out images; neither the test set nor CLIC 2020 entered any decision.</p>
     <div class="tiles c4">
-      <div class="tile"><div class="big">45.29<span style="font-size:22px"> dB</span></div><p class="d">PSNR; SSIM 0.9959. The previous release under the same settings: 44.62 dB.</p></div>
-      <div class="tile"><div class="big">0.9964</div><p class="d">Bit accuracy under JPEG at quality 90 to 30. Under resizing alone, down to 0.3×: 1.0000.</p></div>
-      <div class="tile"><div class="big">0.9388</div><p class="d">Bit accuracy under resizing followed by JPEG at the small size, the hardest category. The previous release: 0.9149.</p></div>
-      <div class="tile"><div class="big">0.9980</div><p class="d">Bit accuracy under the Instagram, X, WhatsApp and WeChat settings. With no attack: 1.0000 at every size.</p></div>
+      <div class="tile"><div class="big">44.46<span style="font-size:22px"> dB</span></div><p class="d">PSNR; SSIM 0.9951. Fidelity: 47.23 dB; Resilient: 41.77 dB.</p></div>
+      <div class="tile"><div class="big">0.9978</div><p class="d">Bit accuracy under JPEG at quality 90 to 30. Under resizing alone, down to 0.3×: 1.0000.</p></div>
+      <div class="tile"><div class="big">0.9473</div><p class="d">Bit accuracy under resizing followed by JPEG at the small size, the hardest category. Resilient: 0.9686.</p></div>
+      <div class="tile"><div class="big">0.9989</div><p class="d">Bit accuracy under the Instagram, X, WhatsApp and WeChat settings. With no attack: at least 0.99999 at every size.</p></div>
     </div>
 
     <figure class="fig">
-      <div class="fig-head"><h3 class="h3">Bit accuracy by image size</h3><span class="small muted">test set · seed 0</span></div>
+      <div class="fig-head"><h3 class="h3">Bit accuracy by image size</h3><span class="small muted">test set · seed 0 · Balance</span></div>
       <div class="legend" id="sizeLegend"></div>
       <div id="sizeChart"></div>
-      <figcaption class="caption">Larger images keep more of the watermark through resizing followed by JPEG: after 0.3× and quality 50, bit accuracy rises from 0.6940 at 1280 × 768 to 0.9337 at 2048 × 1536 (table). The platform settings cap only the long side, so a 1024 × 1024 image is only compressed. In the random row each image gets its own size, from 256 to 2048 pixels per side.</figcaption>
+      <figcaption class="caption">Larger images keep more of the watermark through resizing followed by JPEG: after 0.3× and quality 50, bit accuracy rises from 0.7114 at 1280 × 768 to 0.9491 at 2048 × 1536 (table). The platform settings cap only the long side, so a 1024 × 1024 image is only compressed. In the random row each image gets its own size, from 256 to 2048 pixels per side.</figcaption>
       <details><summary>Table: every size</summary>
         <div class="table-wrap"><table><thead><tr><th>size</th><th>PSNR</th><th>SSIM</th><th>BA, no attack</th><th>JPEG 30</th><th>0.5×, JPEG 70</th><th>0.3×, JPEG 50</th><th>WeChat</th></tr></thead><tbody id="sizeTable"></tbody></table></div>
       </details>
     </figure>
 
     <figure class="fig">
-      <div class="fig-head"><h3 class="h3">Quality against robustness</h3><span class="small muted">24 held-out images · the 10 candidate strengths of the selection</span></div>
+      <div class="fig-head"><h3 class="h3">Quality against robustness</h3><span class="small muted">24 held-out images · 16 strengths, 0.35 to 2.00</span></div>
       <div class="legend" id="tradeLegend"></div>
       <div id="tradeChart"></div>
-      <figcaption class="caption">Each point is one candidate strength s, averaged over 6 sizes (PSNR) and 16 conditions × 6 sizes (bit accuracy). The deployed strength s = 1.0 has the highest PSNR among the candidates with bit accuracy ≥ 0.975, and is the only one that reaches it. This describes the deployed strength; it is not the procedure that chose it. The robust floor, s = 0.45, is the smallest strength whose unattacked bit accuracy is at least 0.998 at every held-out size.</figcaption>
+      <figcaption class="caption">Each point is one strength s on the held-out images: PSNR averaged over the five fixed sizes, bit accuracy over the 16 conditions at those sizes. The three modes, Fidelity (s = 0.80), Balance (s = 1.10) and Resilient (s = 1.50), were chosen by the authors from these held-out measurements, including signed verification with the public key in the payload; no fixed rule picked them. The robust floor, s = 0.45, is the smallest strength whose unattacked bit accuracy is at least 0.998 at every held-out size.</figcaption>
+    </figure>
+
+    <figure class="fig">
+      <div class="fig-head"><h3 class="h3">The three modes</h3><span class="small muted">test set (100 images) and CLIC 2020 (530) · five fixed sizes · key in the payload</span></div>
+      <div class="table-wrap"><table class="vt"><thead><tr><th>mode</th><th>set</th><th>PSNR</th><th>SSIM</th><th>Instagram</th><th>X</th><th>WhatsApp</th><th>WeChat</th><th>JPEG 30</th><th>0.4×, JPEG 75</th><th>0.3×, JPEG 50</th></tr></thead><tbody>
+        <tr><td rowspan="2" class="l"><b>Fidelity</b><br><span class="muted">s = 0.80</span></td><td>test</td><td>47.23</td><td>0.9973</td><td>97.4</td><td>98.2</td><td>95.8</td><td>75.2</td><td>63.2</td><td>39.2</td><td>1.0</td></tr>
+        <tr><td>CLIC</td><td>48.59</td><td>0.9976</td><td>96.8</td><td>97.8</td><td>95.8</td><td>79.7</td><td>61.2</td><td>42.0</td><td>0.3</td></tr>
+        <tr><td rowspan="2" class="l"><b>Balance</b><br><span class="muted">s = 1.10</span></td><td>test</td><td>44.46</td><td>0.9951</td><td>99.8</td><td>99.8</td><td>99.6</td><td>96.8</td><td>91.0</td><td>63.8</td><td>5.8</td></tr>
+        <tr><td>CLIC</td><td>45.83</td><td>0.9957</td><td>99.6</td><td>99.7</td><td>99.6</td><td>96.5</td><td>90.7</td><td>66.2</td><td>4.6</td></tr>
+        <tr><td rowspan="2" class="l"><b>Resilient</b><br><span class="muted">s = 1.50</span></td><td>test</td><td>41.77</td><td>0.9914</td><td>100.0</td><td>100.0</td><td>100.0</td><td>100.0</td><td>99.6</td><td>87.6</td><td>21.2</td></tr>
+        <tr><td>CLIC</td><td>43.14</td><td>0.9924</td><td>100.0</td><td>100.0</td><td>100.0</td><td>99.3</td><td>99.0</td><td>87.5</td><td>18.9</td></tr>
+      </tbody></table></div>
+      <figcaption class="caption">PSNR (dB) and SSIM are means over the five fixed sizes; the other columns are the percent of signed images that verify, pooled over the five sizes. Balance and Resilient meet the goal of at least 95% under the Instagram, X and WhatsApp settings at every size (worst size: Balance 99.0% on the test set and 98.9% on CLIC 2020, Resilient 100.0% and 99.8%). Fidelity does not: at its worst size and platform, 92.0% of test images and 93.8% of CLIC images verify, and at phone and camera photo sizes Instagram drops to 91.7% and WhatsApp to 93.4%. With no attack every signed image verifies in Fidelity and Balance; in Resilient 99.96% of signed CLIC images do (one of 530 fails at 1088 × 1920: all its bits decode, but the stronger watermark moves the image's own perceptual hash by 5 bits, past the 4-bit bridge).</figcaption>
     </figure>
 
     <div class="tiles c2">
-      <div class="tile"><div class="t">CLIC 2020</div><div class="big" style="margin-top:8px">46.65<span style="font-size:22px"> dB</span></div><p class="d">PSNR on 530 independent images, same protocol; bit accuracy 0.9963 under JPEG, 0.9395 under resizing followed by JPEG and 0.9980 under the platform settings, 1.0000 with no attack.</p></div>
-      <div class="tile"><div class="t">Phone and camera photos</div><div class="big" style="margin-top:8px">100%</div><p class="d">of signed images verify after the Instagram, X and WhatsApp settings at phone sizes: 12-megapixel held-out images and real camera photos of 5 to 13 megapixels. WeChat: 94.7% to 100%.</p></div>
-      <div class="tile"><div class="t">100-bit mode</div><div class="big" style="margin-top:8px">0.968</div><p class="d">Bit accuracy of a 100-bit message on the same model, each bit repeated about 10 times, after 0.3× and JPEG 50 (the 1,024 bits: 0.723). 1.000 under every JPEG, resize and platform setting (530 CLIC images at 1024 × 1024).</p></div>
+      <div class="tile"><div class="t">CLIC 2020</div><div class="big" style="margin-top:8px">45.83<span style="font-size:22px"> dB</span></div><p class="d">PSNR on 530 independent images in the default mode, same protocol; bit accuracy 0.9975 under JPEG, 0.9477 under resizing followed by JPEG and 0.9987 under the platform settings, at least 0.99999 with no attack.</p></div>
+      <div class="tile"><div class="t">Phone and camera photos</div><div class="big" style="margin-top:8px">100%</div><p class="d">of signed images verify after the Instagram, X and WhatsApp settings at phone sizes in the default mode: 12-megapixel held-out images and real camera photos of 5 to 13 megapixels. WeChat: 91.7% to 100.0%. Resilient: also 100%, WeChat 98.7% to 100.0%. Fidelity: Instagram down to 91.7%, WhatsApp to 93.4%.</p></div>
+      <div class="tile"><div class="t">100-bit mode</div><div class="big" style="margin-top:8px">0.968</div><p class="d">Bit accuracy of a 100-bit message on the same model at s = 1, each bit repeated about 10 times, after 0.3× and JPEG 50 (the 1,024 bits: 0.723). 1.000 under every JPEG, resize and platform setting (530 CLIC images at 1024 × 1024).</p></div>
       <div class="tile"><div class="t">Asymmetric cost</div>
         <div style="margin-top:14px" aria-label="Signer 0.68 GMACs versus verifier 43.64 GMACs per image">
           <div class="small"><span>Signer</span> <b class="num">0.68 GMACs</b></div>
@@ -582,9 +606,9 @@ footer .row { margin-top: 14px; }
     </div>
 
     <figure class="fig">
-      <div class="fig-head"><h3 class="h3">Signed images that verify</h3><span class="small muted">530 CLIC 2020 images × 5 sizes · one key pair · one run</span></div>
+      <div class="fig-head"><h3 class="h3">Signed images that verify</h3><span class="small muted">530 CLIC 2020 images × 5 sizes · Balance · one key pair · one run</span></div>
       <div class="table-wrap"><table class="vt"><thead><tr><th>condition</th><th class="b" style="text-align:left">all five sizes</th><th><span class="nb">all five</span></th><th>1024²</th><th>2048 × 1536</th></tr></thead><tbody id="verifyBody"></tbody></table></div>
-      <figcaption class="caption">Percent of images whose codeword decodes and whose signature checks out with the trusted public key, pooled over the five fixed sizes (1024 × 1024 to 2048 × 1536). For the edits the percentage is how often the edited image is still accepted, so lower is better. The platform settings cap the long side, so at 1024 × 1024 they only compress.</figcaption>
+      <figcaption class="caption">Default mode (Balance, s = 1.10), public key in the payload. Percent of images whose codeword decodes and whose signature checks out with the trusted public key, pooled over the five fixed sizes (1024 × 1024 to 2048 × 1536). For the edits the percentage is how often the edited image is still accepted, so lower is better. The platform settings cap the long side, so at 1024 × 1024 they only compress.</figcaption>
     </figure>
   </div>
 </section>
@@ -664,7 +688,7 @@ footer .row { margin-top: 14px; }
       <div class="tile finding"><div class="t">The decoder sets the frontier</div><div class="big" style="margin-top:10px">+0.79 dB</div><p class="d">PSNR at matched bit accuracy from a 32-unit residual decoder, with 34% fewer bit errors at matched PSNR. 64 and 128 units add only +0.06 dB each, not significantly.</p><p class="src">Screening study: 51 configurations × 3 seeds, compared at matched PSNR, SSIM and LPIPS.</p></div>
       <div class="tile finding"><div class="t">The signer can stay tiny</div><div class="big" style="margin-top:10px">10,412</div><p class="d">parameters. No larger embedder we tried improves on this two-convolution write on any readout, including coupling INNs and deep convolutional embedders at 33× its cost.</p><p class="src">Taking an 8-block INN apart: block 0 alone builds 86% of the recovered message.</p></div>
       <div class="tile finding"><div class="t">A fixed carrier does the spreading</div><div class="big" style="margin-top:10px">12–47×</div><p class="d">as many bit errors at matched PSNR when the fixed scatter is replaced by a learned linear, block-local or learned-upsampling message code. A random scatter is as good as any rule we tried; a periodic one costs 1.45 dB.</p><p class="src">Every bit gets its own disjoint, exactly orthogonal set of positions.</p></div>
-      <div class="tile finding"><div class="t">Better than the previous release</div><div class="big" style="margin-top:10px">40–46%</div><p class="d">fewer bit errors at matched PSNR (44 and 46 dB) under JPEG, resizing followed by JPEG and the platform settings, on the 24 held-out images with three training seeds per recipe. On the test set, one run each: 45.29 against 44.62 dB PSNR, and 0.9388 against 0.9149 bit accuracy under resizing followed by JPEG.</p><p class="src">The same recipe trained on the new attacks alone gains as much; p &lt; 0.05 in five of the six category-and-level cells.</p></div>
+      <div class="tile finding"><div class="t">Better than the previous release</div><div class="big" style="margin-top:10px">40–46%</div><p class="d">fewer bit errors at matched PSNR (44 and 46 dB) under JPEG, resizing followed by JPEG and the platform settings, on the 24 held-out images with three training seeds per recipe. On the test set, one run each (this model at s = 1, the previous release at its deployed s = 0.9): 45.29 against 44.62 dB PSNR, and 0.9388 against 0.9149 bit accuracy under resizing followed by JPEG.</p><p class="src">The same recipe trained on the new attacks alone gains as much; p &lt; 0.05 in five of the six category-and-level cells.</p></div>
     </div>
 
     <figure class="fig" id="carrierFig">
@@ -693,49 +717,52 @@ footer .row { margin-top: 14px; }
   <div class="wrap section">
     <p class="kicker">Signed payload</p>
     <h2 class="h2">A signature in 1,024 bits.</h2>
-    <p class="sub">The signer hashes the photo's 512 × 512 view with a 128-bit PDQ-style perceptual hash, signs the hash with Ed25519 and embeds one Reed–Solomon codeword. The hash itself is not sent; only its BCH syndrome is.</p>
+    <p class="sub">The signer hashes the photo's 512 × 512 view with a 128-bit PDQ-style perceptual hash, signs the hash with Ed25519 and embeds one BCH codeword that also carries the public key. The hash itself is not sent; only its BCH syndrome is.</p>
     <figure class="fig has-narrow">
-      <div class="scroll-x"><svg class="diagram" viewBox="0 0 980 120" role="img" aria-label="The 1,024 bits: 28-bit hash syndrome, 512-bit signature, 256-bit public key, 4 zero bits, and 224 bits of Reed-Solomon parity.">
+      <div class="scroll-x"><svg class="diagram" viewBox="0 0 980 120" role="img" aria-label="The 1,024 bits: 28-bit hash syndrome, 512-bit signature, 256-bit public key, 2 zero bits, 225 bits of BCH parity and 1 spare bit.">
         <g font-size="12.5" text-anchor="middle">
           <rect x="10" y="30" width="28" height="44" fill="var(--s3)"/>
-          <rect x="40" y="30" width="487" height="44" fill="var(--s1)"/>
-          <rect x="529" y="30" width="242" height="44" fill="var(--s2)"/>
-          <rect x="773" y="30" width="4" height="44" fill="var(--fg-3)"/>
-          <rect x="779" y="30" width="191" height="44" fill="var(--fixed)" stroke="var(--hair)"/>
+          <rect x="40" y="30" width="476" height="44" fill="var(--s1)"/>
+          <rect x="518" y="30" width="238" height="44" fill="var(--s2)"/>
+          <rect x="758" y="30" width="3" height="44" fill="var(--fg-3)"/>
+          <rect x="763" y="30" width="200" height="44" fill="var(--fixed)" stroke="var(--hair)"/>
+          <rect x="965" y="30" width="5" height="44" fill="var(--fg-3)"/>
           <text x="24" y="20" fill="var(--fg-2)" font-size="11">28</text>
-          <text x="283" y="57" fill="#ffffff" font-weight="600">Ed25519 signature · 512 bits</text>
-          <text x="650" y="57" fill="#ffffff" font-weight="600">public key · 256</text>
-          <text x="874" y="57" fill="var(--fg)" font-weight="600">RS parity · 224</text>
+          <text x="970" y="20" fill="var(--fg-2)" font-size="11" text-anchor="end">1 spare</text>
+          <text x="278" y="57" fill="#ffffff" font-weight="600">Ed25519 signature · 512 bits</text>
+          <text x="637" y="57" fill="#ffffff" font-weight="600">public key · 256</text>
+          <text x="863" y="57" fill="var(--fg)" font-weight="600">BCH parity · 225</text>
           <text x="24" y="96" fill="var(--fg-2)" font-size="11" text-anchor="start">hash syndrome</text>
-          <text x="393" y="96" fill="var(--fg-2)" font-size="11">100 data bytes (796 bits + 4 zero bits)</text>
-          <text x="874" y="96" fill="var(--fg-2)" font-size="11">28 parity bytes</text>
+          <text x="400" y="96" fill="var(--fg-2)" font-size="11">798 message bits (796 bits + 2 zero bits)</text>
+          <text x="863" y="96" fill="var(--fg-2)" font-size="11">225 parity bits</text>
         </g>
       </svg></div>
-      <svg class="diagram-narrow" viewBox="0 0 340 124" role="img" aria-label="The 1,024 bits: 28-bit hash syndrome, 512-bit signature, 256-bit public key, 4 zero bits, and 224 bits of Reed-Solomon parity.">
+      <svg class="diagram-narrow" viewBox="0 0 340 124" role="img" aria-label="The 1,024 bits: 28-bit hash syndrome, 512-bit signature, 256-bit public key, 2 zero bits, 225 bits of BCH parity and 1 spare bit.">
         <g font-size="12" text-anchor="middle">
           <rect x="10" y="26" width="9" height="40" fill="var(--s3)"/>
-          <rect x="20" y="26" width="162" height="40" fill="var(--s1)"/>
-          <rect x="183" y="26" width="80" height="40" fill="var(--s2)"/>
-          <rect x="264" y="26" width="2" height="40" fill="var(--fg-3)"/>
-          <rect x="267" y="26" width="63" height="40" fill="var(--fixed)" stroke="var(--hair)"/>
+          <rect x="20" y="26" width="158" height="40" fill="var(--s1)"/>
+          <rect x="179" y="26" width="79" height="40" fill="var(--s2)"/>
+          <rect x="259" y="26" width="2" height="40" fill="var(--fg-3)"/>
+          <rect x="262" y="26" width="64" height="40" fill="var(--fixed)" stroke="var(--hair)"/>
+          <rect x="327" y="26" width="3" height="40" fill="var(--fg-3)"/>
           <text x="10" y="16" fill="var(--fg-2)" font-size="11" text-anchor="start">hash syndrome · 28 bits</text>
-          <text x="101" y="50" fill="#ffffff" font-weight="600">signature · 512</text>
-          <text x="223" y="50" fill="#ffffff" font-weight="600">key · 256</text>
-          <text x="298" y="50" fill="var(--fg)" font-weight="600">RS · 224</text>
-          <path d="M10 74 V80 H265 V74 M267 74 V80 H330 V74" fill="none" stroke="var(--fg-3)" stroke-width="1"/>
-          <text x="137" y="97" fill="var(--fg-2)" font-size="11">100 data bytes (796 bits + 4 zero bits)</text>
-          <text x="330" y="115" fill="var(--fg-2)" font-size="11" text-anchor="end">28 Reed–Solomon parity bytes</text>
+          <text x="99" y="50" fill="#ffffff" font-weight="600">signature · 512</text>
+          <text x="218" y="50" fill="#ffffff" font-weight="600">key · 256</text>
+          <text x="294" y="50" fill="var(--fg)" font-weight="600">BCH · 225</text>
+          <path d="M10 74 V80 H261 V74 M262 74 V80 H330 V74" fill="none" stroke="var(--fg-3)" stroke-width="1"/>
+          <text x="135" y="97" fill="var(--fg-2)" font-size="11">798 message bits (796 + 2 zero bits)</text>
+          <text x="330" y="115" fill="var(--fg-2)" font-size="11" text-anchor="end">225 BCH parity bits + 1 spare</text>
         </g>
       </svg>
-      <figcaption class="caption">RS(128, 100) over bytes corrects up to 14 wrong bytes anywhere in the codeword. BCH(127, t = 4) lets the verifier recover the signed hash from its own hash of the received image when the two differ in at most 4 bits.</figcaption>
+      <figcaption class="caption">Binary BCH(1023, 798) corrects any 23 wrong bits wherever they fall in the codeword; the last of the 1,024 bits is a spare. BCH(127, t = 4) lets the verifier recover the signed hash from its own hash of the received image when the two differ in at most 4 bits.</figcaption>
     </figure>
     <div class="steps-list">
-      <div><p class="n">Step 1</p><p class="h3" style="font-size:19px;margin-top:4px">Decode</p><p class="d small muted" style="margin-top:8px">Read the 1,024 bits and correct up to 14 bytes. More errors: <b>decode_fail</b>.</p></div>
+      <div><p class="n">Step 1</p><p class="h3" style="font-size:19px;margin-top:4px">Decode</p><p class="d small muted" style="margin-top:8px">Read the 1,024 bits and correct up to 23 wrong bits. More errors: <b>decode_fail</b>.</p></div>
       <div><p class="n">Step 2</p><p class="h3" style="font-size:19px;margin-top:4px">Recover the hash</p><p class="d small muted" style="margin-top:8px">Hash the received image and use the syndrome to correct it back to the signed hash, if it drifted by at most 4 bits.</p></div>
       <div><p class="n">Step 3</p><p class="h3" style="font-size:19px;margin-top:4px">Check the signature</p><p class="d small muted" style="margin-top:8px">Verify with the trusted public key: <b>verified</b>, otherwise <b>sig_mismatch</b>.</p></div>
     </div>
     <p class="caption" style="margin-top:22px">Without a trusted key the key carried in the payload is used, which shows only that the payload is self-consistent: anyone can sign an image with their own key. The signature binds the perceptual hash, not the pixels.</p>
-    <p class="caption" style="margin-top:10px">The verification rates elsewhere on this page were measured with a second layout, for a verifier that already holds the signer's key: the key is left out and its bits go to a stronger code (binary BCH(1023, 543), up to 53 wrong bits). With the key in the payload, as here, fewer errors are corrected; measured rates for this layout will replace them.</p>
+    <p class="caption" style="margin-top:10px">A verifier that already holds the signer's key can leave the key out of the payload and spend its bits on a stronger code, binary BCH(1023, 543), which fixes any 53 wrong bits. Measured at s = 1 on CLIC 2020, 99.96%, 99.9% and 99.8% of signed images then verify after the Instagram, X and WhatsApp settings.</p>
   </div>
 </section>
 
@@ -744,10 +771,11 @@ footer .row { margin-top: 14px; }
     <p class="kicker">Limits</p>
     <h2 class="h2">What it does not do.</h2>
     <div class="lim">
-      <div><b>Small images</b>Every image is resampled to the 512 × 512 canvas, so a small image is enlarged and the watermark shrunk back to its size. Below about 256 pixels per side even unattacked images lose bits: on one test image, bit accuracy 0.878 at 128 × 192 and 0.995 at 256 × 256. Every evaluated size is at least 256 pixels per side.</div>
+      <div><b>Small images</b>Every image is resampled to the 512 × 512 canvas, so a small image is enlarged and the watermark shrunk back to its size. Below about 256 pixels per side even unattacked images lose bits: on one test image at s = 1, bit accuracy 0.878 at 128 × 192 and 0.995 at 256 × 256. Every evaluated size is at least 256 pixels per side.</div>
       <div><b>Geometry</b>No robustness to geometric attacks: after a crop to 95% of each side, no signed image verified.</div>
-      <div><b>Strong downscaling with JPEG</b>After shrinking to 0.3× and compressing at quality 50, only 9.2% of signed images verify over the five sizes (42.5% at 2048 × 1536); after 0.4× and quality 75, 77.4%.</div>
-      <div><b>Perceptual binding</b>Small local edits can keep the hash within 4 bits: a black box over 5% of each side is accepted for 43.0% of images, an inpainted rectangle of 8% of the area for 12.4%.</div>
+      <div><b>Strong downscaling with JPEG</b>In the default mode, after shrinking to 0.3× and compressing at quality 50, only 4.6% of signed CLIC images verify over the five sizes (21.9% at 2048 × 1536; Resilient: 18.9%); after 0.4× and quality 75, 66.2% (Resilient: 87.5%).</div>
+      <div><b>Perceptual binding</b>Small local edits can keep the hash within 4 bits: a black box over 5% of each side is accepted for 42.8% of signed CLIC images, an inpainted rectangle of 8% of the area for 12.3%.</div>
+      <div><b>Fidelity and the platform goal</b>Fidelity (s = 0.80) misses the goal of at least 95% verified under the Instagram, X and WhatsApp settings at every size: 92.0% at its worst size on the test set, 93.8% on CLIC 2020. Balance and Resilient meet it.</div>
       <div><b>Adversaries</b>Not designed against adaptive or white-box attackers who know the model. Not legal evidence; a verified signature shows only possession of the signing key.</div>
       <div><b>One run</b>The verification rates come from one training seed and one key pair, so no spread is given.</div>
     </div>
@@ -1746,8 +1774,9 @@ void main() {
 })(typeof self !== 'undefined' ? self : this);
 </script>
 <script>
-/* AsymSeal signed payload in the browser: the PDQ-style hash, BCH(127, t=4) syndrome coding,
- * RS(128, 100) error correction, the 796-bit wire layout and Ed25519 (WebCrypto).
+/* AsymSeal signed payload in the browser: the PDQ-style hash, BCH(127, t=4) syndrome coding, the
+ * 796-bit wire layout (hash syndrome, signature, public key) under binary BCH(1023, 798), t = 23
+ * (scheme bch1023pk, the default) or RS(128, 100) (scheme rs128), and Ed25519 (WebCrypto).
  * Mirrors asymseal/payload/*.py; float64 sums run in the same order, so the hash matches the
  * Python package bit for bit on the golden vectors. As in the package, the hash that is signed and
  * compared is taken on the image's 512 x 512 view (hashView: Pillow's bilinear resize per channel).
@@ -2097,8 +2126,101 @@ void main() {
   }
 
   // ---------------------------------------------------------------------------------------
-  // Wire layout: syndrome (28) | signature (512) | public key (256) | 4 zero bits -> RS
+  // Binary narrow-sense BCH(1023, k) over GF(2^10), primitive polynomial 0x409
+  // (asymseal/payload/bch1023.py): t = 23 gives k = 798 (the bch1023pk scheme), t = 53 gives
+  // k = 543. Codeword bit j is the coefficient of x^(1022 - j): message first, then parity.
+  // Decoder: 2t syndromes, Berlekamp-Massey, Chien search, syndrome re-check.
   // ---------------------------------------------------------------------------------------
+  const QM = 10, QN = 1023;
+  const QEXP = new Int32Array(2 * QN), QLOG = new Int32Array(QN + 1).fill(-1);
+  (() => { let x = 1; for (let i = 0; i < QN; i++) { QEXP[i] = x; QLOG[x] = i; x <<= 1; if (x & (1 << QM)) x ^= 0x409; } for (let i = QN; i < 2 * QN; i++) QEXP[i] = QEXP[i - QN]; })();
+  const qmul = (a, b) => (a === 0 || b === 0) ? 0 : QEXP[QLOG[a] + QLOG[b]];
+  const qinv = (a) => QEXP[(QN - QLOG[a]) % QN];
+  const qmod = (x) => ((x % QN) + QN) % QN;
+  function makeBch1023(t) {
+    const nroots = 2 * t, roots = new Set();
+    for (let i = 1; i <= nroots; i++) { let x = i % QN; while (!roots.has(x)) { roots.add(x); x = (2 * x) % QN; } }
+    let g = [1];  // GF(2^10) coefficients, lowest degree first
+    for (const r of Array.from(roots).sort((a, b) => a - b)) {
+      const a = QEXP[r], nxt = new Array(g.length + 1).fill(0);
+      g.forEach((c, k) => { nxt[k + 1] ^= c; nxt[k] ^= qmul(c, a); });
+      g = nxt;
+    }
+    if (g.some(c => c !== 0 && c !== 1)) throw new Error('BCH generator polynomial is not binary');
+    const G = Uint8Array.from(g), DEG = G.length - 1, K = QN - DEG;
+    function encode(msg) {
+      const m = Uint8Array.from(msg);
+      if (m.length !== K) throw new Error(`bch1023 encode: expected ${K} bits, got ${m.length}`);
+      const reg = new Uint8Array(DEG);  // remainder of m(x) x^DEG mod g(x); reg[i] = coefficient of x^i
+      for (let j = 0; j < K; j++) {
+        const fb = m[j] ^ reg[DEG - 1];
+        for (let i = DEG - 1; i > 0; i--) reg[i] = reg[i - 1] ^ (fb & G[i]);
+        reg[0] = fb & G[0];
+      }
+      const out = new Uint8Array(QN);
+      out.set(m);
+      for (let j = 0; j < DEG; j++) out[K + j] = reg[DEG - 1 - j];
+      return out;
+    }
+    function syndromes(c) {
+      const S = new Array(nroots).fill(0);
+      for (let p = 0; p < QN; p++) {
+        if (!c[p]) continue;
+        const pw = QN - 1 - p;
+        for (let j = 1; j <= nroots; j++) S[j - 1] ^= QEXP[(j * pw) % QN];
+      }
+      return S;
+    }
+    function berlekampMassey(syn) {
+      let sigma = [1], prev = [1], L = 0, m = 1, b = 1;
+      for (let r = 0; r < syn.length; r++) {
+        let delta = syn[r];
+        for (let i = 1; i <= Math.min(L, sigma.length - 1); i++) delta ^= qmul(sigma[i], syn[r - i]);
+        if (delta === 0) { m++; continue; }
+        const t0 = sigma.slice(), coef = qmul(delta, qinv(b));
+        const nxt = sigma.concat(new Array(Math.max(0, prev.length + m - sigma.length)).fill(0));
+        prev.forEach((p, k) => { nxt[k + m] ^= qmul(p, coef); });
+        sigma = nxt;
+        if (2 * L <= r) { L = r + 1 - L; prev = t0; b = delta; m = 1; } else m++;
+      }
+      while (sigma.length > 1 && sigma[sigma.length - 1] === 0) sigma.pop();
+      return [sigma, L];
+    }
+    function chien(sigma) {  // exponents p with sigma(a^-p) = 0
+      const out = [];
+      for (let p = 0; p < QN; p++) {
+        let acc = 0;
+        for (let k = 0; k < sigma.length; k++) if (sigma[k]) acc ^= QEXP[qmod(QLOG[sigma[k]] - k * p)];
+        if (acc === 0) out.push(p);
+      }
+      return out;
+    }
+    // received 1023 bits -> [corrected codeword, number of corrected bits (-1 on failure), ok]
+    function decode(code) {
+      const c = Uint8Array.from(code);
+      if (c.length !== QN) throw new Error(`bch1023 decode: expected ${QN} bits, got ${c.length}`);
+      const syn = syndromes(c);
+      if (!syn.some(v => v)) return [c, 0, true];
+      const [sigma, L] = berlekampMassey(syn);
+      if (L === 0 || L > t || sigma.length - 1 !== L) return [c, -1, false];
+      const pw = chien(sigma);
+      if (pw.length !== L) return [c, -1, false];
+      const out = Uint8Array.from(c);
+      for (const p of pw) out[QN - 1 - p] ^= 1;
+      if (syndromes(out).some(v => v)) return [c, -1, false];
+      return [out, L, true];
+    }
+    return { N: QN, K, T: t, generator: G, encode, decode, syndromes };
+  }
+  const BCHPK = makeBch1023(23);
+  if (BCHPK.K !== 798) throw new Error(`BCH(1023), t = 23: expected k = 798, got ${BCHPK.K}`);
+
+  // ---------------------------------------------------------------------------------------
+  // Wire layout: syndrome (28) | signature (512) | public key (256), protected either by
+  // RS(128, 100) (scheme rs128: 4 zero bits, then 28 parity bytes) or by BCH(1023, 798)
+  // (scheme bch1023pk, the default: 2 zero bits, 225 parity bits, spare bit 1023 = 0).
+  // ---------------------------------------------------------------------------------------
+  const SCHEMES = ['bch1023pk', 'rs128'], DEFAULT_SCHEME = 'bch1023pk';
   const PAYLOAD_BITS = 796, OFF_SIG = 28, OFF_PK = 540;
   function packWire(syn28, sig, pk) {
     const out = new Uint8Array(PAYLOAD_BITS);
@@ -2120,6 +2242,26 @@ void main() {
     const [ok, fixed, n] = rsDecode(cb);
     const data = ok ? fixed.slice(0, RS_K) : cb.slice(0, RS_K);
     return [bitsFromBytes(data).slice(0, PAYLOAD_BITS), ok ? n : -1, ok];
+  }
+  // bch1023pk (asymseal/payload/wire_bchpk.py): 796 wire bits -> 1024 watermark bits
+  function eccEncodeBchpk(wire) {
+    const msg = new Uint8Array(BCHPK.K);
+    msg.set(wire);
+    const out = new Uint8Array(1024);
+    out.set(BCHPK.encode(msg));
+    return out;
+  }
+  // 1024 received bits -> [796 wire bits, corrected bits (-1 on failure), ok]; nonzero padding after decoding fails
+  function eccDecodeBchpk(code1024) {
+    const rx = Uint8Array.from(code1024).slice(0, QN);
+    let [fixed, n, ok] = BCHPK.decode(rx);
+    if (ok && fixed.slice(PAYLOAD_BITS, BCHPK.K).some(v => v)) { ok = false; n = -1; }
+    const data = ok ? fixed : rx;
+    return [data.slice(0, PAYLOAD_BITS), ok ? n : -1, ok];
+  }
+  function checkScheme(scheme) {
+    if (!SCHEMES.includes(scheme)) throw new Error(`unknown payload scheme ${scheme}; choose one of ${SCHEMES.join(', ')}`);
+    return scheme;
   }
 
   // ---------------------------------------------------------------------------------------
@@ -2162,27 +2304,33 @@ void main() {
   // ---------------------------------------------------------------------------------------
   // Sign and verify
   // ---------------------------------------------------------------------------------------
-  async function signHash(hash16, signer) {
+  async function signHash(hash16, signer, scheme = DEFAULT_SCHEME) {
+    checkScheme(scheme);
     const H = canonicalize(hash16);
     const syn = bchSyndrome(bitsFromBytes(H).slice(0, BN));
     const sig = await sign(H, signer);
-    const code = eccEncode(packWire(syn, sig, signer.publicKey));
-    return { codeword: code, info: { H: hex(H), syndrome: Array.from(syn).join(''), sig: hex(sig), pk: hex(signer.publicKey) } };
+    const wire = packWire(syn, sig, signer.publicKey);
+    const code = scheme === 'rs128' ? eccEncode(wire) : eccEncodeBchpk(wire);
+    return { codeword: code, info: { H: hex(H), syndrome: Array.from(syn).join(''), sig: hex(sig), pk: hex(signer.publicKey), scheme } };
   }
-  async function signImage(coverRGBA, signer) { return signHash(imageHash(coverRGBA), signer); }
+  async function signImage(coverRGBA, signer, scheme = DEFAULT_SCHEME) { return signHash(imageHash(coverRGBA), signer, scheme); }
 
-  // bits: 1024 decoded bits; received: the image they came from; trustedPk: 32 bytes or null
-  async function verifyImage(bits, received, trustedPk, sentBits) {
-    const Hp = canonicalize(imageHash(received));
-    const info = { H_prime: hex(Hp) };
-    const [wire, nFix, rsOk] = eccDecode(bits);
-    info.rs_ok = rsOk; info.rs_corrected = nFix;
+  // bits: 1024 decoded bits; receivedHash: 16-byte hash of the received image's 512 x 512 view;
+  // trustedPk: 32 bytes or null (null: the key carried in the payload; shows self-consistency only)
+  async function verifyHash(bits, receivedHash, trustedPk, sentBits, scheme = DEFAULT_SCHEME) {
+    checkScheme(scheme);
+    const Hp = canonicalize(receivedHash);
+    const info = { H_prime: hex(Hp), scheme };
+    const [wire, nFix, eccOk] = scheme === 'rs128' ? eccDecode(bits) : eccDecodeBchpk(bits);
+    info.ecc_ok = eccOk; info.ecc_corrected = nFix;
+    info.rs_ok = scheme === 'rs128' ? eccOk : null; info.rs_corrected = scheme === 'rs128' ? nFix : null;
     if (sentBits) {
       const a = bytesFromBits(bits), b = bytesFromBits(sentBits);
-      let bad = 0; for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) bad++;
-      info.rs_bad_bytes = bad;
+      let bad = 0, be = 0;
+      for (let i = 0; i < a.length; i++) { const d = a[i] ^ b[i]; if (d) { bad++; be += hamming([d], [0]); } }
+      info.rs_bad_bytes = bad; info.bit_errors = be;
     }
-    if (!rsOk) { info.sig_ok = false; return { outcome: 'decode_fail', info }; }
+    if (!eccOk) { info.sig_ok = false; return { outcome: 'decode_fail', info }; }
     const [syn, sig, pkRx] = unpackWire(wire);
     const [rec, nBch, bchOk] = bchDecode(syn, bitsFromBytes(Hp).slice(0, BN));
     const recBits = new Uint8Array(128); recBits.set(rec);
@@ -2193,11 +2341,16 @@ void main() {
       pk_rx: hex(pkRx), pk_match: !trustedPk || hex(pkRx) === hex(trustedPk), sig_ok: sigOk });
     return { outcome: sigOk ? 'verified' : 'sig_mismatch', info };
   }
+  // bits: 1024 decoded bits; received: the image they came from
+  async function verifyImage(bits, received, trustedPk, sentBits, scheme = DEFAULT_SCHEME) {
+    return verifyHash(bits, imageHash(received), trustedPk, sentBits, scheme);
+  }
 
   const api = {
     bitsFromBytes, bytesFromBits, hex, fromHex, hamming, pdq128Bits, pdq128, canonicalize, HASH_SIDE, hashView, imageHash,
     bchSyndrome, bchDecode, rsEncode, rsDecode, GEN, packWire, unpackWire, eccEncode, eccDecode,
-    ed25519Supported, keyFromSeed, generateKey, sign, verifySig, signHash, signImage, verifyImage,
+    makeBch1023, BCHPK, eccEncodeBchpk, eccDecodeBchpk, SCHEMES, DEFAULT_SCHEME,
+    ed25519Supported, keyFromSeed, generateKey, sign, verifySig, signHash, signImage, verifyHash, verifyImage,
   };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.AsymSealSigned = api;
@@ -2235,34 +2388,45 @@ void main() {
   }
 
   // -------------------------------------------------------------------------------------
-  // Reported numbers: the final evaluation of the released checkpoint (seed 0) at s = 1.0
+  // Reported numbers: the released checkpoint (seed 0) in its default mode, Balance (s = 1.10), with the public key in
+  // the payload (experiments/modes292/final/summary.json); held-out sweep: experiments/modes292/readout_pk.json "ba"
   // -------------------------------------------------------------------------------------
-  const SIZES = [ // test set: size, PSNR, SSIM, BA no attack, JPEG 30, 0.5x + JPEG 70, 0.3x + JPEG 50, WeChat setting
-    ['1024 × 1024', 45.46, 0.9962, 1.0000, 0.9811, 0.9692, 0.7194, 0.9947],
-    ['1088 × 1920', 45.25, 0.9958, 1.0000, 0.9927, 0.9920, 0.8584, 0.9918],
-    ['1920 × 1088', 45.24, 0.9957, 1.0000, 0.9949, 0.9939, 0.8554, 0.9944],
-    ['1280 × 768', 45.32, 0.9958, 1.0000, 0.9806, 0.9570, 0.6940, 0.9951],
-    ['2048 × 1536', 45.17, 0.9961, 1.0000, 0.9972, 0.9977, 0.9337, 0.9967],
-    ['random size', 45.41, 0.9959, 1.0000, 0.9585, 0.9131, 0.7393, 0.9714],
+  const SIZES = [ // test set, Balance: size, PSNR, SSIM, BA no attack, JPEG 30, 0.5x + JPEG 70, 0.3x + JPEG 50, WeChat setting
+    ['1024 × 1024', 44.64, 0.9955, 1.0000, 0.9871, 0.9785, 0.7398, 0.9968],
+    ['1088 × 1920', 44.42, 0.9950, 1.0000, 0.9955, 0.9948, 0.8784, 0.9951],
+    ['1920 × 1088', 44.41, 0.9948, 1.0000, 0.9969, 0.9962, 0.8763, 0.9970],
+    ['1280 × 768', 44.50, 0.9949, 1.0000, 0.9874, 0.9681, 0.7114, 0.9969],
+    ['2048 × 1536', 44.35, 0.9954, 1.0000, 0.9984, 0.9986, 0.9491, 0.9979],
+    ['random size', 44.59, 0.9951, 1.0000, 0.9663, 0.9231, 0.7542, 0.9776],
   ];
-  const CANDS = [ // held-out selection, 10 candidate strengths: s, PSNR, BA
-    [0.35, 54.55, 0.8711], [0.40, 53.39, 0.8976], [0.45, 52.37, 0.9162], [0.50, 51.45, 0.9298],
-    [0.55, 50.62, 0.9402], [0.60, 49.87, 0.9482], [0.70, 48.53, 0.9601], [0.80, 47.37, 0.9683],
-    [0.90, 46.35, 0.9744], [1.00, 45.43, 0.9785],
+  const CANDS = [ // held-out (24 images), 16 strengths: s, PSNR (5 fixed sizes), BA (16 conditions x 5 fixed sizes)
+    [0.35, 54.56, 0.8761], [0.40, 53.40, 0.9025], [0.45, 52.37, 0.9209], [0.50, 51.46, 0.9342],
+    [0.55, 50.63, 0.9444], [0.60, 49.88, 0.9522], [0.65, 49.18, 0.9586], [0.70, 48.54, 0.9637],
+    [0.80, 47.38, 0.9716], [0.90, 46.36, 0.9773], [1.00, 45.44, 0.9812], [1.10, 44.61, 0.9843],
+    [1.25, 43.51, 0.9874], [1.50, 41.92, 0.9910], [1.75, 40.59, 0.9932], [2.00, 39.43, 0.9948],
   ];
-  const DEPLOYED_S = 1.0, FLOOR_S = 0.45, THRESHOLD = 0.975;
-  const VERIFY = [ // CLIC 2020, signed: [group] or [label, five fixed sizes pooled, 1024 x 1024, 2048 x 1536, edit]
+  const MODES = [{ s: 0.80, name: 'Fidelity' }, { s: 1.10, name: 'Balance' }, { s: 1.50, name: 'Resilient' }];
+  const FLOOR_S = 0.45;
+  // the three modes: values of the one setting s (the trade-off of the weights is fixed)
+  const DEFAULT_MODE_S = '1.10';
+  const MODE_HINTS = {
+    '0.80': 'Fidelity: the highest image quality of the three (47.23 dB on the test set), but it misses the 95% platform goal: at its worst size and platform, 92.0% of test images verify.',
+    '1.10': 'Balance, the default: 44.46 dB on the test set; after the Instagram, X and WhatsApp settings at least 99.0% of test images verify at every size.',
+    '1.50': 'Resilient: for heavy recompression and downscaling (41.77 dB; on the test set 100.0% verify after the WeChat setting and 87.6% after 0.4× and JPEG 75).',
+    custom: 'Custom: any strength from 0.35 to 2.00.',
+  };
+  const VERIFY = [ // CLIC 2020, signed, Balance, key in the payload: [group] or [label, five fixed sizes pooled, 1024 x 1024, 2048 x 1536, edit]
     ['No attack'], ['8-bit PNG', 100.0, 100.0, 100.0],
-    ['JPEG'], ['Quality 90', 100.0, 100.0, 100.0], ['Quality 70', 99.8, 99.6, 100.0],
-    ['Quality 50', 99.2, 98.3, 100.0], ['Quality 30', 95.7, 92.8, 99.8],
+    ['JPEG'], ['Quality 90', 100.0, 100.0, 100.0], ['Quality 70', 99.7, 99.2, 100.0],
+    ['Quality 50', 98.3, 96.6, 99.8], ['Quality 30', 90.7, 84.3, 99.1],
     ['Resize'], ['0.9×', 100.0, 100.0, 100.0], ['0.7×', 100.0, 100.0, 100.0], ['0.5×', 100.0, 100.0, 100.0], ['0.3×', 100.0, 100.0, 100.0],
-    ['Resize, then JPEG'], ['0.5×, JPEG 85', 98.4, 97.4, 100.0], ['0.4×, JPEG 75', 77.4, 61.5, 99.1],
-    ['0.5×, JPEG 70', 90.9, 87.2, 99.4], ['0.3×, JPEG 50', 9.2, 0.0, 42.5],
-    ['Platform settings'], ['Instagram (1080, JPEG 85)', 100.0, 100.0, 100.0], ['X (2048, JPEG 75)', 99.9, 100.0, 100.0],
-    ['WhatsApp (1600, JPEG 70)', 99.8, 99.6, 100.0], ['WeChat (1280, JPEG 50)', 98.3, 98.3, 99.4],
+    ['Resize, then JPEG'], ['0.5×, JPEG 85', 96.3, 94.2, 99.8], ['0.4×, JPEG 75', 66.2, 38.9, 97.4],
+    ['0.5×, JPEG 70', 83.5, 75.5, 98.5], ['0.3×, JPEG 50', 4.6, 0.0, 21.9],
+    ['Platform settings'], ['Instagram (1080, JPEG 85)', 99.6, 100.0, 100.0], ['X (2048, JPEG 75)', 99.7, 99.2, 100.0],
+    ['WhatsApp (1600, JPEG 70)', 99.6, 99.2, 100.0], ['WeChat (1280, JPEG 50)', 96.5, 96.6, 97.7],
     ['Edits · acceptance, lower is better'], ['Crop to 95% of each side', 0.0, 0.0, 0.0, true],
-    ['Black box, 5% of each side', 43.0, 47.0, 41.7, true], ['Pasted rectangle, 8% of the area', 0.5, 0.8, 0.4, true],
-    ['Inpainted rectangle, 8% of the area', 12.4, 11.5, 10.9, true],
+    ['Black box, 5% of each side', 42.8, 46.6, 40.9, true], ['Pasted rectangle, 8% of the area', 0.6, 0.8, 0.4, true],
+    ['Inpainted rectangle, 8% of the area', 12.3, 11.7, 10.8, true],
   ];
 
   // -------------------------------------------------------------------------------------
@@ -2301,6 +2465,10 @@ void main() {
     { key: 4, label: 'JPEG quality 30', shape: 'square', color: 'var(--s2)' },
     { key: 7, label: 'WeChat setting', shape: 'diamond', color: 'var(--s3)' },
   ];
+  function sizeAria() {
+    const span = (k) => { const s = SIZES.slice().sort((a, b) => a[k] - b[k]); return `from ${nf(s[0][k], 3)} at ${s[0][0].replace(' × ', ' by ')} to ${nf(s[s.length - 1][k], 3)} at ${s[s.length - 1][0].replace(' × ', ' by ')}`; };
+    return `Bit accuracy by image size in the default mode: about 1.0 with no attack at every size; JPEG quality 30 ${span(4)}; WeChat setting ${span(7)}.`;
+  }
   function drawSizeChart() {
     const host = $('sizeChart');
     const W = Math.max(280, host.clientWidth || 900);
@@ -2311,7 +2479,7 @@ void main() {
     const X = (v) => left + (v - lo) / (hi - lo) * (W - left - right);
     host.innerHTML = '';
     const svg = el('svg', { viewBox: `0 0 ${W} ${H}`, width: W, height: H, role: 'img',
-      'aria-label': 'Bit accuracy by image size: 1.0 with no attack at every size; JPEG quality 30 from 0.959 at a random size to 0.997 at 2048 by 1536; WeChat setting from 0.971 at a random size to 0.997 at 2048 by 1536.' }, { display: 'block', 'max-width': '100%' }, host);
+      'aria-label': sizeAria() }, { display: 'block', 'max-width': '100%' }, host);
     for (let k = 94; k <= 100; k++) {
       const t = k / 100;
       el('line', { x1: X(t), x2: X(t), y1: top - 8, y2: H - 26 }, { stroke: 'var(--hair)', 'stroke-width': '1px' }, svg);
@@ -2333,50 +2501,46 @@ void main() {
     const host = $('tradeChart');
     const W = Math.max(280, host.clientWidth || 900);
     const narrow = W < 560;
-    const left = 48, right = narrow ? 16 : 150, top = 20, bottom = 40;
-    const H = narrow ? 320 : 380;
-    const xlo = 0.86, xhi = 0.99, ylo = 44.5, yhi = 55.5;
+    const left = 48, right = narrow ? 16 : 40, top = 20, bottom = 40;
+    const H = narrow ? 340 : 400;
+    const xlo = 0.86, xhi = 1.0, ylo = 38.5, yhi = 55.5;
     const X = (v) => left + (v - xlo) / (xhi - xlo) * (W - left - right);
     const Y = (v) => top + (yhi - v) / (yhi - ylo) * (H - top - bottom);
+    const modeOf = (s) => MODES.find(m => Math.abs(m.s - s) < 1e-9);
     host.innerHTML = '';
+    const desc = MODES.map(m => { const c = CANDS.find(r => Math.abs(r[0] - m.s) < 1e-9); return `${m.name} s = ${m.s.toFixed(2)} (${nf(c[1], 2)} dB, bit accuracy ${nf(c[2], 4)})`; }).join(', ');
     const svg = el('svg', { viewBox: `0 0 ${W} ${H}`, width: W, height: H, role: 'img',
-      'aria-label': 'Held-out PSNR against bit accuracy for the 10 candidate strengths s from 0.35 to 1.0. Raising s trades PSNR for bit accuracy; the deployed strength s = 1.0 has PSNR 45.43 dB and bit accuracy 0.9785; the robust floor is s = 0.45.' }, { display: 'block', 'max-width': '100%' }, host);
-    for (let v = 46; v <= 54; v += 2) {
+      'aria-label': `Held-out PSNR against bit accuracy for ${CANDS.length} strengths s from 0.35 to 2.0. Raising s trades PSNR for bit accuracy. The three modes: ${desc}. Robust floor: s = 0.45.` }, { display: 'block', 'max-width': '100%' }, host);
+    for (let v = 40; v <= 54; v += 2) {
       el('line', { x1: left, x2: W - right, y1: Y(v), y2: Y(v) }, { stroke: 'var(--hair)', 'stroke-width': '1px' }, svg);
       text(svg, left - 8, Y(v) + 4, String(v), { 'text-anchor': 'end' });
     }
-    for (let v = 0.87; v <= 0.9901; v += 0.02) {
+    for (let v = 0.87; v <= 0.9901; v += narrow ? 0.04 : 0.02) {
       text(svg, X(v), H - 18, v.toFixed(2), { 'text-anchor': 'middle' });
     }
-    text(svg, left, H - 2, 'bit accuracy (16 conditions × 6 sizes)', {}, { 'font-size': '11px' });
+    text(svg, left, H - 2, 'bit accuracy (16 conditions × 5 sizes)', {}, { 'font-size': '11px' });
     text(svg, 4, top - 6, 'PSNR (dB)', {}, { 'font-size': '11px' });
-    // threshold of the rule
-    el('line', { x1: X(THRESHOLD), x2: X(THRESHOLD), y1: top, y2: H - bottom }, { stroke: 'var(--fg-2)', 'stroke-width': '1.2px', 'stroke-dasharray': '4 4' }, svg);
-    text(svg, X(THRESHOLD) - 6, top + 12, 'BA ≥ 0.975', { 'text-anchor': 'end' }, { 'font-size': '11px' });
     el('polyline', { points: CANDS.map(c => `${X(c[2])},${Y(c[1])}`).join(' ') }, { fill: 'none', stroke: 'var(--s1)', 'stroke-width': '2px', 'stroke-linejoin': 'round' }, svg);
     const pts = [];
     CANDS.forEach(c => {
-      const x = X(c[2]), y = Y(c[1]);
-      if (c[0] === DEPLOYED_S) el('circle', { cx: x, cy: y, r: 11 }, { fill: 'none', stroke: 'var(--accent)', 'stroke-width': '2px' }, svg);
+      const x = X(c[2]), y = Y(c[1]), m = modeOf(c[0]);
+      if (m) el('circle', { cx: x, cy: y, r: 11 }, { fill: 'none', stroke: 'var(--accent)', 'stroke-width': '2px' }, svg);
       if (c[0] === FLOOR_S) el('circle', { cx: x, cy: y, r: 10 }, { fill: 'none', stroke: 'var(--s2)', 'stroke-width': '2px', 'stroke-dasharray': '3 3' }, svg);
       marker(svg, 'circle', x, y, 'var(--s1)', 4.5);
-      pts.push([x, y, c]);
-      // labels clear of the curve, the axis and the threshold line: the first above its point, the others below-left
+      pts.push([x, y, c, m]);
+      // labels below-left of their points, clear of the curve (which rises to the left)
       if (c[0] === 0.35) text(svg, x + 6, y - 10, 's = 0.35', {}, { 'font-size': '11px' });
-      else if ((narrow ? [0.6] : [0.6, 0.8]).includes(c[0])) text(svg, x - 8, y + 16, 's = ' + c[0].toFixed(2), { 'text-anchor': 'end' }, { 'font-size': '11px' });
+      if (c[0] === 2.0) text(svg, x - 8, y + 18, 's = 2.00', { 'text-anchor': 'end' }, { 'font-size': '11px' });
+      if (m) {
+        text(svg, x - 16, y + 20, narrow ? m.name : `${m.name}: s = ${m.s.toFixed(2)}`, { 'text-anchor': 'end' }, { fill: 'var(--fg)', 'font-size': narrow ? '11px' : '12px', 'font-weight': '600' });
+        if (!narrow) text(svg, x - 16, y + 35, `${nf(c[1], 2)} dB · BA ${nf(c[2], 4)}`, { 'text-anchor': 'end' }, { 'font-size': '11.5px' });
+      }
     });
     const fl = CANDS.find(c => c[0] === FLOOR_S);
     text(svg, X(fl[2]) + 6, Y(fl[1]) - 14, narrow ? 'floor' : 'robust floor: s = 0.45', {}, { fill: 'var(--fg)', 'font-size': '11px', 'font-weight': '600' });
-    const dep = CANDS.find(c => c[0] === DEPLOYED_S);
-    if (!narrow) {
-      text(svg, X(dep[2]) + 16, Y(dep[1]) - 14, 'Deployed: s = 1.00', {}, { fill: 'var(--fg)', 'font-size': '12px', 'font-weight': '600' });
-      text(svg, X(dep[2]) + 16, Y(dep[1]) + 2, '45.43 dB · BA 0.9785', {}, { 'font-size': '11.5px' });
-    } else {
-      text(svg, X(dep[2]) - 14, Y(dep[1]) - 12, 'deployed', { 'text-anchor': 'end' }, { fill: 'var(--fg)', 'font-size': '11px', 'font-weight': '600' });
-    }
-    pts.forEach(([x, y, c]) => {
+    pts.forEach(([x, y, c, m]) => {
       const hit = el('circle', { cx: x, cy: y, r: 13 }, { fill: 'transparent', cursor: 'default' }, svg);
-      const tag = c[0] === DEPLOYED_S ? ' · deployed' : c[0] === FLOOR_S ? ' · robust floor' : '';
+      const tag = m ? ' · ' + m.name : c[0] === FLOOR_S ? ' · robust floor' : '';
       tipTarget(hit, `<b>s = ${c[0].toFixed(2)}</b>${tag}<br>PSNR ${nf(c[1], 2)} dB<br>Bit accuracy ${nf(c[2], 4)}`);
     });
   }
@@ -2385,7 +2549,8 @@ void main() {
     const lg = $('sizeLegend');
     SIZE_SERIES.forEach(s => lg.appendChild(legendSwatch(s.shape, s.color, s.label)));
     const tl = $('tradeLegend');
-    tl.appendChild(legendSwatch('circle', 'var(--s1)', 'candidate strengths s, 0.35 to 1.0'));
+    tl.appendChild(legendSwatch('circle', 'var(--s1)', 'held-out strengths s, 0.35 to 2.00'));
+    tl.appendChild(legendSwatch('circle', 'var(--accent)', 'the three modes', true));
     const tb = $('sizeTable');
     tb.innerHTML = SIZES.map(r => `<tr><td>${r[0]}</td><td>${nf(r[1], 2)}</td><td>${nf(r[2], 4)}</td>` + r.slice(3).map(v => `<td>${nf(v, 4)}</td>`).join('') + '</tr>').join('');
     const vb = $('verifyBody');
@@ -2764,7 +2929,7 @@ void main() {
     if (res.verify) {
       const o = res.verify.outcome;
       badge = o === 'verified' ? '<span class="badge ok">✓ Verified with your public key</span>'
-        : o === 'decode_fail' ? '<span class="badge bad">✕ decode_fail: too many byte errors</span>'
+        : o === 'decode_fail' ? '<span class="badge bad">✕ decode_fail: too many bit errors</span>'
           : '<span class="badge bad">✕ sig_mismatch: hash or signature does not check out</span>';
     } else if (res.text !== undefined) {
       badge = res.textOk ? '<span class="badge ok">✓ Message intact</span>' : `<span class="badge warn">! Message damaged by ${res.nWrong} bit error${res.nWrong === 1 ? '' : 's'}</span>`;
@@ -2787,8 +2952,8 @@ void main() {
     if (meta.canvas) h += ` · canvas ${meta.canvas[1]} × ${meta.canvas[0]}`;
     if (res.verify) {
       const i = res.verify.info;
-      h += `<br>Codeword: ${i.rs_bad_bytes} of 128 bytes wrong (up to 14 fixable)`;
-      if (i.rs_ok) h += `<br>Hash drift: ${i.bch_ok ? i.bch_errors + ' bit' + (i.bch_errors === 1 ? '' : 's') : 'more than 4 bits'} (up to 4 recoverable) · signature ${i.sig_ok ? 'valid' : 'invalid'}`;
+      h += `<br>Codeword: ${i.bit_errors} of 1,024 bits wrong (up to 23 fixable)`;
+      if (i.ecc_ok) h += `<br>Hash drift: ${i.bch_ok ? i.bch_errors + ' bit' + (i.bch_errors === 1 ? '' : 's') : 'more than 4 bits'} (up to 4 recoverable) · signature ${i.sig_ok ? 'valid' : 'invalid'}`;
     }
     h += '<br><span style="color:var(--fg-3)">Red cells: payload slots decoded wrong.</span>';
     kv.innerHTML = h;
@@ -3033,6 +3198,14 @@ void main() {
     } catch (e) { renderError(host, e); }
     finally { setBusy(false); setProgress(0); }
   }
+  function setStrength(v) {
+    const custom = v === 'custom';
+    document.querySelectorAll('#strengthSeg button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.s === v)));
+    $('customStrength').hidden = !custom;
+    if (!custom) $('sIn').value = v;
+    $('sVal').textContent = 's = ' + nf($('sIn').value, 2);
+    $('strengthHint').textContent = MODE_HINTS[v] || MODE_HINTS.custom;
+  }
   function setMode(m) {
     if (m === 'signed' && !state.ed25519) return;
     state.mode = m;
@@ -3122,6 +3295,8 @@ void main() {
     const tb = () => { const n = new TextEncoder().encode($('textIn').value).length; $('textBytes').textContent = n; $('textBytes').style.color = n > 128 ? 'var(--bad-ink)' : ''; };
     $('textIn').addEventListener('input', () => { tb(); if (!state.emb) drawCarrier(); }); tb();
     $('sIn').addEventListener('input', () => { $('sVal').textContent = 's = ' + nf($('sIn').value, 2); });
+    document.querySelectorAll('#strengthSeg button').forEach(b => b.addEventListener('click', () => setStrength(b.dataset.s)));
+    setStrength(DEFAULT_MODE_S);
     document.querySelectorAll('#viewSeg button').forEach(b => b.addEventListener('click', () => setView(b.dataset.view)));
     document.querySelectorAll('#modeSeg button').forEach(b => b.addEventListener('click', () => setMode(b.dataset.mode)));
     $('embedBtn').addEventListener('click', () => doEmbed(false));

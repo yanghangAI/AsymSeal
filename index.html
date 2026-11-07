@@ -291,7 +291,8 @@ input[type=range] { width: 100%; accent-color: var(--accent); }
 .vt { width: 100%; }
 .vt td { padding: 7px 8px; }
 .vt td.l { text-align: left; white-space: normal; min-width: 150px; }
-.vt td.b { width: 42%; min-width: 120px; }
+.vt td.b { width: 34%; min-width: 110px; }
+.vt td.ph, .vt th.ph { border-left: 1px solid var(--hair); }
 .vt .grp td { font-size: 12px; font-weight: 600; color: var(--fg-2); padding-top: 18px; text-transform: uppercase; letter-spacing: 0.05em; text-align: left; }
 .vbar { height: 10px; border-radius: 4px; background: var(--s1); }
 .vbar.edit { background: var(--fg-3); }
@@ -299,7 +300,7 @@ input[type=range] { width: 100%; accent-color: var(--accent); }
 @media (max-width: 560px) {
   .vt td.b, .vt th.b { display: none; }
   .vt .nb { display: inline; }
-  .vt td.l { min-width: 0; }
+  .vt td.l { min-width: 96px; }
   .vt td { padding: 7px 5px; }
 }
 
@@ -586,9 +587,9 @@ footer .row { margin-top: 14px; }
         <tr><td rowspan="2" class="l"><b>Balance</b><br><span class="muted">s = 1.10</span></td><td>test</td><td>44.46</td><td>0.9951</td><td>99.8</td><td>99.8</td><td>99.6</td><td>96.8</td><td>91.0</td><td>63.8</td><td>5.8</td></tr>
         <tr><td>CLIC</td><td>45.83</td><td>0.9957</td><td>99.6</td><td>99.7</td><td>99.6</td><td>96.5</td><td>90.7</td><td>66.2</td><td>4.6</td></tr>
         <tr><td rowspan="2" class="l"><b>Resilient</b><br><span class="muted">s = 1.50</span></td><td>test</td><td>41.77</td><td>0.9914</td><td>100.0</td><td>100.0</td><td>100.0</td><td>100.0</td><td>99.6</td><td>87.6</td><td>21.2</td></tr>
-        <tr><td>CLIC</td><td>43.14</td><td>0.9924</td><td>100.0</td><td>100.0</td><td>100.0</td><td>99.3</td><td>99.0</td><td>87.5</td><td>18.9</td></tr>
+        <tr><td>CLIC</td><td>43.14</td><td>0.9924</td><td>99.96</td><td>100.0</td><td>100.0</td><td>99.3</td><td>99.0</td><td>87.5</td><td>18.9</td></tr>
       </tbody></table></div>
-      <figcaption class="caption">PSNR (dB) and SSIM are means over the five fixed sizes; the other columns are the percent of signed images that verify, pooled over the five sizes. Balance and Resilient meet the goal of at least 95% under the Instagram, X and WhatsApp settings at every size (worst size: Balance 99.0% on the test set and 98.9% on CLIC 2020, Resilient 100.0% and 99.8%). Fidelity does not: at its worst size and platform, 92.0% of test images and 93.8% of CLIC images verify, and at phone and camera photo sizes Instagram drops to 91.7% and WhatsApp to 93.4%. With no attack every signed image verifies in Fidelity and Balance; in Resilient 99.96% of signed CLIC images do (one of 530 fails at 1088 × 1920: all its bits decode, but the stronger watermark moves the image's own perceptual hash by 5 bits, past the 4-bit bridge).</figcaption>
+      <figcaption class="caption">PSNR (dB) and SSIM are means over the five fixed sizes; the other columns are the percent of signed images that verify, pooled over the five sizes (two decimals where a rate below 100 would round to 100.0). Balance and Resilient meet the goal of at least 95% under the Instagram, X and WhatsApp settings at every size (worst size: Balance 99.0% on the test set and 98.9% on CLIC 2020, Resilient 100.0% and 99.8%). Fidelity does not: at its worst size and platform, 92.0% of test images and 93.8% of CLIC images verify, and at phone and camera photo sizes Instagram drops to 91.7% and WhatsApp to 93.4%. With no attack every signed image verifies in Fidelity and Balance; in Resilient 99.96% of signed CLIC images do (one of 530 fails at 1088 × 1920: all its bits decode, but the stronger watermark moves the image's own perceptual hash by 5 bits, past the 4-bit bridge).</figcaption>
     </figure>
 
     <div class="tiles c2">
@@ -606,9 +607,9 @@ footer .row { margin-top: 14px; }
     </div>
 
     <figure class="fig">
-      <div class="fig-head"><h3 class="h3">Signed images that verify</h3><span class="small muted">530 CLIC 2020 images × 5 sizes · Balance · one key pair · one run</span></div>
-      <div class="table-wrap"><table class="vt"><thead><tr><th>condition</th><th class="b" style="text-align:left">all five sizes</th><th><span class="nb">all five</span></th><th>1024²</th><th>2048 × 1536</th></tr></thead><tbody id="verifyBody"></tbody></table></div>
-      <figcaption class="caption">Default mode (Balance, s = 1.10), public key in the payload. Percent of images whose codeword decodes and whose signature checks out with the trusted public key, pooled over the five fixed sizes (1024 × 1024 to 2048 × 1536). For the edits the percentage is how often the edited image is still accepted, so lower is better. The platform settings cap the long side, so at 1024 × 1024 they only compress.</figcaption>
+      <div class="fig-head"><h3 class="h3">Signed images that verify</h3><span class="small muted">530 CLIC 2020 images × 5 sizes, then phone-size and camera photos · Balance · one key pair · one run</span></div>
+      <div class="table-wrap"><table class="vt"><thead><tr><th>condition</th><th class="b" style="text-align:left">all five sizes</th><th><span class="nb">all five</span></th><th>1024²</th><th>2048 × 1536</th><th class="ph">12 MP</th><th>camera photos</th></tr></thead><tbody id="verifyBody"></tbody></table></div>
+      <figcaption class="caption">Default mode (Balance, s = 1.10), public key in the payload. Percent of images whose codeword decodes and whose signature checks out with the trusted public key, pooled over the five fixed sizes (1024 × 1024 to 2048 × 1536). For the edits the percentage is how often the edited image is still accepted, so lower is better. The platform settings cap the long side, so at 1024 × 1024 they only compress. The last two columns are real photo sizes, from separate runs: <b>12 MP</b> is the 24 held-out images at 3008 × 4032 and 4032 × 3008 (48 per cell); <b>camera photos</b> are 302 real phone and camera photos at their native size (BlackBerry 3072 × 4160 and 3072 × 3072, Sony 1920 × 2560, Canon 2432 × 3648; 5 to 13 megapixels, centre-cropped, not resized), pooled.</figcaption>
     </figure>
   </div>
 </section>
@@ -2415,18 +2416,18 @@ void main() {
     '1.50': 'Resilient: for heavy recompression and downscaling (41.77 dB; on the test set 100.0% verify after the WeChat setting and 87.6% after 0.4× and JPEG 75).',
     custom: 'Custom: any strength from 0.35 to 2.00.',
   };
-  const VERIFY = [ // CLIC 2020, signed, Balance, key in the payload: [group] or [label, five fixed sizes pooled, 1024 x 1024, 2048 x 1536, edit]
-    ['No attack'], ['8-bit PNG', 100.0, 100.0, 100.0],
-    ['JPEG'], ['Quality 90', 100.0, 100.0, 100.0], ['Quality 70', 99.7, 99.2, 100.0],
-    ['Quality 50', 98.3, 96.6, 99.8], ['Quality 30', 90.7, 84.3, 99.1],
-    ['Resize'], ['0.9×', 100.0, 100.0, 100.0], ['0.7×', 100.0, 100.0, 100.0], ['0.5×', 100.0, 100.0, 100.0], ['0.3×', 100.0, 100.0, 100.0],
-    ['Resize, then JPEG'], ['0.5×, JPEG 85', 96.3, 94.2, 99.8], ['0.4×, JPEG 75', 66.2, 38.9, 97.4],
-    ['0.5×, JPEG 70', 83.5, 75.5, 98.5], ['0.3×, JPEG 50', 4.6, 0.0, 21.9],
-    ['Platform settings'], ['Instagram (1080, JPEG 85)', 99.6, 100.0, 100.0], ['X (2048, JPEG 75)', 99.7, 99.2, 100.0],
-    ['WhatsApp (1600, JPEG 70)', 99.6, 99.2, 100.0], ['WeChat (1280, JPEG 50)', 96.5, 96.6, 97.7],
-    ['Edits · acceptance, lower is better'], ['Crop to 95% of each side', 0.0, 0.0, 0.0, true],
-    ['Black box, 5% of each side', 42.8, 46.6, 40.9, true], ['Pasted rectangle, 8% of the area', 0.6, 0.8, 0.4, true],
-    ['Inpainted rectangle, 8% of the area', 12.3, 11.7, 10.8, true],
+  const VERIFY = [ // CLIC 2020, signed, Balance, key in the payload: [group] or [label, five fixed sizes pooled, 1024 x 1024, 2048 x 1536, 12 MP, camera photos, edit]; the last two from the phone-photo runs (Balance)
+    ['No attack'], ['8-bit PNG', 100.0, 100.0, 100.0, 100.0, 100.0],
+    ['JPEG'], ['Quality 90', 100.0, 100.0, 100.0, 100.0, 100.0], ['Quality 70', 99.7, 99.2, 100.0, 100.0, 100.0],
+    ['Quality 50', 98.3, 96.6, 99.8, 100.0, 100.0], ['Quality 30', 90.7, 84.3, 99.1, 100.0, 100.0],
+    ['Resize'], ['0.9×', 100.0, 100.0, 100.0, 100.0, 100.0], ['0.7×', 100.0, 100.0, 100.0, 100.0, 100.0], ['0.5×', 100.0, 100.0, 100.0, 100.0, 100.0], ['0.3×', 99.96, 100.0, 100.0, 100.0, 100.0],
+    ['Resize, then JPEG'], ['0.5×, JPEG 85', 96.3, 94.2, 99.8, 100.0, 100.0], ['0.4×, JPEG 75', 66.2, 38.9, 97.4, 100.0, 98.7],
+    ['0.5×, JPEG 70', 83.5, 75.5, 98.5, 100.0, 99.0], ['0.3×, JPEG 50', 4.6, 0.0, 21.9, 91.7, 77.8],
+    ['Platform settings'], ['Instagram (1080, JPEG 85)', 99.6, 100.0, 100.0, 100.0, 100.0], ['X (2048, JPEG 75)', 99.7, 99.2, 100.0, 100.0, 100.0],
+    ['WhatsApp (1600, JPEG 70)', 99.6, 99.2, 100.0, 100.0, 100.0], ['WeChat (1280, JPEG 50)', 96.5, 96.6, 97.7, 91.7, 94.7],
+    ['Edits · acceptance, lower is better'], ['Crop to 95% of each side', 0.0, 0.0, 0.0, 0.0, 0.0, true],
+    ['Black box, 5% of each side', 42.8, 46.6, 40.9, 43.8, 42.4, true], ['Pasted rectangle, 8% of the area', 0.6, 0.8, 0.4, 0.0, 0.3, true],
+    ['Inpainted rectangle, 8% of the area', 12.3, 11.7, 10.8, 4.2, 9.9, true],
   ];
 
   // -------------------------------------------------------------------------------------
@@ -2554,11 +2555,12 @@ void main() {
     const tb = $('sizeTable');
     tb.innerHTML = SIZES.map(r => `<tr><td>${r[0]}</td><td>${nf(r[1], 2)}</td><td>${nf(r[2], 4)}</td>` + r.slice(3).map(v => `<td>${nf(v, 4)}</td>`).join('') + '</tr>').join('');
     const vb = $('verifyBody');
+    const pc = v => nf(v, v >= 99.95 && v < 100 ? 2 : 1);   // a rate below 100 never prints as 100.0
     vb.innerHTML = VERIFY.map(r => {
-      if (r.length === 1) return `<tr class="grp"><td colspan="5">${r[0]}</td></tr>`;
-      const [label, six, b, c, edit] = r;
+      if (r.length === 1) return `<tr class="grp"><td colspan="7">${r[0]}</td></tr>`;
+      const [label, six, b, c, mp, cam, edit] = r;
       return `<tr><td class="l">${label}</td><td class="b"><div class="bar-track" style="height:10px"><div class="vbar${edit ? ' edit' : ''}" style="width:${Math.max(six, 0.4)}%"></div></div></td>` +
-        `<td><b>${nf(six, 1)}</b></td><td>${nf(b, 1)}</td><td>${nf(c, 1)}</td></tr>`;
+        `<td><b>${pc(six)}</b></td><td>${pc(b)}</td><td>${pc(c)}</td><td class="ph">${pc(mp)}</td><td>${pc(cam)}</td></tr>`;
     }).join('');
     drawSizeChart(); drawTradeChart();
     let rt = 0;
